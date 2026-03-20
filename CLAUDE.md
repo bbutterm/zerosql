@@ -1,46 +1,98 @@
-# ZeroSQL — Browser Detective SQL Game
+# ZeroSQL — Руководство для разработки
 
-## What is this?
+## Что это
 
-Browser-based detective game where SQL queries ARE the gameplay. Player is a detective-analyst in DataCity investigating criminal group "BASE". Dark noir theme, Russian language interface.
+Браузерный SQL-детектив. Игрок пишет SQL-запросы для расследования дел. Вся логика — клиентская: SQL.js (SQLite → WASM) работает в браузере, серверной части нет.
 
-## Tech Stack
+## Ключевые правила
 
-- **Next.js 16** (App Router, Turbopack, `src/` dir)
-- **SQL.js** — SQLite compiled to WASM, runs entirely in browser
-- **CodeMirror 6** — SQL editor with syntax highlighting + autocomplete
-- **Zustand** — state management with LocalStorage persistence
-- **shadcn/ui** + Tailwind CSS — UI components, noir dark theme
+### Engine Facade
 
-## Key Architecture
+Ядро (`src/engine/`) доступно **только через фасад** `src/engine/index.ts`.
 
-- `/game` route is fully client-side (`'use client'`). No server-side SQL execution.
-- SQL.js WASM binary served from `public/sql-wasm.wasm`
-- Game database (8 tables) is created and seeded in-browser on first load
-- Mission validation checks **query results**, not SQL text — any correct query works
-- Progress saved to LocalStorage via Zustand persist middleware
-
-## Project Structure
-
-- `src/engine/` — database init, query execution, schema, seed, validator, mission runner
-- `src/data/missions/` — mission definitions (add new missions here)
-- `src/stores/game-store.ts` — central Zustand store
-- `src/components/game/` — game UI components (editor, results, mission panel)
-- `src/types/` — TypeScript types for game, missions, database
-
-## Commands
-
-```bash
-npm run dev      # Start dev server
-npm run build    # Production build
+```
+✅ import { initEngine, executeSQL } from "@/engine"
+❌ import { executeQuery } from "@/engine/database"
+❌ import { SCHEMA_SQL } from "@/engine/schema"
 ```
 
-## Adding New Missions
+Исключение — тесты: они проверяют внутренние модули напрямую.
 
-1. Create `src/data/missions/mission-XX-name.ts` following the `Mission` type
-2. Add to `src/data/missions/index.ts` array
-3. Validation types: `row_count`, `contains_columns`, `contains_value`, `exact_match`, `custom`
+Проверка отсутствия прямых импортов:
+```bash
+grep -rn "from.*engine/database\|from.*engine/schema\|from.*engine/seed\|from.*engine/mission-runner\|from.*engine/validator\|from.*engine/table-guard" src/ --include="*.ts" --include="*.tsx" | grep -v "engine/index" | grep -v "__tests__"
+# Должно быть пусто
+```
 
-## Game Database Tables
+### Фасад — API
 
-suspects, crimes, evidence, crime_suspects, locations, communications, transactions, org_members
+| Функция | Что делает |
+|---------|-----------|
+| `initEngine()` | Создаёт БД, накатывает schema + seed, возвращает `{ db, schema, foreignKeys }` |
+| `executeSQL(db, sql, unlockedTables)` | Проверяет доступ к таблицам + выполняет запрос. При блокировке — `QueryResult` с `error`, не исключение |
+| `checkMissionProgress(mission, result, db, completed)` | Проверяет цели миссии по результату запроса |
+| `isMissionComplete(mission, completed)` | Завершена ли миссия |
+| `getSchema(db)` / `getForeignKeys(db)` | Данные для UI-панели схемы |
+
+Реэкспортируемые типы: `QueryResult`, `TableInfo`, `ForeignKey`, `Mission`, `ValidationOutcome`, `ObjectiveResult`.
+
+### Поток данных
+
+```
+Игрок вводит SQL → game-store.executeSQL()
+  → engine.executeSQL(db, sql, unlockedTables)
+    → table-guard: проверка доступа
+    → database: выполнение запроса
+  ← QueryResult
+  → engine.checkMissionProgress(mission, result, db, completed)
+    → mission-runner: проверка целей по порядку
+    → validator: 5 типов валидации
+  ← ObjectiveResult[]
+  → обновление стора (прогресс, фидбек, нарратив)
+```
+
+### Валидация миссий
+
+Система проверяет **результат запроса**, не текст SQL. 5 типов:
+- `row_count` — количество строк (eq/gte/lte)
+- `contains_columns` — наличие столбцов
+- `contains_value` — значение в столбце
+- `exact_match` — точное совпадение с reference-запросом
+- `custom` — произвольная функция
+
+Цели проверяются **последовательно** по полю `order`. За один запрос можно пройти максимум одну цель.
+
+### Контроль доступа к таблицам
+
+Каждая миссия определяет `unlockedTables`. Table guard парсит SQL (FROM, JOIN, INTO, UPDATE) и блокирует обращения к закрытым таблицам. `sqlite_master` всегда доступна.
+
+## Структура проекта
+
+- `src/engine/` — ядро (фасад + 6 внутренних модулей)
+- `src/data/missions/` — определения миссий
+- `src/stores/game-store.ts` — Zustand стор (единственный потребитель фасада)
+- `src/components/game/` — UI компоненты (все `'use client'`)
+- `src/types/` — TypeScript типы
+- `src/__tests__/` — 125 тестов
+
+## Команды
+
+```bash
+npm run dev        # Дев-сервер
+npm run build      # Продакшен-сборка
+npm run test:run   # 125 тестов
+npm run lint       # ESLint
+```
+
+## Ограничения при изменениях
+
+- **Внутренние модули engine** (`database.ts`, `validator.ts`, ...) — менять можно, но фасад (`index.ts`) должен оставаться единственной точкой входа для внешних потребителей
+- **Типы** (`src/types/`) — реэкспортируются через фасад, расширять можно
+- **Миссии** — добавлять в `src/data/missions/`, обязательно писать тесты
+- **UI компоненты** — взаимодействуют только через Zustand стор, не импортируют из engine напрямую
+- **Тесты** — после любых изменений: `npm run test:run` (все 125 должны быть зелёными)
+
+## Известные баги
+
+1. **Миссия 3, `obj-money-trail`**: seed = 1 транзакция (suspect_id=1, suspicious=1), валидатор ожидает >= 2. Фикс: добавить транзакцию в seed или понизить порог.
+2. **SQLite LIKE + кириллица**: case-insensitive работает только для ASCII. `'%груз%'` не найдёт `'Груз'`. Обходной путь в валидаторе — альтернативный паттерн `'%порт%'`.

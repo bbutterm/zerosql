@@ -1,6 +1,6 @@
 /**
  * Миссия 0: Туториал — "Первый день в участке"
- * 4 цели, SQL: SELECT, WHERE, COUNT
+ * 3 цели, SQL: SELECT, WHERE, COUNT
  * unlockedTables: suspects, crimes
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -10,7 +10,7 @@ import { executeQuery } from "@/engine/database";
 import { validate } from "@/engine/validator";
 import { checkObjectives, isMissionComplete } from "@/engine/mission-runner";
 import { checkTableAccess } from "@/engine/table-guard";
-import { tutorialMission } from "@/data/missions/mission-00-tutorial";
+import { tutorialMission } from "@/data/missions";
 
 let db: Database;
 
@@ -23,25 +23,7 @@ afterEach(() => {
 });
 
 describe("Миссия 0 — Туториал: проходимость", () => {
-  // ─── Цель 1: obj-see-tables ──────────────────────────
-
-  describe("obj-see-tables: просмотр таблиц", () => {
-    const obj = tutorialMission.objectives.find((o) => o.id === "obj-see-tables")!;
-
-    it("SELECT name FROM sqlite_master WHERE type='table' → pass", () => {
-      const result = executeQuery(db, "SELECT name, type FROM sqlite_master WHERE type='table'");
-      const outcome = validate(obj.validation, result, db);
-      expect(outcome.passed).toBe(true);
-    });
-
-    it("альтернатива: SELECT * FROM sqlite_master → тоже pass", () => {
-      const result = executeQuery(db, "SELECT * FROM sqlite_master");
-      const outcome = validate(obj.validation, result, db);
-      expect(outcome.passed).toBe(true);
-    });
-  });
-
-  // ─── Цель 2: obj-list-suspects ────────────────────────
+  // ─── Цель 1: obj-list-suspects ────────────────────────
 
   describe("obj-list-suspects: список подозреваемых", () => {
     const obj = tutorialMission.objectives.find((o) => o.id === "obj-list-suspects")!;
@@ -60,7 +42,7 @@ describe("Миссия 0 — Туториал: проходимость", () => 
     });
   });
 
-  // ─── Цель 3: obj-wanted ───────────────────────────────
+  // ─── Цель 2: obj-wanted ───────────────────────────────
 
   describe("obj-wanted: подозреваемые в розыске", () => {
     const obj = tutorialMission.objectives.find((o) => o.id === "obj-wanted")!;
@@ -83,7 +65,7 @@ describe("Миссия 0 — Туториал: проходимость", () => 
     });
   });
 
-  // ─── Цель 4: obj-count-crimes ─────────────────────────
+  // ─── Цель 3: obj-count-crimes ─────────────────────────
 
   describe("obj-count-crimes: количество открытых дел", () => {
     const obj = tutorialMission.objectives.find((o) => o.id === "obj-count-crimes")!;
@@ -131,38 +113,31 @@ describe("Миссия 0 — Туториал: проходимость", () => 
 
   // ─── Полный последовательный прогон ────────────────────
 
-  describe("полный прогон всех 4 целей", () => {
+  describe("полный прогон всех 3 целей", () => {
     it("проходит все цели последовательно через checkObjectives", () => {
       const completed = new Set<string>();
 
-      // Цель 1: see tables
-      const r1 = executeQuery(db, "SELECT name, type FROM sqlite_master WHERE type='table'");
+      // Цель 1: list suspects
+      const r1 = executeQuery(db, "SELECT * FROM suspects");
       const o1 = checkObjectives(tutorialMission, r1, db, completed);
       expect(o1).toHaveLength(1);
-      expect(o1[0].objectiveId).toBe("obj-see-tables");
+      expect(o1[0].objectiveId).toBe("obj-list-suspects");
       expect(o1[0].outcome.passed).toBe(true);
       completed.add(o1[0].objectiveId);
 
-      // Цель 2: list suspects
-      const r2 = executeQuery(db, "SELECT * FROM suspects");
+      // Цель 2: wanted
+      const r2 = executeQuery(db, "SELECT * FROM suspects WHERE status = 'в розыске'");
       const o2 = checkObjectives(tutorialMission, r2, db, completed);
       expect(o2).toHaveLength(1);
-      expect(o2[0].objectiveId).toBe("obj-list-suspects");
+      expect(o2[0].objectiveId).toBe("obj-wanted");
       completed.add(o2[0].objectiveId);
 
-      // Цель 3: wanted
-      const r3 = executeQuery(db, "SELECT * FROM suspects WHERE status = 'в розыске'");
+      // Цель 3: count crimes
+      const r3 = executeQuery(db, "SELECT COUNT(*) FROM crimes WHERE status = 'открыто'");
       const o3 = checkObjectives(tutorialMission, r3, db, completed);
       expect(o3).toHaveLength(1);
-      expect(o3[0].objectiveId).toBe("obj-wanted");
+      expect(o3[0].objectiveId).toBe("obj-count-crimes");
       completed.add(o3[0].objectiveId);
-
-      // Цель 4: count crimes
-      const r4 = executeQuery(db, "SELECT COUNT(*) FROM crimes WHERE status = 'открыто'");
-      const o4 = checkObjectives(tutorialMission, r4, db, completed);
-      expect(o4).toHaveLength(1);
-      expect(o4[0].objectiveId).toBe("obj-count-crimes");
-      completed.add(o4[0].objectiveId);
 
       expect(isMissionComplete(tutorialMission, completed)).toBe(true);
     });

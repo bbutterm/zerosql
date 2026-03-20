@@ -1,0 +1,6 @@
+[
+  "SELECT * FROM communications WHERE flagged = 1 — помеченные сообщения.",
+  "LIKE '%груз%' — ищет подстроку в тексте сообщения.",
+  "WHERE timestamp LIKE '2024-01%' — фильтр по январю 2024.",
+  "JOIN suspects ON communications.to_suspect_id = suspects.id — имя получателя."
+]

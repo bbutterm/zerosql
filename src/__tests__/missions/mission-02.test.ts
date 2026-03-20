@@ -10,7 +10,7 @@ import { executeQuery } from "@/engine/database";
 import { validate } from "@/engine/validator";
 import { checkObjectives, isMissionComplete } from "@/engine/mission-runner";
 import { checkTableAccess } from "@/engine/table-guard";
-import { interceptMission } from "@/data/missions/mission-02-intercept";
+import { interceptMission } from "@/data/missions";
 
 let db: Database;
 

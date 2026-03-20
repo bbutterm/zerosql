@@ -1,0 +1,43 @@
+[
+  {
+    "id": "obj-suspicious-transactions",
+    "description": "Найдите все подозрительные транзакции (suspicious = 1)",
+    "order": 1,
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "amount" },
+        { "type": "row_count", "expected": 5, "comparison": "gte" }
+      ],
+      "successMessage": "Вот они — все подозрительные переводы. Миллионы проходят мимо налоговой."
+    }
+  },
+  {
+    "id": "obj-money-trail",
+    "description": "Найдите подозрительные транзакции именно Воронова (suspect_id = 1)",
+    "hint": "WHERE suspect_id = 1 AND suspicious = 1",
+    "order": 2,
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "amount" },
+        { "type": "row_count", "expected": 2, "comparison": "gte" }
+      ],
+      "successMessage": "Деньги не лгут. Миллионы идут через подставные фирмы. Ворон отмывает через всю сеть."
+    }
+  },
+  {
+    "id": "obj-total-amount",
+    "description": "Подсчитайте общую сумму подозрительных транзакций Воронова",
+    "hint": "Используйте SUM(amount) с GROUP BY или WHERE",
+    "order": 3,
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "row_count", "expected": 1, "comparison": "eq" },
+        { "type": "value_check", "row": 0, "col": 0, "comparison": "gt", "expected": 0 }
+      ],
+      "successMessage": "Вот сколько прошло через руки Ворона. Достаточно для обвинения."
+    }
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "obj-flagged-comms",
+    "description": "Найдите все помеченные (flagged) перехваченные сообщения",
+    "hint": "В таблице communications есть поле flagged (0 или 1)",
+    "order": 1,
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "content" },
+        { "type": "row_count", "expected": 5, "comparison": "gte" }
+      ],
+      "successMessage": "Вот они — все подозрительные переговоры. Теперь сузим поиск."
+    }
+  },
+  {
+    "id": "obj-communications",
+    "description": "Найдите перехваченные сообщения, связанные с контрабандой (упоминание груза или порта, январь 2024)",
+    "hint": "Ищите в communications по content с LIKE и фильтруйте по дате",
+    "order": 2,
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "content" },
+        {
+          "type": "any_of",
+          "rules": [
+            { "type": "contains_substring", "column": "content", "substring": "груз" },
+            { "type": "contains_substring", "column": "content", "substring": "порт" }
+          ],
+          "successMessage": ""
+        }
+      ],
+      "successMessage": "Отлично. Ворон координировал операцию через Тень. Цепочка выстраивается."
+    }
+  },
+  {
+    "id": "obj-voronov-contacts",
+    "description": "Определите, с кем переписывался Воронов (suspect_id = 1) — выведите имена собеседников",
+    "hint": "JOIN communications с suspects по to_suspect_id, где from_suspect_id = 1",
+    "order": 3,
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "name" },
+        { "type": "row_count", "expected": 2, "comparison": "gte" }
+      ],
+      "successMessage": "Ворон на связи с несколькими членами группировки. Сеть контактов ширится."
+    }
+  }
+]

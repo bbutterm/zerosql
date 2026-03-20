@@ -10,7 +10,7 @@ import { executeQuery } from "@/engine/database";
 import { validate } from "@/engine/validator";
 import { checkObjectives, isMissionComplete } from "@/engine/mission-runner";
 import { checkTableAccess } from "@/engine/table-guard";
-import { firstCaseMission } from "@/data/missions/mission-01-first-case";
+import { firstCaseMission } from "@/data/missions";
 
 let db: Database;
 

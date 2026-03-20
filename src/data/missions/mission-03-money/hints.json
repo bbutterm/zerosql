@@ -1,0 +1,5 @@
+[
+  "SELECT * FROM transactions WHERE suspicious = 1 — все подозрительные.",
+  "Добавьте AND suspect_id = 1 — только транзакции Воронова.",
+  "SELECT SUM(amount) FROM transactions WHERE suspect_id = 1 AND suspicious = 1 — итого."
+]
