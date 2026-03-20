@@ -33,29 +33,13 @@ export const firstCaseMission: Mission = {
       hint: "Отфильтруйте crime_suspects по crime_id дела о контрабанде",
       order: 2,
       validation: {
-        type: "custom",
-        check: (result) => {
-          const hasRole = result.columns.some(
-            (c) => c.toLowerCase() === "role"
-          );
-          if (!hasRole) {
-            return {
-              passed: false,
-              message: "Нужны роли участников. Ищите в таблице crime_suspects.",
-            };
-          }
-          if (result.rowCount !== 3) {
-            return {
-              passed: false,
-              message: `Найдено ${result.rowCount}. В деле замешаны ровно трое.`,
-            };
-          }
-          return {
-            passed: true,
-            message:
-              "Трое: организатор, исполнитель и соучастник. Но кто есть кто? Нужны имена — используйте JOIN с suspects.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "role" },
+          { type: "row_count", expected: 3, comparison: "eq" },
+        ],
+        successMessage:
+          "Трое: организатор, исполнитель и соучастник. Но кто есть кто? Нужны имена — используйте JOIN с suspects.",
       },
     },
     {

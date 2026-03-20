@@ -19,30 +19,13 @@ export const moneyTrailMission: Mission = {
         "Найдите все подозрительные транзакции (suspicious = 1)",
       order: 1,
       validation: {
-        type: "custom",
-        check: (result) => {
-          const hasAmount = result.columns.some(
-            (c) => c.toLowerCase() === "amount"
-          );
-          if (!hasAmount) {
-            return {
-              passed: false,
-              message: "Нужны суммы транзакций. Где столбец amount?",
-            };
-          }
-          if (result.rowCount < 5) {
-            return {
-              passed: false,
-              message:
-                "Подозрительных транзакций больше. Проверьте условие.",
-            };
-          }
-          return {
-            passed: true,
-            message:
-              "Вот они — все подозрительные переводы. Миллионы проходят мимо налоговой.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "amount" },
+          { type: "row_count", expected: 5, comparison: "gte" },
+        ],
+        successMessage:
+          "Вот они — все подозрительные переводы. Миллионы проходят мимо налоговой.",
       },
     },
     {
@@ -52,30 +35,13 @@ export const moneyTrailMission: Mission = {
       hint: "WHERE suspect_id = 1 AND suspicious = 1",
       order: 2,
       validation: {
-        type: "custom",
-        check: (result) => {
-          const hasAmount = result.columns.some(
-            (c) => c.toLowerCase() === "amount"
-          );
-          if (!hasAmount) {
-            return {
-              passed: false,
-              message: "Нужны суммы транзакций. Где столбец amount?",
-            };
-          }
-          if (result.rowCount < 2) {
-            return {
-              passed: false,
-              message:
-                "У Воронова больше подозрительных транзакций. Копайте глубже.",
-            };
-          }
-          return {
-            passed: true,
-            message:
-              "Деньги не лгут. Миллионы идут через подставные фирмы. Ворон отмывает через всю сеть.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "amount" },
+          { type: "row_count", expected: 2, comparison: "gte" },
+        ],
+        successMessage:
+          "Деньги не лгут. Миллионы идут через подставные фирмы. Ворон отмывает через всю сеть.",
       },
     },
     {
@@ -85,26 +51,13 @@ export const moneyTrailMission: Mission = {
       hint: "Используйте SUM(amount) с GROUP BY или WHERE",
       order: 3,
       validation: {
-        type: "custom",
-        check: (result) => {
-          if (result.rowCount !== 1) {
-            return {
-              passed: false,
-              message: "Нужна одна строка с итоговой суммой.",
-            };
-          }
-          const val = Number(result.rows[0]?.[0]);
-          if (val <= 0 || isNaN(val)) {
-            return {
-              passed: false,
-              message: "Сумма должна быть числом больше нуля.",
-            };
-          }
-          return {
-            passed: true,
-            message: `${val.toLocaleString("ru-RU")} ₽ — вот сколько прошло через руки Ворона. Достаточно для обвинения.`,
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "row_count", expected: 1, comparison: "eq" },
+          { type: "value_check", row: 0, col: 0, comparison: "gt", expected: 0 },
+        ],
+        successMessage:
+          "Вот сколько прошло через руки Ворона. Достаточно для обвинения.",
       },
     },
   ],

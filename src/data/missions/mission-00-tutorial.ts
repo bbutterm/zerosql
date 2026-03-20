@@ -58,23 +58,13 @@ export const tutorialMission: Mission = {
       hint: "Функция COUNT(*) считает количество записей",
       order: 4,
       validation: {
-        type: "custom",
-        check: (result) => {
-          if (result.rowCount !== 1) {
-            return {
-              passed: false,
-              message: "Нужно одно число — общее количество.",
-            };
-          }
-          const val = Number(result.rows[0]?.[0]);
-          return {
-            passed: val === 6,
-            message:
-              val === 6
-                ? "Шесть открытых дел. Не считая тех, о которых мы ещё не знаем."
-                : "Не совсем. Проверьте условие фильтрации.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "row_count", expected: 1, comparison: "eq" },
+          { type: "value_check", row: 0, col: 0, comparison: "eq", expected: 6 },
+        ],
+        successMessage:
+          "Шесть открытых дел. Не считая тех, о которых мы ещё не знаем.",
       },
     },
   ],

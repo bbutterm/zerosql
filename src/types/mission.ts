@@ -28,7 +28,12 @@ export type ValidationRule =
   | { type: "contains_columns"; columns: string[] }
   | { type: "contains_value"; column: string; value: unknown }
   | { type: "exact_match"; referenceQuery: string }
-  | { type: "custom"; check: (result: QueryResult) => ValidationOutcome };
+  | { type: "custom"; check: (result: QueryResult) => ValidationOutcome }
+  | { type: "requires_column"; column: string; minRows?: number }
+  | { type: "contains_substring"; column: string; substring: string }
+  | { type: "value_check"; row: number; col: number; comparison: "eq" | "gt" | "gte" | "lt" | "lte"; expected: number }
+  | { type: "compound"; rules: ValidationRule[]; successMessage: string }
+  | { type: "any_of"; rules: ValidationRule[]; successMessage: string };
 
 export interface ValidationOutcome {
   passed: boolean;

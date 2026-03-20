@@ -222,3 +222,238 @@ describe("custom", () => {
     expect(validate(rule, makeResult({ rowCount: 1 }), db).passed).toBe(false);
   });
 });
+
+// ─── requires_column ────────────────────────────────────
+
+describe("requires_column", () => {
+  it("pass: столбец найден (case-insensitive)", () => {
+    const r = validate(
+      { type: "requires_column", column: "Name" },
+      makeResult({ columns: ["id", "name"] }),
+      db
+    );
+    expect(r.passed).toBe(true);
+  });
+
+  it("pass: столбец + minRows выполнено", () => {
+    const r = validate(
+      { type: "requires_column", column: "name", minRows: 2 },
+      makeResult({ columns: ["id", "name"], rowCount: 3 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+  });
+
+  it("fail: столбец отсутствует", () => {
+    const r = validate(
+      { type: "requires_column", column: "phone" },
+      makeResult({ columns: ["id", "name"] }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("phone");
+  });
+
+  it("fail: столбец есть, но строк меньше minRows", () => {
+    const r = validate(
+      { type: "requires_column", column: "name", minRows: 5 },
+      makeResult({ columns: ["id", "name"], rowCount: 2 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("5");
+  });
+});
+
+// ─── contains_substring ─────────────────────────────────
+
+describe("contains_substring", () => {
+  it("pass: подстрока найдена (case-insensitive)", () => {
+    const r = validate(
+      { type: "contains_substring", column: "content", substring: "груз" },
+      makeResult({ columns: ["id", "content"], rows: [[1, "Отправить Груз в порт"]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+  });
+
+  it("fail: столбец отсутствует", () => {
+    const r = validate(
+      { type: "contains_substring", column: "content", substring: "груз" },
+      makeResult({ columns: ["id", "name"] }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("content");
+  });
+
+  it("fail: подстрока не найдена", () => {
+    const r = validate(
+      { type: "contains_substring", column: "content", substring: "груз" },
+      makeResult({ columns: ["id", "content"], rows: [[1, "Всё тихо"]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("груз");
+  });
+});
+
+// ─── value_check ────────────────────────────────────────
+
+describe("value_check", () => {
+  it("pass: eq совпадает", () => {
+    const r = validate(
+      { type: "value_check", row: 0, col: 0, comparison: "eq", expected: 6 },
+      makeResult({ rows: [[6]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+  });
+
+  it("pass: gt выполнено", () => {
+    const r = validate(
+      { type: "value_check", row: 0, col: 0, comparison: "gt", expected: 0 },
+      makeResult({ rows: [[7500000]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+  });
+
+  it("fail: eq не совпадает", () => {
+    const r = validate(
+      { type: "value_check", row: 0, col: 0, comparison: "eq", expected: 6 },
+      makeResult({ rows: [[3]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+  });
+
+  it("fail: строка за пределами", () => {
+    const r = validate(
+      { type: "value_check", row: 5, col: 0, comparison: "eq", expected: 1 },
+      makeResult({ rows: [[1]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("строк");
+  });
+
+  it("fail: значение не число", () => {
+    const r = validate(
+      { type: "value_check", row: 0, col: 0, comparison: "eq", expected: 1 },
+      makeResult({ rows: [["abc"]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("числом");
+  });
+});
+
+// ─── compound ───────────────────────────────────────────
+
+describe("compound", () => {
+  it("pass: все правила прошли → successMessage", () => {
+    const r = validate(
+      {
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "name" },
+          { type: "row_count", expected: 1, comparison: "eq" },
+        ],
+        successMessage: "Всё верно!",
+      },
+      makeResult({ columns: ["id", "name"], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+    expect(r.message).toBe("Всё верно!");
+  });
+
+  it("fail: первое правило падает", () => {
+    const r = validate(
+      {
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "phone" },
+          { type: "row_count", expected: 1, comparison: "eq" },
+        ],
+        successMessage: "Всё верно!",
+      },
+      makeResult({ columns: ["id", "name"], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("phone");
+  });
+
+  it("fail: второе правило падает", () => {
+    const r = validate(
+      {
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "name" },
+          { type: "row_count", expected: 5, comparison: "eq" },
+        ],
+        successMessage: "Всё верно!",
+      },
+      makeResult({ columns: ["id", "name"], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+    expect(r.message).toContain("5");
+  });
+});
+
+// ─── any_of ─────────────────────────────────────────────
+
+describe("any_of", () => {
+  it("pass: первое правило прошло", () => {
+    const r = validate(
+      {
+        type: "any_of",
+        rules: [
+          { type: "contains_substring", column: "content", substring: "груз" },
+          { type: "contains_substring", column: "content", substring: "порт" },
+        ],
+        successMessage: "Найдено!",
+      },
+      makeResult({ columns: ["content"], rows: [["Груз отправлен"]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+    expect(r.message).toBe("Найдено!");
+  });
+
+  it("pass: только второе правило прошло", () => {
+    const r = validate(
+      {
+        type: "any_of",
+        rules: [
+          { type: "contains_substring", column: "content", substring: "груз" },
+          { type: "contains_substring", column: "content", substring: "порт" },
+        ],
+        successMessage: "Найдено!",
+      },
+      makeResult({ columns: ["content"], rows: [["Встреча в порту"]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(true);
+    expect(r.message).toBe("Найдено!");
+  });
+
+  it("fail: ни одно правило не прошло", () => {
+    const r = validate(
+      {
+        type: "any_of",
+        rules: [
+          { type: "contains_substring", column: "content", substring: "груз" },
+          { type: "contains_substring", column: "content", substring: "порт" },
+        ],
+        successMessage: "Найдено!",
+      },
+      makeResult({ columns: ["content"], rows: [["Всё тихо"]], rowCount: 1 }),
+      db
+    );
+    expect(r.passed).toBe(false);
+  });
+});

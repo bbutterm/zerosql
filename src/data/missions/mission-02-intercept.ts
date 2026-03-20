@@ -19,30 +19,13 @@ export const interceptMission: Mission = {
       hint: "В таблице communications есть поле flagged (0 или 1)",
       order: 1,
       validation: {
-        type: "custom",
-        check: (result) => {
-          const hasContent = result.columns.some(
-            (c) => c.toLowerCase() === "content"
-          );
-          if (!hasContent) {
-            return {
-              passed: false,
-              message: "Нужно содержание сообщений. Включите столбец content.",
-            };
-          }
-          if (result.rowCount < 5) {
-            return {
-              passed: false,
-              message:
-                "Помеченных сообщений больше. Проверьте условие фильтрации.",
-            };
-          }
-          return {
-            passed: true,
-            message:
-              "Вот они — все подозрительные переговоры. Теперь сузим поиск.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "content" },
+          { type: "row_count", expected: 5, comparison: "gte" },
+        ],
+        successMessage:
+          "Вот они — все подозрительные переговоры. Теперь сузим поиск.",
       },
     },
     {
@@ -52,39 +35,20 @@ export const interceptMission: Mission = {
       hint: "Ищите в communications по content с LIKE и фильтруйте по дате",
       order: 2,
       validation: {
-        type: "custom",
-        check: (result) => {
-          const hasContent = result.columns.some(
-            (c) => c.toLowerCase() === "content"
-          );
-          if (!hasContent) {
-            return {
-              passed: false,
-              message: "Где содержание сообщений? Нужен столбец content.",
-            };
-          }
-          const contentIdx = result.columns.findIndex(
-            (c) => c.toLowerCase() === "content"
-          );
-          const hasGruz = result.rows.some((r) =>
-            String(r[contentIdx]).toLowerCase().includes("груз")
-          );
-          const hasPort = result.rows.some((r) =>
-            String(r[contentIdx]).toLowerCase().includes("порт")
-          );
-          if (!hasGruz && !hasPort) {
-            return {
-              passed: false,
-              message:
-                "Ищите сообщения про «груз» или «порт». Они там есть.",
-            };
-          }
-          return {
-            passed: true,
-            message:
-              "Отлично. Ворон координировал операцию через Тень. Цепочка выстраивается.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "content" },
+          {
+            type: "any_of",
+            rules: [
+              { type: "contains_substring", column: "content", substring: "груз" },
+              { type: "contains_substring", column: "content", substring: "порт" },
+            ],
+            successMessage: "",
+          },
+        ],
+        successMessage:
+          "Отлично. Ворон координировал операцию через Тень. Цепочка выстраивается.",
       },
     },
     {
@@ -94,31 +58,13 @@ export const interceptMission: Mission = {
       hint: "JOIN communications с suspects по to_suspect_id, где from_suspect_id = 1",
       order: 3,
       validation: {
-        type: "custom",
-        check: (result) => {
-          const hasName = result.columns.some(
-            (c) => c.toLowerCase() === "name"
-          );
-          if (!hasName) {
-            return {
-              passed: false,
-              message:
-                "Нужны имена собеседников. Используйте JOIN с таблицей suspects.",
-            };
-          }
-          if (result.rowCount < 2) {
-            return {
-              passed: false,
-              message:
-                "У Воронова больше контактов. Проверьте запрос.",
-            };
-          }
-          return {
-            passed: true,
-            message:
-              "Ворон на связи с несколькими членами группировки. Сеть контактов ширится.",
-          };
-        },
+        type: "compound",
+        rules: [
+          { type: "requires_column", column: "name" },
+          { type: "row_count", expected: 2, comparison: "gte" },
+        ],
+        successMessage:
+          "Ворон на связи с несколькими членами группировки. Сеть контактов ширится.",
       },
     },
   ],
