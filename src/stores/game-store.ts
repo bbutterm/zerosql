@@ -3,15 +3,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Database } from "sql.js";
-import type { QueryResult, TableInfo, ForeignKey } from "@/types/database";
 import type { QueryHistoryEntry } from "@/types/game";
-import { getDatabase, executeQuery, getTableSchema, getForeignKeys } from "@/engine/database";
-import { SCHEMA_SQL } from "@/engine/schema";
-import { SEED_SQL } from "@/engine/seed";
+import {
+  initEngine,
+  executeSQL as engineExecuteSQL,
+  checkMissionProgress,
+  isMissionComplete,
+} from "@/engine";
+import type { QueryResult, TableInfo, ForeignKey, Mission } from "@/engine";
 import { missions } from "@/data/missions";
-import { checkObjectives, isMissionComplete } from "@/engine/mission-runner";
-import { checkTableAccess } from "@/engine/table-guard";
-import type { Mission } from "@/types/mission";
 
 interface FeedbackMessage {
   objectiveId: string;
@@ -66,21 +66,7 @@ export const useGameStore = create<GameState>()(
 
       initDatabase: async () => {
         try {
-          const db = await getDatabase();
-          executeQuery(db, SCHEMA_SQL);
-          // Check if data already exists
-          const check = executeQuery(
-            db,
-            "SELECT COUNT(*) as c FROM suspects"
-          );
-          if (
-            check.rows.length === 0 ||
-            (check.rows[0][0] as number) === 0
-          ) {
-            executeQuery(db, SEED_SQL);
-          }
-          const schema = getTableSchema(db);
-          const foreignKeys = getForeignKeys(db);
+          const { db, schema, foreignKeys } = await initEngine();
           set({ dbReady: true, _db: db, _schema: schema, _foreignKeys: foreignKeys });
         } catch (e) {
           console.error("Failed to init database:", e);
@@ -91,37 +77,14 @@ export const useGameStore = create<GameState>()(
         const { _db, currentMissionId, objectiveStatus } = get();
         if (!_db) return;
 
-        // Check table access before execution
         const currentMission = currentMissionId
           ? missions.find((m) => m.id === currentMissionId)
           : null;
-        const access = checkTableAccess(
+        const result = engineExecuteSQL(
+          _db,
           sqlInput,
           currentMission?.unlockedTables ?? null
         );
-        if (!access.allowed) {
-          const entry: QueryHistoryEntry = {
-            sql: sqlInput,
-            timestamp: Date.now(),
-            success: false,
-            rowCount: 0,
-            executionTimeMs: 0,
-          };
-          set({
-            _lastResult: {
-              columns: [],
-              rows: [],
-              rowCount: 0,
-              executionTimeMs: 0,
-              error: `[ДОСТУП ЗАПРЕЩЁН] Таблица «${access.blockedTable}» ещё не разблокирована. Продолжайте расследование — новые данные откроются в следующих делах.`,
-            },
-            queryHistory: [...get().queryHistory, entry],
-            feedbackMessages: [],
-          });
-          return;
-        }
-
-        const result = executeQuery(_db, sqlInput);
         const entry: QueryHistoryEntry = {
           sql: sqlInput,
           timestamp: Date.now(),
@@ -142,7 +105,7 @@ export const useGameStore = create<GameState>()(
           if (mission) {
             const completed =
               objectiveStatus[currentMissionId] ?? new Set<string>();
-            const results = checkObjectives(
+            const results = checkMissionProgress(
               mission,
               result,
               _db,
