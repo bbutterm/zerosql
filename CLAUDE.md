@@ -46,19 +46,24 @@ grep -rn "from.*engine/database\|from.*engine/schema\|from.*engine/seed\|from.*e
   ← QueryResult
   → engine.checkMissionProgress(mission, result, db, completed)
     → mission-runner: проверка целей по порядку
-    → validator: 5 типов валидации
+    → validator: 10 типов валидации
   ← ObjectiveResult[]
   → обновление стора (прогресс, фидбек, нарратив)
 ```
 
 ### Валидация миссий
 
-Система проверяет **результат запроса**, не текст SQL. 5 типов:
+Система проверяет **результат запроса**, не текст SQL. 10 типов:
 - `row_count` — количество строк (eq/gte/lte)
 - `contains_columns` — наличие столбцов
 - `contains_value` — значение в столбце
 - `exact_match` — точное совпадение с reference-запросом
-- `custom` — произвольная функция
+- `requires_column` — столбец существует + опционально minRows
+- `contains_substring` — подстрока в любой строке столбца
+- `value_check` — числовое сравнение конкретной ячейки [row][col]
+- `compound` — все подправила должны пройти
+- `any_of` — хотя бы одно подправило проходит
+- `custom` — произвольная функция (только в TS-миссиях)
 
 Цели проверяются **последовательно** по полю `order`. За один запрос можно пройти максимум одну цель.
 
@@ -73,14 +78,14 @@ grep -rn "from.*engine/database\|from.*engine/schema\|from.*engine/seed\|from.*e
 - `src/stores/game-store.ts` — Zustand стор (единственный потребитель фасада)
 - `src/components/game/` — UI компоненты (все `'use client'`)
 - `src/types/` — TypeScript типы
-- `src/__tests__/` — 125 тестов
+- `src/__tests__/` — 200 тестов
 
 ## Команды
 
 ```bash
 npm run dev        # Дев-сервер
 npm run build      # Продакшен-сборка
-npm run test:run   # 125 тестов
+npm run test:run   # 200 тестов
 npm run lint       # ESLint
 ```
 
@@ -90,9 +95,8 @@ npm run lint       # ESLint
 - **Типы** (`src/types/`) — реэкспортируются через фасад, расширять можно
 - **Миссии** — добавлять в `src/data/missions/`, обязательно писать тесты
 - **UI компоненты** — взаимодействуют только через Zustand стор, не импортируют из engine напрямую
-- **Тесты** — после любых изменений: `npm run test:run` (все 125 должны быть зелёными)
+- **Тесты** — после любых изменений: `npm run test:run` (все 200 должны быть зелёными)
 
 ## Известные баги
 
-1. **Миссия 3, `obj-money-trail`**: seed = 1 транзакция (suspect_id=1, suspicious=1), валидатор ожидает >= 2. Фикс: добавить транзакцию в seed или понизить порог.
-2. **SQLite LIKE + кириллица**: case-insensitive работает только для ASCII. `'%груз%'` не найдёт `'Груз'`. Обходной путь в валидаторе — альтернативный паттерн `'%порт%'`.
+1. **SQLite LIKE + кириллица**: case-insensitive работает только для ASCII. `'%груз%'` не найдёт `'Груз'`. Обходной путь в валидаторе — альтернативный паттерн `'%порт%'`.

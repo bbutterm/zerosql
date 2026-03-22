@@ -1,0 +1,64 @@
+[
+  {
+    "id": "obj-org-members-list",
+    "description": "Получите список всех членов организации с их именами и рангами, отсортированный по дате вступления",
+    "hint": "JOIN org_members с suspects, используйте ORDER BY joined_date",
+    "order": 1,
+    "storyReward": "Двенадцать имён. От босса до рядовых солдат. BASE начала формироваться в 2015 году — Воронов стоял у истоков.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "name" },
+        { "type": "requires_column", "column": "rank" },
+        { "type": "row_count", "expected": 12, "comparison": "eq" }
+      ],
+      "successMessage": "Двенадцать имён. От босса до рядовых солдат. BASE начала формироваться в 2015 году."
+    }
+  },
+  {
+    "id": "obj-distinct-ranks",
+    "description": "Определите, какие уникальные ранги существуют в организации",
+    "hint": "Используйте SELECT DISTINCT rank FROM org_members",
+    "order": 2,
+    "storyReward": "Четыре уровня иерархии: босс, лейтенанты, солдаты и информатор. Классическая структура ОПГ.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "rank" },
+        { "type": "row_count", "expected": 4, "comparison": "eq" }
+      ],
+      "successMessage": "Четыре уровня иерархии: босс, лейтенанты, солдаты и информатор. Классическая структура ОПГ."
+    }
+  },
+  {
+    "id": "obj-finance-dept",
+    "description": "Найдите всех членов финансового отдела с именами",
+    "hint": "JOIN org_members с suspects, WHERE department = 'финансы'",
+    "order": 3,
+    "storyReward": "Финансовый отдел — четыре человека. Деньги BASE проходят через их руки.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "name" },
+        { "type": "row_count", "expected": 4, "comparison": "eq" },
+        { "type": "contains_value", "column": "department", "value": "финансы" }
+      ],
+      "successMessage": "Финансовый отдел — четыре человека. Деньги BASE проходят через их руки."
+    }
+  },
+  {
+    "id": "obj-not-in-org",
+    "description": "Найдите подозреваемых, которые НЕ состоят в организации BASE",
+    "hint": "Используйте WHERE id NOT IN (SELECT suspect_id FROM org_members)",
+    "order": 4,
+    "storyReward": "Трое за бортом: Орлова, Белова и Рыбаков. Рыбаков — тот самый «Сеть», убитый на причале. А вот Орлова и Белова... Их роль ещё предстоит выяснить.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "name" },
+        { "type": "row_count", "expected": 3, "comparison": "eq" }
+      ],
+      "successMessage": "Трое за бортом: Орлова, Белова и Рыбаков. Убитый информатор и два призрака на периферии."
+    }
+  }
+]

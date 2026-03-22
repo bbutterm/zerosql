@@ -1,0 +1,7 @@
+[
+  "EXISTS проверяет существование записей: WHERE EXISTS (SELECT 1 FROM ... WHERE ...). Возвращает TRUE, если подзапрос нашёл хотя бы одну строку.",
+  "UNION объединяет результаты двух SELECT-ов в один. Оба запроса должны иметь одинаковое количество столбцов.",
+  "Для доказательства вины босса комбинируйте: org_members (rank = 'босс') + EXISTS по crime_suspects + EXISTS по transactions.",
+  "Финальный отчёт: JOIN crimes с locations (через location_id), добавьте подзапрос или JOIN с crime_suspects для подсчёта подозреваемых.",
+  "Воронов — suspect_id = 1. Преступления в crime_suspects, переговоры в communications (from_suspect_id = 1), транзакции в transactions (suspect_id = 1)."
+]

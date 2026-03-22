@@ -1,0 +1,48 @@
+[
+  {
+    "id": "obj-left-join-suspects",
+    "description": "С помощью LEFT JOIN найдите всех подозреваемых, которые НЕ связаны ни с одним преступлением",
+    "hint": "SELECT s.name FROM suspects s LEFT JOIN crime_suspects cs ON s.id = cs.suspect_id WHERE cs.crime_id IS NULL",
+    "order": 1,
+    "storyReward": "Четверо «чистых»: Лисицын-Паук, Кротов-Крот, Орлова-Кошка и Белова-Соль. Но двое из них — члены BASE. Чистые руки не значат чистую совесть.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "name" },
+        { "type": "row_count", "expected": 4, "comparison": "eq" }
+      ],
+      "successMessage": "Четверо «чистых». Но двое — члены BASE. Программист и информатор работают в тени."
+    }
+  },
+  {
+    "id": "obj-crime-count-having",
+    "description": "Найдите подозреваемых, замешанных более чем в одном преступлении. Выведите имя и количество дел",
+    "hint": "JOIN suspects с crime_suspects, GROUP BY suspect_id, HAVING COUNT(*) > 1",
+    "order": 2,
+    "storyReward": "Семеро рецидивистов. Быков лидирует с тремя делами — контрабанда, вымогательство и подозрение в убийстве.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "name" },
+        { "type": "row_count", "expected": 7, "comparison": "eq" }
+      ],
+      "successMessage": "Семеро замешаны в нескольких делах. Быков — рекордсмен. Три преступления на одного человека."
+    }
+  },
+  {
+    "id": "obj-threat-level",
+    "description": "Классифицируйте ВСЕХ подозреваемых по уровню угрозы: 0 дел = 'нет данных', 1 = 'низкий', 2 = 'средний', 3+ = 'высокий'. Столбец — threat_level",
+    "hint": "LEFT JOIN suspects с crime_suspects, GROUP BY, затем CASE WHEN COUNT(cs.crime_id) = 0 THEN 'нет данных' ... END AS threat_level",
+    "order": 3,
+    "storyReward": "Карта угроз готова. Высокий уровень — один Быков. Средний — шесть человек. Но четверо с отметкой «нет данных» вызывают больше вопросов, чем ответов.",
+    "validation": {
+      "type": "compound",
+      "rules": [
+        { "type": "requires_column", "column": "threat_level" },
+        { "type": "row_count", "expected": 15, "comparison": "eq" },
+        { "type": "contains_value", "column": "threat_level", "value": "высокий" }
+      ],
+      "successMessage": "Карта угроз на стене. Один «высокий», шесть «средних» и четверо — «нет данных». Полная картина."
+    }
+  }
+]
