@@ -1,3 +1,9 @@
+<img src="./docs/portfolio-cover.svg" width="900" alt="ZeroSQL — SQL detective game">
+
+**[Open demo](https://zerosql.vercel.app)** · **Project documentation**
+
+---
+
 # ZeroSQL — Браузерный SQL-детектив
 
 Нуарная детективная игра, где **SQL-запросы — это геймплей**. Игрок — аналитик-детектив в городе DataCity, расследующий дела преступной группировки «БАЗА».
