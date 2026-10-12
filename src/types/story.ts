@@ -47,7 +47,10 @@ export interface CharacterDef {
 }
 
 export interface DialogueLine {
-  /** Стабильный id = имя файла озвучки, формат <case>.<scene>.<nnn> */
+  /**
+   * Стабильный id = имя файла озвучки, формат <caseShort>.<sceneId>.<nnn>:
+   * caseShort — «c» + order дела в две цифры. Пример: c03.interrogation.007
+   */
   id: string;
   /** id персонажа | "narrator" | "player" */
   speaker: string;

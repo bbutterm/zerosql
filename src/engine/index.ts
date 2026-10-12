@@ -17,8 +17,94 @@ import type { ObjectiveResult } from "./mission-runner";
 
 // --- Re-export types for external consumers ---
 export type { QueryResult, TableInfo, ForeignKey, SqlErrorHelp, QueryErrorKind } from "@/types/database";
-export type { Mission, ValidationOutcome } from "@/types/mission";
+export type { Mission, ValidationOutcome, ValidationRule, CellValue } from "@/types/mission";
 export type { ObjectiveResult } from "./mission-runner";
+
+// --- v2: контент дела и сюжета ---
+export type {
+  CaseDef,
+  CaseObjective,
+  Difficulty,
+  EvidenceDef,
+  EvidenceKind,
+  HintDef,
+  ProtocolDef,
+  ProtocolBlank,
+  HandbookEntry,
+  SecretDef,
+  AchievementDef,
+  AchievementKind,
+} from "@/types/case";
+export type {
+  CharacterDef,
+  Scene,
+  DialogueLine,
+  DialogueChoice,
+  EvidencePresent,
+  Emotion,
+} from "@/types/story";
+export { EMOTIONS, NARRATOR, PLAYER } from "@/types/story";
+
+// --- v2: игровая логика ---
+
+/** Прогресс по задачам дела: основные по порядку, дополнительные — на каждом запросе */
+export {
+  checkCaseProgress,
+  isCaseObjectivesDone,
+  activeObjective,
+  mainObjectives,
+  optionalObjectives,
+} from "./case-runner";
+export type { CaseProgress, CompletedObjective } from "./case-runner";
+
+/** Протокол-дедукция: увиденные варианты и пакетная сверка */
+export {
+  scanSeenOptions,
+  availableOptions,
+  checkProtocol,
+  statementParts,
+  protocolFailureLine,
+  DEFAULT_BATCH_SIZE,
+} from "./protocol";
+export type { ProtocolCheck, StatementPart } from "./protocol";
+
+/** Тайники (пасхалки) */
+export { checkSecrets } from "./secrets";
+
+/** Очки, звёзды, звания, достижения */
+export { scoreCase, starsFor, rankFor, RANKS, SCORING, checkAchievements } from "./scoring";
+export type {
+  CaseStats,
+  CaseScore,
+  ScoreLine,
+  Stars,
+  RankDef,
+  RankInfo,
+  AchievementState,
+  SolvedCaseRecord,
+} from "./scoring";
+
+/** Сюжет: сцены и проверка контента */
+export {
+  getScene,
+  sceneChain,
+  sceneLinks,
+  caseShort,
+  collectEvidenceIds,
+  validateCaseContent,
+  validateSeasonContent,
+} from "./story";
+
+/**
+ * Журнал запросов query_log. Писать ПОСЛЕ checkCaseProgress/checkSecrets:
+ * иначе эталонные запросы к query_log увидят текущий запрос, а результат
+ * игрока — нет. Заблокированные запросы пишутся со статусом 'denied'.
+ */
+export { ensureQueryLog, logPlayerQuery, logQueryResult, queryLogStatus, QUERY_LOG_TABLE } from "./query-log";
+export type { PlayerQueryEntry, QueryLogMeta, QueryLogStatus } from "./query-log";
+
+/** Игровые часы */
+export { advanceClock, formatClockRu, parseClock } from "./clock";
 
 // --- Facade functions ---
 
