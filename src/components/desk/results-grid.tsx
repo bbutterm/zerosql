@@ -1,37 +1,35 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
-import {
-  AlertTriangle,
-  CornerDownLeft,
-  Lightbulb,
-  Lock,
-  Pin,
-  ShieldAlert,
-  Table2,
-  Timer,
-} from "lucide-react";
-import type { QueryErrorKind, QueryResult } from "@/types/database";
+import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import type { QueryResult } from "@/types/database";
 import { cn } from "@/lib/utils";
-import { pluralize } from "@/lib/plural";
-import { GrainLayer, SectionLabel, SteamLayer } from "@/components/kit/atmosphere";
+import { countOf, formatInt, formatMs, lowerFirst } from "@/components/kit/typo";
 
 export interface ResultsGridProps {
   result: QueryResult | null;
-  /** Закрепить строку в улики; без колбэка кнопки булавки не показываются */
+  /** Приобщить строку к делу; без колбэка кнопка «приобщить» не показывается */
   onPinRow?: (rowIndex: number) => void;
-  /** Уже закреплённые строки (индексы в result.rows) */
+  /** Уже приобщённые строки (индексы в result.rows) */
   pinnedRows?: number[];
   /** Сколько строк рисовать максимум */
   maxRows?: number;
   running?: boolean;
-  /** Подсказка в пустом состоянии до первого запроса */
+  /** Своё содержимое вместо приветствия до первого запроса */
   idleHint?: ReactNode;
+  /** Строки приветствия до первого запроса, каждая с «> » */
+  idleLines?: string[];
+  /** Alt+клик по значению: вставить его литералом в редактор ('B-0233', 42, NULL) */
+  onInsertValue?: (literal: string) => void;
+  /** Клик по предложенному имени в ошибке: заменить ошибочное имя в редакторе */
+  onSuggest?: (identifier: string, wrong?: string) => void;
   className?: string;
 }
 
-const LONG_TEXT = 36;
-
+/**
+ * Таблица результатов (раздел 7.7) и вывод ошибок (раздел 7.8).
+ * Плотно: строка 24 px, PT Mono, линейки, без зебры и цвета. Ничего не анимируется,
+ * кроме фирменного жеста — полёта приобщённой строки к «Материалам».
+ */
 export function ResultsGrid({
   result,
   onPinRow,
@@ -39,35 +37,30 @@ export function ResultsGrid({
   maxRows = 500,
   running = false,
   idleHint,
+  idleLines,
+  onInsertValue,
+  onSuggest,
   className,
 }: ResultsGridProps) {
+  const slow = useSlowFlag(running, 150);
+
   return (
     <section
       aria-label="Результат запроса"
       aria-busy={running}
-      className={cn(
-        "relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-frost-line bg-ink-deep",
-        className
-      )}
+      className={cn("flex min-h-0 min-w-0 flex-col bg-scr-base", className)}
     >
-      {running && (
-        <div
-          aria-hidden
-          className="absolute inset-x-0 top-0 z-30 h-0.5 overflow-hidden bg-frost-line"
-        >
-          <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-aurora to-transparent motion-safe:animate-scan" />
-        </div>
-      )}
       {result === null ? (
-        <IdleState hint={idleHint} />
-      ) : result.error ? (
-        <ErrorState result={result} />
-      ) : result.columns.length === 0 ? (
         <>
-          <div className="flex flex-1 items-center justify-center p-6 text-center">
-            <p className="text-sm text-frost">Запрос выполнен. Команда не возвращает данных.</p>
+          <div className="min-h-0 flex-1 overflow-auto p-3">
+            {idleHint ?? <TerminalLines lines={idleLines ?? ["Зеркало подключено."]} />}
           </div>
-          <Footer result={result} shown={0} />
+          <Footer slow={slow} />
+        </>
+      ) : result.error ? (
+        <>
+          <ErrorOutput result={result} onSuggest={onSuggest} />
+          <Footer slow={slow} />
         </>
       ) : (
         <DataTable
@@ -75,9 +68,36 @@ export function ResultsGrid({
           maxRows={maxRows}
           onPinRow={onPinRow}
           pinnedRows={pinnedRows}
+          onInsertValue={onInsertValue}
+          slow={slow}
         />
       )}
     </section>
+  );
+}
+
+/* ---------- «Выполняется…» — только если запрос идёт дольше 150 мс ---------- */
+
+function useSlowFlag(running: boolean, delay: number): boolean {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (!running) return;
+    const t = window.setTimeout(() => setSlow(true), delay);
+    return () => {
+      window.clearTimeout(t);
+      setSlow(false);
+    };
+  }, [running, delay]);
+  return running && slow;
+}
+
+function TerminalLines({ lines }: { lines: string[] }) {
+  return (
+    <div className="mono-12 text-ink-3">
+      {lines.map((line, i) => (
+        <p key={i}>&gt; {line}</p>
+      ))}
+    </div>
   );
 }
 
@@ -94,55 +114,128 @@ function isNumericColumn(rows: unknown[][], col: number): boolean {
   return seen;
 }
 
-const crackStyle: CSSProperties = {
-  backgroundImage: "var(--crack)",
-  backgroundRepeat: "repeat-x",
-  backgroundPosition: "left bottom -3px",
-  backgroundSize: "260px 10px",
-};
+/** Значение литералом SQL: строки в одинарных кавычках */
+function toLiteral(value: unknown): string {
+  if (value === null || value === undefined) return "NULL";
+  if (typeof value === "number" || typeof value === "bigint") return String(value);
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function cellText(value: unknown): string {
+  if (value === null || value === undefined) return "NULL";
+  if (value instanceof Uint8Array) return `BLOB, ${value.byteLength} байт`;
+  return String(value);
+}
+
+type Cell = { r: number; c: number };
 
 function DataTable({
   result,
   maxRows,
   onPinRow,
   pinnedRows,
+  onInsertValue,
+  slow,
 }: {
   result: QueryResult;
   maxRows: number;
   onPinRow?: (rowIndex: number) => void;
   pinnedRows: number[];
+  onInsertValue?: (literal: string) => void;
+  slow: boolean;
 }) {
   const rows = result.rows.slice(0, maxRows);
   const numeric = result.columns.map((_, i) => isNumericColumn(rows, i));
   const pinned = new Set(pinnedRows);
-  const empty = rows.length === 0;
+  const [sel, setSel] = useState<Cell | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const cols = result.columns.length;
+
+  // Новый результат — выделение сбрасывается (паттерн «состояние от пропса»)
+  const [seenResult, setSeenResult] = useState(result);
+  if (seenResult !== result) {
+    setSeenResult(result);
+    setSel(null);
+  }
+
+  const pin = (r: number, rowEl?: HTMLElement | null) => {
+    if (!onPinRow || pinned.has(r)) return;
+    if (rowEl && scrollRef.current) flyToRegistry(rowEl, scrollRef.current);
+    onPinRow(r);
+  };
+
+  const onCellClick = (e: MouseEvent, r: number, c: number) => {
+    if (e.altKey && onInsertValue) {
+      e.preventDefault();
+      onInsertValue(toLiteral(rows[r][c]));
+      return;
+    }
+    setSel({ r, c });
+  };
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (rows.length === 0) return;
+    if (e.key === "Enter" && e.ctrlKey && e.shiftKey && sel) {
+      e.preventDefault();
+      const rowEl = scrollRef.current?.querySelector<HTMLElement>(`tr[data-row="${sel.r}"]`);
+      pin(sel.r, rowEl);
+      return;
+    }
+    const moves: Record<string, [number, number]> = {
+      ArrowUp: [-1, 0],
+      ArrowDown: [1, 0],
+      ArrowLeft: [0, -1],
+      ArrowRight: [0, 1],
+    };
+    const m = moves[e.key];
+    if (!m) return;
+    e.preventDefault();
+    const cur = sel ?? { r: 0, c: 0 };
+    const next = sel
+      ? { r: Math.min(rows.length - 1, Math.max(0, cur.r + m[0])), c: Math.min(cols - 1, Math.max(0, cur.c + m[1])) }
+      : cur;
+    setSel(next);
+    scrollRef.current
+      ?.querySelector(`tr[data-row="${next.r}"] td[data-col="${next.c}"]`)
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  };
 
   return (
     <>
-      <div className="scrollbar-ice relative min-h-0 flex-1 overflow-auto">
-        <table className="w-max min-w-full border-separate border-spacing-0 font-mono text-[12.5px]">
+      <div
+        ref={scrollRef}
+        tabIndex={0}
+        role="region"
+        aria-label="Строки результата"
+        onKeyDown={onKeyDown}
+        className="relative min-h-0 flex-1 overflow-auto focus-visible:outline-offset-[-1px]"
+      >
+        <table className="w-max min-w-full border-separate border-spacing-0 mono-13 text-ink-1">
           <thead>
             <tr>
               <th
                 scope="col"
-                className="sticky top-0 left-0 z-20 w-12 border-b border-frost-line-strong bg-ink-raised px-2 py-2 text-right text-[10px] font-normal text-frost-faint"
-                style={crackStyle}
+                className="sticky top-0 left-0 z-20 h-7 w-10 min-w-10 border-r border-b border-r-line border-b-line-strong bg-scr-chrome"
               >
-                <span className="sr-only">Номер строки</span>#
+                <span className="sr-only">Номер строки</span>
               </th>
               {result.columns.map((col, i) => (
                 <th
                   key={`${col}-${i}`}
                   scope="col"
                   className={cn(
-                    "sticky top-0 z-10 border-b border-frost-line-strong bg-ink-raised px-3 py-2 font-medium whitespace-nowrap text-aurora/90",
+                    "sticky top-0 z-10 h-7 border-b border-line-strong bg-scr-chrome px-3 mono-12 font-normal whitespace-nowrap text-ink-2",
                     numeric[i] ? "text-right" : "text-left"
                   )}
-                  style={crackStyle}
                 >
                   {col}
                 </th>
               ))}
+              {onPinRow && (
+                <th scope="col" className="sticky top-0 z-10 h-7 w-24 border-b border-line-strong bg-scr-chrome">
+                  <span className="sr-only">Приобщить</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -151,250 +244,273 @@ function DataTable({
               return (
                 <tr
                   key={r}
-                  className={cn(
-                    "group/row transition-colors",
-                    r % 2 === 1 && "bg-steam/[0.018]",
-                    "hover:bg-aurora/[0.06]",
-                    isPinned && "bg-signal/[0.07] hover:bg-signal/[0.1]"
-                  )}
+                  data-row={r}
+                  className={cn("group/row", isPinned ? "bg-sodium-wash" : "hover:bg-scr-raise")}
                 >
                   <td
                     className={cn(
-                      "sticky left-0 z-[1] h-8 w-12 border-b border-frost-line bg-ink-deep px-1.5 text-right align-middle text-[11px] text-frost-faint tabular-nums",
-                      "group-hover/row:bg-[#0c1426]",
-                      isPinned && "shadow-[inset_2px_0_0_var(--signal)]"
+                      "sticky left-0 z-[1] h-6 w-10 border-r border-b border-line pr-2 text-right align-middle mono-12 tnum max-lg:h-[22px]",
+                      isPinned ? "bg-sodium-wash text-sodium" : "bg-scr-base text-ink-4 group-hover/row:bg-scr-raise"
                     )}
                   >
-                    {onPinRow ? (
-                      <span className="relative flex h-full items-center justify-end">
-                        <span
-                          className={cn(
-                            "transition-opacity",
-                            isPinned ? "opacity-0" : "group-focus-within/row:opacity-0 group-hover/row:opacity-0"
-                          )}
-                        >
-                          {r + 1}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => onPinRow(r)}
-                          aria-pressed={isPinned}
-                          aria-label={isPinned ? `Строка ${r + 1} уже в уликах` : `В улики: строка ${r + 1}`}
-                          title={isPinned ? "Уже в уликах" : "В улики"}
-                          className={cn(
-                            "absolute inset-y-0 right-0 my-auto grid size-6 place-items-center rounded transition-[opacity,color,background-color]",
-                            isPinned
-                              ? "text-signal opacity-100"
-                              : "text-frost opacity-0 group-hover/row:opacity-100 hover:bg-signal/15 hover:text-signal focus-visible:opacity-100"
-                          )}
-                        >
-                          <Pin className={cn("size-3.5", isPinned && "fill-signal")} />
-                        </button>
-                      </span>
-                    ) : (
-                      r + 1
-                    )}
+                    {r + 1}
                   </td>
-                  {row.map((cell, c) => (
+                  {row.map((cell, c) => {
+                    const text = cellText(cell);
+                    const isNull = cell === null || cell === undefined;
+                    const selected = sel?.r === r && sel.c === c;
+                    return (
+                      <td
+                        key={c}
+                        data-col={c}
+                        onClick={(e) => onCellClick(e, r, c)}
+                        title={text.length > 40 ? text : undefined}
+                        className={cn(
+                          "h-6 border-b border-line px-3 align-middle whitespace-nowrap max-lg:h-[22px] max-lg:text-[12px] max-lg:leading-[22px]",
+                          numeric[c] && !isNull ? "text-right" : "text-left",
+                          (isNull || cell instanceof Uint8Array) && "text-ink-3",
+                          selected && "outline outline-1 -outline-offset-1 outline-ink-2"
+                        )}
+                      >
+                        {text.length > 40 ? (
+                          <span className="inline-block max-w-[40ch] truncate align-top">{text}</span>
+                        ) : (
+                          text
+                        )}
+                      </td>
+                    );
+                  })}
+                  {onPinRow && (
                     <td
-                      key={c}
                       className={cn(
-                        "h-8 border-b border-frost-line px-3 align-middle whitespace-nowrap",
-                        numeric[c] ? "text-right tabular-nums" : "text-left"
+                        "sticky right-0 h-6 w-24 border-b border-line px-3 text-right align-middle",
+                        isPinned
+                          ? "group-hover/row:bg-sodium-wash"
+                          : "group-hover/row:bg-scr-raise group-focus-within/row:bg-scr-raise"
                       )}
                     >
-                      <Cell value={cell} />
+                      {isPinned ? (
+                        <span className="invisible ui-12 text-ink-3 group-hover/row:visible">приобщено</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => pin(r, e.currentTarget.closest("tr"))}
+                          className="ui-12 text-ink-2 opacity-0 group-hover/row:opacity-100 hover:text-ink-1 hover:underline focus-visible:opacity-100 underline-offset-[3px]"
+                        >
+                          приобщить
+                        </button>
+                      )}
                     </td>
-                  ))}
+                  )}
                 </tr>
               );
             })}
           </tbody>
         </table>
-        {empty && (
-          <div className="flex flex-col items-center gap-1.5 px-6 py-10 text-center">
-            <span className="font-display text-sm text-frost">0 строк</span>
-            <span className="max-w-sm text-xs leading-relaxed text-frost-dim">
-              Запрос верный, но под условие ничего не попало. Ослабьте WHERE или проверьте написание
-              значений.
-            </span>
+        {rows.length === 0 && (
+          <div className="p-3">
+            <TerminalLines lines={["Запрос выполнен. Строк: 0."]} />
           </div>
         )}
       </div>
-      <Footer result={result} shown={rows.length} pinnedCount={pinned.size} />
+      <Footer
+        slow={slow}
+        fields={
+          cols === 0
+            ? ["Запрос выполнен.", formatMs(result.executionTimeMs)]
+            : [
+                countOf(result.rowCount, ["строка", "строки", "строк"]),
+                countOf(cols, ["столбец", "столбца", "столбцов"]),
+                formatMs(result.executionTimeMs),
+              ]
+        }
+        note={
+          rows.length < result.rowCount || result.truncated
+            ? `показаны первые ${formatInt(rows.length)}`
+            : undefined
+        }
+      />
     </>
   );
 }
 
-function Cell({ value }: { value: unknown }) {
-  if (value === null || value === undefined) {
-    return (
-      <span className="inline-flex h-[18px] items-center rounded-sm border border-dashed border-frost-line-strong px-1 text-[9.5px] tracking-[0.12em] text-frost-dim/80">
-        NULL
-      </span>
-    );
-  }
-  if (typeof value === "number" || typeof value === "bigint") {
-    return <span className="text-aurora-violet-soft">{String(value)}</span>;
-  }
-  if (value instanceof Uint8Array) {
-    return <span className="text-frost-dim italic">BLOB · {pluralize(value.byteLength, ["байт", "байта", "байт"])}</span>;
-  }
-  const text = String(value);
-  if (text.length > LONG_TEXT) {
-    return (
-      <span className="inline-block max-w-[34ch] truncate align-middle text-steam/90" title={text}>
-        {text}
-      </span>
-    );
-  }
-  return <span className="text-steam/90">{text}</span>;
+/* ---------- Фирменный жест: снимок строки летит по дуге к «Материалам» ---------- */
+
+function flyToRegistry(row: HTMLElement, scroller: HTMLElement) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const scope = row.closest("[data-desk]") ?? document;
+  const targets = Array.from(scope.querySelectorAll<HTMLElement>("[data-pin-target]"));
+  const target = targets.find((el) => el.offsetParent !== null);
+  if (!target) return;
+
+  const box = scroller.getBoundingClientRect();
+  const rr = row.getBoundingClientRect();
+  const left = Math.max(rr.left, box.left);
+  const width = Math.max(120, Math.min(rr.right, box.right) - left);
+  const to = target.getBoundingClientRect();
+
+  const ghost = document.createElement("div");
+  ghost.setAttribute("aria-hidden", "true");
+  ghost.textContent = Array.from(row.querySelectorAll("td[data-col]"))
+    .map((td) => td.textContent ?? "")
+    .join("   ");
+  Object.assign(ghost.style, {
+    position: "fixed",
+    left: `${left}px`,
+    top: `${rr.top}px`,
+    width: `${width}px`,
+    height: "24px",
+    padding: "0 12px",
+    background: "var(--sodium-wash)",
+    color: "var(--ink-1)",
+    font: "13px/24px var(--font-mono)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    pointerEvents: "none",
+    zIndex: "90",
+    transformOrigin: "50% 50%",
+  } satisfies Partial<CSSStyleDeclaration>);
+  document.body.append(ghost);
+
+  const dx = to.left + to.width / 2 - (left + width / 2);
+  const dy = to.top + to.height / 2 - (rr.top + 12);
+  const anim = ghost.animate(
+    [
+      { transform: "translate(0, 0) scale(1)", opacity: 1 },
+      { transform: `translate(${dx * 0.5}px, ${dy * 0.5 - 56}px) scale(0.62)`, opacity: 1, offset: 0.5 },
+      { opacity: 1, offset: 0.7 },
+      { transform: `translate(${dx}px, ${dy}px) scale(0.35)`, opacity: 0 },
+    ],
+    { duration: 420, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)", fill: "forwards" }
+  );
+  anim.onfinish = () => ghost.remove();
+  anim.oncancel = () => ghost.remove();
 }
 
 /* ---------- Подвал ---------- */
 
-function formatMs(ms: number): string {
-  if (ms < 1) return "< 1 мс";
-  if (ms < 1000) return `${ms.toLocaleString("ru-RU", { maximumFractionDigits: 1 })} мс`;
-  return `${(ms / 1000).toLocaleString("ru-RU", { maximumFractionDigits: 2 })} с`;
-}
-
-function Footer({
-  result,
-  shown,
-  pinnedCount = 0,
-}: {
-  result: QueryResult;
-  shown: number;
-  pinnedCount?: number;
-}) {
-  const total = result.rowCount;
-  const capped = shown < total;
+function Footer({ fields = [], note, slow }: { fields?: string[]; note?: string; slow: boolean }) {
   return (
-    <footer className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1 border-t border-frost-line bg-ink-raised/60 px-3 py-1.5 text-[11.5px] text-frost-dim">
-      <span className="inline-flex items-center gap-1.5 text-frost">
-        <span
-          aria-hidden
-          className={cn("size-1.5 rounded-full", total > 0 ? "bg-aurora shadow-[0_0_8px_var(--aurora-teal)]" : "bg-frost-dim")}
-        />
-        {pluralize(total, ["строка", "строки", "строк"])}
-        {result.columns.length > 0 && (
-          <span className="text-frost-dim">· {pluralize(result.columns.length, ["столбец", "столбца", "столбцов"])}</span>
-        )}
-      </span>
-      {capped && (
-        <span className="text-sodium">
-          показано {shown.toLocaleString("ru-RU")} из {total.toLocaleString("ru-RU")}
-        </span>
+    <footer className="flex h-6 shrink-0 items-center gap-4 overflow-hidden border-t border-line bg-scr-base px-3 mono-12 whitespace-nowrap text-ink-3">
+      {slow ? (
+        <span>Выполняется…</span>
+      ) : (
+        fields.map((f, i) => (
+          <span key={i} className="tnum">
+            {f}
+          </span>
+        ))
       )}
-      {result.truncated && (
-        <span className="inline-flex items-center gap-1 text-sodium">
-          <AlertTriangle className="size-3" />
-          результат обрезан — уточните запрос (WHERE, LIMIT)
-        </span>
-      )}
-      {pinnedCount > 0 && (
-        <span className="inline-flex items-center gap-1 text-signal">
-          <Pin className="size-3 fill-signal" />
-          {pinnedCount} в уликах
-        </span>
-      )}
-      <span className="ml-auto inline-flex items-center gap-1 font-mono tabular-nums">
-        <Timer className="size-3" />
-        {formatMs(result.executionTimeMs)}
-      </span>
+      {note && !slow && <span className="ml-auto text-ink-1">{note}</span>}
     </footer>
   );
 }
 
-/* ---------- Пусто до первого запроса ---------- */
+/* ---------- Ошибки: вывод терминала, без карточек и иконок ---------- */
 
-function IdleState({ hint }: { hint?: ReactNode }) {
+/** «…«full_name»…» → имя моноширинным; в предложении — кликабельно, с пунктиром */
+function Annotated({
+  text,
+  onPick,
+  wrong,
+}: {
+  text: string;
+  onPick?: (identifier: string, wrong?: string) => void;
+  wrong?: string;
+}) {
+  const parts = text.split(/«([^»]+)»/g);
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center gap-3 overflow-hidden px-6 py-10 text-center">
-      <SteamLayer intensity={0.5} />
-      <div className="relative grid size-11 place-items-center rounded-full border border-frost-line-strong bg-ink-raised">
-        <Table2 className="size-5 text-frost-dim" />
-      </div>
-      <p className="relative max-w-sm text-sm leading-relaxed text-frost">
-        {hint ?? "Здесь появятся строки из зеркала городских данных."}
-      </p>
-      <p className="relative inline-flex items-center gap-1.5 text-xs text-frost-dim">
-        Напишите запрос и нажмите
-        <span className="inline-flex h-5 items-center gap-0.5 rounded border border-frost-line-strong px-1 font-mono text-[10px] text-frost">
-          Ctrl <CornerDownLeft className="size-3" />
-        </span>
-      </p>
-    </div>
+    <>
+      {parts.map((part, i) => {
+        if (i % 2 === 0) return <span key={i}>{part}</span>;
+        const ident = /^[\w.]+$/.test(part);
+        if (!ident) return <span key={i}>«{part}»</span>;
+        if (onPick) {
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onPick(part, wrong)}
+              className="mono-13 text-ink-1 underline decoration-ink-3 decoration-dashed decoration-1 underline-offset-[3px] hover:decoration-ink-1"
+            >
+              {part}
+            </button>
+          );
+        }
+        return (
+          <span key={i} className="mono-13">
+            {part}
+          </span>
+        );
+      })}
+    </>
   );
 }
 
-/* ---------- Ошибки ---------- */
-
-const ERROR_TONES: Record<
-  QueryErrorKind,
-  { color: string; label: string; icon: typeof AlertTriangle; textClass: string }
-> = {
-  sql: { color: "#ff6a2b", label: "Ошибка в запросе", icon: AlertTriangle, textClass: "text-signal" },
-  locked_table: { color: "#8b5cf6", label: "Засекречено", icon: Lock, textClass: "text-aurora-violet-soft" },
-  read_only: { color: "#ffb547", label: "Запрет записи", icon: ShieldAlert, textClass: "text-sodium" },
-};
-
-function ErrorState({ result }: { result: QueryResult }) {
-  const kind: QueryErrorKind = result.errorKind ?? "sql";
-  const tone = ERROR_TONES[kind];
-  const Icon = tone.icon;
+function ErrorOutput({
+  result,
+  onSuggest,
+}: {
+  result: QueryResult;
+  onSuggest?: (identifier: string, wrong?: string) => void;
+}) {
+  const kind = result.errorKind ?? "sql";
   const help = result.errorHelp;
-  const frosted = kind === "locked_table";
+
+  if (kind === "locked_table") {
+    const table = result.error?.match(/«([^»]+)»/)?.[1] ?? help?.explanation.match(/«([^»]+)»/)?.[1];
+    return (
+      <div role="alert" className="min-h-0 flex-1 overflow-auto p-3">
+        <p className="max-w-[72ch] ui-14 text-ink-1">
+          <span className="font-semibold text-alarm">ОТКАЗАНО.</span>{" "}
+          {table ? (
+            <>
+              Таблица <span className="mono-13">{table}</span> засекречена.
+            </>
+          ) : (
+            "Таблица засекречена."
+          )}{" "}
+          Допуск не выдан.
+        </p>
+      </div>
+    );
+  }
+
+  if (kind === "read_only") {
+    return (
+      <div role="alert" className="min-h-0 flex-1 overflow-auto p-3">
+        <p className="max-w-[72ch] ui-14 text-ink-1">
+          <span className="font-semibold text-alarm">ОТКАЗАНО.</span> Зеркало только для чтения. Изменять
+          данные нельзя.
+        </p>
+      </div>
+    );
+  }
+
+  const wrong = help?.explanation.match(/«([\w.]+)»/)?.[1];
+  const suggestion = help?.suggestion?.replace(/^Возможно, вы имели в виду /, "Возможно, ");
+  const isGuess = Boolean(suggestion?.startsWith("Возможно"));
 
   return (
-    <div className="scrollbar-ice flex min-h-0 flex-1 flex-col overflow-auto p-3 sm:p-4" role="alert">
-      <div
-        className="relative overflow-hidden rounded-lg border p-4 sm:p-5"
-        style={{
-          borderColor: `${tone.color}55`,
-          background: frosted
-            ? `linear-gradient(135deg, ${tone.color}1f, rgb(188 203 224 / 0.05) 45%, ${tone.color}12)`
-            : `linear-gradient(180deg, ${tone.color}14, transparent 70%)`,
-        }}
-      >
-        {frosted && <GrainLayer opacity={0.12} />}
-        {frosted && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -top-10 -right-10 size-40 rounded-full opacity-30 blur-3xl"
-            style={{ background: tone.color }}
-          />
-        )}
-        <div className="relative flex items-start gap-3.5">
-          <span
-            className="grid size-9 shrink-0 place-items-center rounded-full ring-1"
-            style={{ background: `${tone.color}1f`, color: tone.color, boxShadow: `0 0 24px -6px ${tone.color}` }}
-          >
-            <Icon className="size-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <SectionLabel className={tone.textClass}>{tone.label}</SectionLabel>
-            <h3 className="mt-1 font-display text-base leading-snug font-semibold text-steam sm:text-lg">
-              {help?.title ?? "Запрос не выполнен"}
-            </h3>
-            {help?.explanation && (
-              <p className="mt-2 max-w-prose text-sm leading-relaxed text-frost">{help.explanation}</p>
-            )}
-            {help?.suggestion && (
-              <div className="mt-3 flex max-w-prose gap-2.5 rounded-md border border-frost-line bg-ink-deep/70 px-3 py-2.5 text-sm leading-relaxed text-steam/90">
-                <Lightbulb className="mt-0.5 size-4 shrink-0 text-sodium" aria-hidden />
-                <span className="whitespace-pre-wrap">{help.suggestion}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {result.error && (
-        <p className="mt-2.5 px-1 font-mono text-[11px] leading-relaxed break-words text-frost-dim">
-          <span className="text-frost-faint">{kind === "sql" ? "SQLite" : "Система"}:</span> {result.error}
+    <div role="alert" className="min-h-0 flex-1 overflow-auto p-3">
+      <div className="flex max-w-[72ch] flex-col gap-1">
+        <p className="ui-14 text-ink-1">
+          <span className="text-alarm">Ошибка:</span>{" "}
+          {help ? <Annotated text={lowerFirst(help.explanation)} /> : "запрос не выполнен."}
+          {isGuess && suggestion && (
+            <>
+              {" "}
+              <Annotated text={suggestion} onPick={onSuggest} wrong={wrong} />
+            </>
+          )}
         </p>
-      )}
+        {result.error && <p className="mono-12 break-words text-ink-3">sqlite: {result.error}</p>}
+        {!isGuess && suggestion && (
+          <p className="ui-14 text-ink-2">
+            <Annotated text={suggestion} />
+          </p>
+        )}
+      </div>
     </div>
   );
 }

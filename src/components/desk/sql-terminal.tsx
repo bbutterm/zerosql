@@ -1,26 +1,34 @@
 "use client";
 
-import type { ReactNode, Ref } from "react";
+import { useSyncExternalStore, type ReactNode, type Ref } from "react";
 import dynamic from "next/dynamic";
-import { CornerDownLeft, Loader2, Lock, TerminalSquare } from "lucide-react";
 import type { TableInfo } from "@/types/database";
 import type { QueryBudget } from "@/types/ui";
 import { cn } from "@/lib/utils";
-import { plural } from "@/lib/plural";
-import { SectionLabel } from "@/components/kit/atmosphere";
+import { ScreenButton } from "@/components/kit/screen";
 import type { SqlEditorHandle } from "./sql-codemirror";
 
 export type { SqlEditorHandle } from "./sql-codemirror";
 
-const SqlCodeMirror = dynamic(() => import("./sql-codemirror"), {
+/**
+ * Редактор монтируется, когда PT Mono (латиница и кириллица) уже загружен: CodeMirror меряет
+ * высоты строк при создании, и запасной шрифт дал бы сдвинутые номера строк.
+ */
+function fontsFor(sample: string): Promise<unknown> {
+  if (typeof document === "undefined" || !document.fonts) return Promise.resolve();
+  return Promise.race([
+    document.fonts.load("14px 'PT Mono'", sample),
+    new Promise((resolve) => window.setTimeout(resolve, 1500)),
+  ]).catch(() => undefined);
+}
+
+const SqlCodeMirror = dynamic(async () => {
+  const [mod] = await Promise.all([import("./sql-codemirror"), fontsFor("SELECT Аа Ёё")]);
+  return mod;
+}, {
   ssr: false,
-  loading: () => (
-    <div className="flex h-full flex-col gap-2 px-12 py-4" aria-hidden>
-      <div className="h-3 w-2/5 rounded bg-frost-line motion-safe:animate-pulse" />
-      <div className="h-3 w-3/5 rounded bg-frost-line motion-safe:animate-pulse" />
-      <div className="h-3 w-1/4 rounded bg-frost-line motion-safe:animate-pulse" />
-    </div>
-  ),
+  // Загрузка — текстом, без скелетонов
+  loading: () => <p className="py-2.5 pl-[52px] mono-12 text-ink-3">Загрузка редактора…</p>,
 });
 
 export interface SqlTerminalProps {
@@ -30,23 +38,39 @@ export interface SqlTerminalProps {
   /** Схема для автодополнения (только открытые таблицы) */
   schema?: TableInfo[];
   disabled?: boolean;
-  /** Почему терминал недоступен — показывается поверх редактора */
+  /** Почему терминал недоступен — строка под редактором */
   disabledReason?: string;
-  /** Запрос выполняется */
+  /** Запрос выполняется (повторный запуск игнорируется) */
   running?: boolean;
-  /** Бюджет запросов: «осталось 5 запросов» */
+  /** Квота запросов на смену: «квота 6 из 8» */
   budget?: QueryBudget;
   placeholder?: string;
+  /** Заголовок панели, по умолчанию «Запрос» */
   title?: string;
-  /** Мелкая подпись источника данных */
+  /** Необязательная служебная подпись рядом с заголовком */
   source?: string;
-  /** Дополнительные кнопки в шапке (история, форматирование, …) */
+  /** Дополнительные текстовые кнопки в шапке (история, очистка, …) */
   toolbar?: ReactNode;
   /** Императивный доступ: вставка текста из схемы, фокус */
   handleRef?: Ref<SqlEditorHandle>;
   className?: string;
 }
 
+/* ---------- Ctrl или Cmd: подпись у «Выполнить» ---------- */
+
+const noop = () => () => {};
+function useRunKeys(): string {
+  return useSyncExternalStore(
+    noop,
+    () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "Cmd+Enter" : "Ctrl+Enter"),
+    () => "Ctrl+Enter"
+  );
+}
+
+/**
+ * Терминал (раздел 7.6): заголовок «Запрос» 28 px, справа квота и главная кнопка.
+ * На мобильном полоса с квотой и «Выполнить» уходит под редактор и становится 44 px.
+ */
 export function SqlTerminal({
   value,
   onChange,
@@ -56,58 +80,51 @@ export function SqlTerminal({
   disabledReason,
   running = false,
   budget,
-  placeholder = "SELECT * FROM … — пишите запрос, Ctrl+Enter выполнит",
-  title = "Терминал",
-  source = "зеркало · только чтение",
+  placeholder = "-- запрос к зеркалу; Ctrl+Enter — выполнить",
+  title = "Запрос",
+  source,
   toolbar,
   handleRef,
   className,
 }: SqlTerminalProps) {
+  const keys = useRunKeys();
   const outOfBudget = budget !== undefined && budget.left <= 0;
-  const canRun = !disabled && !running && !outOfBudget && value.trim().length > 0;
+  const inactive = disabled || outOfBudget;
+  const canRun = !inactive && !running && value.trim().length > 0;
   const run = () => {
     if (canRun) onRun();
   };
 
   return (
     <section
-      aria-label="SQL-терминал"
-      className={cn(
-        "group/terminal @container relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-frost-line bg-ink-deep transition-[border-color,box-shadow] duration-300",
-        "focus-within:border-aurora/35 focus-within:shadow-[0_0_0_1px_rgb(46_230_197/0.12),0_0_40px_-12px_rgb(46_230_197/0.25)]",
-        className
-      )}
+      aria-label="Запрос"
+      className={cn("flex min-h-0 min-w-0 flex-col bg-scr-base", className)}
     >
-      <header className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-frost-line bg-ink-raised/70 px-3 py-1.5">
-        <SectionLabel icon={<TerminalSquare className="size-3.5 text-aurora" />} className="text-frost">
-          {title}
-        </SectionLabel>
-        <span className="hidden truncate font-mono text-[11px] text-frost-dim @2xl:inline">{source}</span>
-        <div className="ml-auto flex items-center gap-2.5">
+      <header
+        className={cn(
+          "flex h-7 shrink-0 items-center gap-3 border-b border-line px-3",
+          "max-lg:order-last max-lg:h-11 max-lg:border-t max-lg:border-b-0 max-lg:bg-scr-chrome"
+        )}
+      >
+        <h2 className="ui-13 font-medium text-ink-2 max-lg:hidden">{title}</h2>
+        {source && <span className="truncate ui-12 text-ink-3 max-lg:hidden">{source}</span>}
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-4 max-lg:justify-between">
           {toolbar}
-          {budget && <BudgetMeter budget={budget} />}
-          <button
-            type="button"
+          {budget && <Quota budget={budget} />}
+          <ScreenButton
+            variant="primary"
+            keys={keys}
             onClick={run}
-            disabled={!canRun}
-            title="Выполнить (Ctrl/⌘ + Enter)"
-            className={cn(
-              "inline-flex h-8 items-center gap-2 rounded-md bg-sodium pr-1.5 pl-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-deep",
-              "shadow-[0_0_24px_-6px_rgb(255_181_71/0.6)] transition-[filter,transform,opacity] hover:brightness-110 active:translate-y-px",
-              "disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
-            )}
+            disabled={inactive}
+            aria-disabled={!canRun}
+            className="max-lg:min-w-28"
           >
-            {running ? <Loader2 className="size-3.5 animate-spin" /> : null}
             Выполнить
-            <span className="inline-flex h-5 items-center gap-0.5 rounded bg-ink-deep/15 px-1 font-mono text-[10px] normal-case tracking-normal">
-              Ctrl
-              <CornerDownLeft className="size-3" />
-            </span>
-          </button>
+          </ScreenButton>
         </div>
       </header>
 
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
         <div className="absolute inset-0">
           <SqlCodeMirror
             value={value}
@@ -119,51 +136,32 @@ export function SqlTerminal({
             handleRef={handleRef}
           />
         </div>
-        {/* Свечение монитора снизу */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-aurora/[0.04] to-transparent"
-        />
-        {(disabled || outOfBudget) && (
-          <div className="absolute inset-0 grid place-items-center bg-ink-deep/70 backdrop-blur-[2px]">
-            <span className="inline-flex items-center gap-2 rounded-md border border-frost-line-strong bg-ink-raised px-3 py-1.5 text-xs text-frost">
-              <Lock className="size-3.5 text-frost-dim" />
-              {outOfBudget && !disabled
-                ? "Запросы на сегодня закончились"
-                : (disabledReason ?? "Терминал недоступен")}
-            </span>
-          </div>
-        )}
       </div>
+
+      {disabled && (
+        <p className="flex h-6 shrink-0 items-center border-t border-line bg-scr-chrome px-3 mono-12 text-ink-3">
+          {disabledReason ?? "Терминал недоступен."}
+        </p>
+      )}
     </section>
   );
 }
 
-function BudgetMeter({ budget }: { budget: QueryBudget }) {
+function Quota({ budget }: { budget: QueryBudget }) {
   const { left, total } = budget;
-  const tone = left <= 0 ? "text-signal" : left <= 2 ? "text-sodium" : "text-frost";
-  const pips = total !== undefined && total <= 12 ? total : 0;
-  const label =
-    left <= 0 ? "запросов не осталось" : `${plural(left, ["остался", "осталось", "осталось"])} ${left} ${plural(left, ["запрос", "запроса", "запросов"])}`;
-
-  return (
-    <div className="flex items-center gap-2" title={total ? `Бюджет запросов: ${left} из ${total}` : undefined}>
-      {pips > 0 && (
-        <span aria-hidden className="hidden items-center gap-[3px] @lg:flex">
-          {Array.from({ length: pips }, (_, i) => (
-            <span
-              key={i}
-              className={cn(
-                "h-2.5 w-1 rounded-full transition-colors",
-                i < left ? (left <= 2 ? "bg-sodium" : "bg-aurora/80") : "bg-frost-line-strong"
-              )}
-            />
-          ))}
-        </span>
-      )}
-      <span className={cn("text-xs whitespace-nowrap tabular-nums", tone)} aria-live="polite">
-        {label}
+  if (left <= 0) {
+    return (
+      <span className="truncate ui-12 text-alarm" aria-live="polite">
+        квота исчерпана до конца смены
       </span>
-    </div>
+    );
+  }
+  return (
+    <span
+      className={cn("tnum ui-12 whitespace-nowrap", left <= 2 ? "text-ink-1" : "text-ink-3")}
+      aria-live="polite"
+    >
+      {total !== undefined ? `квота ${left} из ${total}` : `квота: ${left}`}
+    </span>
   );
 }

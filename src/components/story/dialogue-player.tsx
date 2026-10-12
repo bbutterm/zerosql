@@ -3,50 +3,44 @@
 import {
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import {
-  ChevronRight,
-  FastForward,
-  Lock,
-  MapPin,
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
-import type { CharacterDef, DialogueChoice, DialogueLine, Scene } from "@/types/story";
+import type { CharacterDef, DialogueChoice, Emotion, Scene } from "@/types/story";
 import { NARRATOR, PLAYER } from "@/types/story";
 import type { EvidenceCardData } from "@/types/ui";
 import { cn } from "@/lib/utils";
-import { GrainLayer, IceCrack, Kbd, SectionLabel, SteamLayer, Vignette } from "@/components/kit/atmosphere";
-import { EvidenceCard } from "@/components/case/evidence-card";
+import { Glyph } from "@/components/kit/glyphs";
+import { ScreenButton } from "@/components/kit/screen";
+import { typo } from "@/components/kit/typo";
+import { EVIDENCE_ITEM_WIDTH, EVIDENCE_KIND_META, EvidenceCard } from "@/components/case/evidence-card";
 import { PortraitFrame } from "./portrait";
 import { isMediaMissing, markMediaMissing, voiceUrl } from "./media-cache";
 
 export interface DialoguePlayerProps {
   scene: Scene;
   characters: Record<string, CharacterDef>;
-  /** Улики игрока: для предъявления и для проверки `requires` у вариантов */
+  /** Материалы игрока: для предъявления и для проверки `requires` у вариантов */
   evidence?: EvidenceCardData[];
   onChoice?: (choice: DialogueChoice) => void;
   onPresent?: (evidenceId: string) => void;
-  /** Сцена закончилась без выбора/предъявления («Далее» или пропуск) */
+  /** Сцена закончилась без выбора/предъявления («дальше» или пропуск) */
   onFinish?: () => void;
   /** overlay — поверх стола на весь экран; inline — внутри родителя (position: relative) */
   variant?: "overlay" | "inline";
-  /** Подпись локации в шапке: «Подвал УВД · 02:14» */
+  /** Титр локации: «Подвал УВД. 14 декабря, 02:31.» */
   locationLabel?: string;
-  /** Имя игрока в плашке */
+  /** Имя игрока в логе */
   playerName?: string;
-  /** Подсказка для запертого варианта */
+  /** Подпись у варианта без улики, по умолчанию «[нужна улика]» */
   lockedChoiceHint?: (choice: DialogueChoice, missing: string[]) => string;
   defaultMuted?: boolean;
   defaultAutoAdvance?: boolean;
-  /** Скорость печати, символов в секунду */
+  /** Скорость печати, знаков в секунду (по умолчанию 26 мс на знак) */
   charsPerSecond?: number;
   /** С какой реплики начать: номер или "end" — сразу к выбору/предъявлению */
   startAt?: number | "end";
@@ -54,12 +48,11 @@ export interface DialoguePlayerProps {
   autoFocus?: boolean;
   voiceBasePath?: string;
   portraitBasePath?: string;
+  /** Картина локации: на весь экран под слоем --room 0.55 */
+  background?: string;
+  /** «Отмена» в предъявлении; без колбэка кнопки нет */
+  onCancelPresent?: () => void;
   className?: string;
-}
-
-/** Сброс состояния при смене сцены — через key */
-export function DialoguePlayer(props: DialoguePlayerProps) {
-  return <DialoguePlayerInner key={props.scene.id} {...props} />;
 }
 
 /* ---------- prefers-reduced-motion как внешний стор ---------- */
@@ -80,10 +73,48 @@ function usePrefersReducedMotion() {
 
 type VoiceState = "idle" | "playing" | "done" | "none";
 
-const LONG_PAUSE = ".!?…";
-const SHORT_PAUSE = ",;:—";
+/** Запись лога: титр локации или реплика */
+interface Entry {
+  key: string;
+  kind: "title" | "line";
+  speaker?: string;
+  text: string;
+  /** id реплики для озвучки */
+  lineId?: string;
+  emotion?: Emotion;
+}
 
-function DialoguePlayerInner({
+const TITLE_MS = 22;
+
+/** Титр из данных: средняя точка-разделитель (U+00B7) становится точкой, в конце — точка */
+function titleOf(label: string): string {
+  const t = label.replace(/\s*\u00B7\s*/g, ". ").trim();
+  return /[.!?…]$/.test(t) ? t : `${t}.`;
+}
+
+function sceneEntries(scene: Scene, label?: string): Entry[] {
+  const out: Entry[] = [];
+  const loc = label ?? scene.location;
+  if (loc) out.push({ key: `${scene.id}:title`, kind: "title", text: titleOf(loc) });
+  for (const line of scene.lines) {
+    out.push({
+      key: line.id,
+      kind: "line",
+      speaker: line.speaker,
+      text: typo(line.text),
+      lineId: line.id,
+      emotion: line.emotion,
+    });
+  }
+  return out;
+}
+
+/**
+ * Диалог (раздел 7.14): комната, портрет слева на всю высоту, справа — лог сцены,
+ * растущий снизу вверх. Реплики печатаются; Ноль — единственное окрашенное имя (натрий).
+ * Выбор — нумерованные строки PT Serif; предъявление — реестр и предмет на столе.
+ */
+export function DialoguePlayer({
   scene,
   characters,
   evidence = [],
@@ -96,84 +127,111 @@ function DialoguePlayerInner({
   lockedChoiceHint,
   defaultMuted = false,
   defaultAutoAdvance = false,
-  charsPerSecond = 46,
+  charsPerSecond = 1000 / 26,
   startAt = 0,
   autoFocus,
   voiceBasePath = "/voice",
   portraitBasePath = "/portraits",
+  background,
+  onCancelPresent,
   className,
 }: DialoguePlayerProps) {
-  const lines = scene.lines;
-  const startEnd = startAt === "end" || lines.length === 0;
-  const [index, setIndex] = useState(() =>
-    startEnd ? Math.max(lines.length - 1, 0) : Math.min(Math.max(startAt as number, 0), Math.max(lines.length - 1, 0))
-  );
-  const [shown, setShown] = useState(startEnd ? Number.MAX_SAFE_INTEGER : 0);
-  const [atEnd, setAtEnd] = useState(startEnd);
+  const reduced = usePrefersReducedMotion();
+
+  /* ---------- Сцена и история: лог переживает смену сцены ---------- */
+
+  const initialIndex = (s: Scene, at: number | "end") => {
+    const items = sceneEntries(s, locationLabel);
+    if (at === "end") return Math.max(items.length - 1, 0);
+    const offset = items[0]?.kind === "title" ? 1 : 0;
+    return Math.min(Math.max(at + offset, 0), Math.max(items.length - 1, 0));
+  };
+
+  const [current, setCurrent] = useState(scene);
+  const [history, setHistory] = useState<Entry[]>([]);
+  const [trailing, setTrailing] = useState<Entry[]>([]);
+  const [index, setIndex] = useState(() => initialIndex(scene, startAt));
+  const [shown, setShown] = useState(() => (startAt === "end" || startAt > 0 ? Number.MAX_SAFE_INTEGER : 0));
+  const [atEnd, setAtEnd] = useState(startAt === "end" || scene.lines.length === 0);
+  const [resolved, setResolved] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [table, setTable] = useState<{ id: string; raised: boolean } | null>(null);
   const [muted, setMuted] = useState(defaultMuted);
   const [auto, setAuto] = useState(defaultAutoAdvance);
   const [voice, setVoice] = useState<{ lineId: string; state: VoiceState }>({ lineId: "", state: "idle" });
-  const [picked, setPicked] = useState<string | null>(null);
 
-  const rootRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const reduced = usePrefersReducedMotion();
+  // Новая сцена от родителя: прошлая уходит в историю, печать начинается заново
+  if (scene.id !== current.id) {
+    const prevItems = sceneEntries(current, locationLabel);
+    setHistory((h) => [...h, ...prevItems.slice(0, index + 1), ...trailing]);
+    setTrailing([]);
+    setCurrent(scene);
+    setIndex(0);
+    setShown(0);
+    setAtEnd(scene.lines.length === 0);
+    setResolved(false);
+    setPicked(null);
+  }
 
-  const line: DialogueLine | undefined = lines[Math.min(index, lines.length - 1)];
-  const text = line?.text ?? "";
+  const items = sceneEntries(scene, locationLabel);
+  const item: Entry | undefined = items[Math.min(index, items.length - 1)];
+  const text = item?.text ?? "";
   const visible = reduced || atEnd ? text.length : Math.min(shown, text.length);
   const typing = visible < text.length;
-  const voiceState: VoiceState = line && voice.lineId === line.id ? voice.state : "idle";
+  const voiceState: VoiceState = item?.lineId && voice.lineId === item.lineId ? voice.state : "idle";
 
   const owned = new Set(evidence.map((e) => e.id));
   const choices = scene.choices ?? [];
   const present = scene.present;
   const endMode: "present" | "choices" | "next" = present ? "present" : choices.length ? "choices" : "next";
 
-  // Последний говоривший персонаж — остаётся на сцене приглушённым, пока говорят другие
+  // На сцене — последний говоривший персонаж (рассказчик и Ноль его не сменяют)
   let stageCharacter: CharacterDef | undefined;
-  let stageEmotion = line?.emotion;
-  for (let i = Math.min(index, lines.length - 1); i >= 0; i--) {
-    const c = characters[lines[i].speaker];
+  let stageEmotion: Emotion | undefined;
+  const pool = [...history, ...items.slice(0, index + 1)];
+  for (let i = pool.length - 1; i >= 0; i--) {
+    const c = pool[i].speaker ? characters[pool[i].speaker!] : undefined;
     if (c) {
       stageCharacter = c;
-      stageEmotion = lines[i].emotion;
+      stageEmotion = pool[i].emotion;
       break;
     }
   }
-  const speaker = line ? characters[line.speaker] : undefined;
-  const isNarrator = line?.speaker === NARRATOR;
-  const isPlayer = line?.speaker === PLAYER;
+  const currentSpeaker = item?.speaker ? characters[item.speaker] : undefined;
+  const speaking = Boolean(stageCharacter && currentSpeaker && currentSpeaker.id === stageCharacter.id);
 
-  /* ---------- Печать ---------- */
+  /* ---------- Печать: 26 мс на знак, после запятой +60, после точки +180 ---------- */
 
   useEffect(() => {
     if (atEnd || reduced || shown >= text.length) return;
     const prev = text[shown - 1] ?? "";
-    const base = 1000 / charsPerSecond;
-    const delay = LONG_PAUSE.includes(prev) ? base * 9 : SHORT_PAUSE.includes(prev) ? base * 4 : base;
-    const t = window.setTimeout(() => setShown((s) => s + 1), delay);
+    const base = item?.kind === "title" ? TITLE_MS : 1000 / charsPerSecond;
+    const pause = ",;:".includes(prev) ? 60 : ".!?…".includes(prev) && text[shown] === " " ? 180 : 0;
+    const t = window.setTimeout(() => setShown((s) => s + 1), base + pause);
     return () => window.clearTimeout(t);
-  }, [atEnd, reduced, shown, text, charsPerSecond]);
+  }, [atEnd, reduced, shown, text, charsPerSecond, item?.kind]);
 
   /* ---------- Переходы ---------- */
 
   const goToEnd = () => {
-    setIndex(Math.max(lines.length - 1, 0));
+    setIndex(Math.max(items.length - 1, 0));
     setShown(Number.MAX_SAFE_INTEGER);
     setAtEnd(true);
   };
 
   const advance = () => {
     if (atEnd) {
-      if (endMode === "next") onFinish?.();
+      if (endMode === "next" && !resolved) {
+        setResolved(true);
+        onFinish?.();
+      }
       return;
     }
     if (typing) {
       setShown(text.length);
       return;
     }
-    if (index < lines.length - 1) {
+    if (index < items.length - 1) {
       setIndex(index + 1);
       setShown(0);
     } else {
@@ -182,8 +240,9 @@ function DialoguePlayerInner({
   };
 
   const skip = () => {
+    audioRef.current?.pause();
     if (endMode === "next") {
-      audioRef.current?.pause();
+      setResolved(true);
       onFinish?.();
     } else {
       goToEnd();
@@ -193,20 +252,33 @@ function DialoguePlayerInner({
   const choiceMissing = (choice: DialogueChoice) => (choice.requires ?? []).filter((id) => !owned.has(id));
 
   const pickChoice = (choice: DialogueChoice) => {
-    if (choiceMissing(choice).length > 0) return;
+    if (resolved || choiceMissing(choice).length > 0) return;
+    setResolved(true);
+    // Выбранный вариант уходит в лог репликой Ноль
+    setTrailing((t) => [...t, { key: `${scene.id}:choice:${choice.id}`, kind: "line", speaker: PLAYER, text: typo(choice.text) }]);
     onChoice?.(choice);
   };
 
-  const presentPicked = (id: string | null = picked) => {
-    if (id) onPresent?.(id);
+  const selectEvidence = (id: string) => {
+    setPicked(id);
+    setTable({ id, raised: false });
+  };
+
+  const presentPicked = () => {
+    if (!picked || resolved) return;
+    setResolved(true);
+    setTable({ id: picked, raised: true });
+    onPresent?.(picked);
   };
 
   /* ---------- Озвучка ---------- */
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const onVoiceEnded = useEffectEvent((lineId: string) => {
     setVoice({ lineId, state: "done" });
-    if (auto && !atEnd && line?.id === lineId) {
-      if (index < lines.length - 1) {
+    if (auto && !atEnd && item?.lineId === lineId) {
+      if (index < items.length - 1) {
         setIndex(index + 1);
         setShown(0);
       } else {
@@ -215,13 +287,13 @@ function DialoguePlayerInner({
     }
   });
 
+  const lineId = item?.kind === "line" ? item.lineId : undefined;
   useEffect(() => {
-    if (!line || atEnd || muted) return;
-    const url = voiceUrl(line.id, voiceBasePath);
+    if (!lineId || atEnd || muted) return;
+    const url = voiceUrl(lineId, voiceBasePath);
     if (isMediaMissing(url)) return;
     const audio = audioRef.current ?? new Audio();
     audioRef.current = audio;
-    const lineId = line.id;
     let cancelled = false;
 
     audio.preload = "auto";
@@ -246,29 +318,43 @@ function DialoguePlayerInner({
       audio.onerror = null;
       audio.pause();
     };
-  }, [line, atEnd, muted, voiceBasePath]);
+  }, [lineId, atEnd, muted, voiceBasePath]);
 
   useEffect(() => () => audioRef.current?.pause(), []);
 
   /* ---------- Автопрокрутка без голоса ---------- */
 
   const autoNext = useEffectEvent(() => advance());
-
   useEffect(() => {
-    if (!auto || atEnd || typing || !line) return;
+    if (!auto || atEnd || typing || !item) return;
     if (voiceState === "playing") return;
     const t = window.setTimeout(() => autoNext(), 1100 + text.length * 28);
     return () => window.clearTimeout(t);
-  }, [auto, atEnd, typing, line, voiceState, text.length]);
+  }, [auto, atEnd, typing, item, voiceState, text.length]);
 
-  /* ---------- Фокус ---------- */
+  /* ---------- Фокус и прокрутка лога (мгновенная) ---------- */
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
   const shouldFocus = autoFocus ?? variant === "overlay";
   useEffect(() => {
     if (shouldFocus) rootRef.current?.focus({ preventScroll: true });
   }, [shouldFocus]);
+  // Новая сцена убрала кнопку под фокусом — клавиатура возвращается плееру
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !shouldFocus) return;
+    const active = document.activeElement;
+    if (!active || active === document.body || !root.contains(active)) root.focus({ preventScroll: true });
+  }, [scene.id, shouldFocus]);
 
-  /* ---------- Клавиатура ---------- */
+  const logLength = history.length + index + trailing.length + (atEnd ? 1 : 0) + (picked ? 1 : 0);
+  useLayoutEffect(() => {
+    const el = logRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [logLength, visible]);
+
+  /* ---------- Клавиатура: ничего не анимирует ---------- */
 
   const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -291,19 +377,19 @@ function DialoguePlayerInner({
       setAuto((a) => !a);
       return;
     }
-    if (/^[1-9]$/.test(e.key) && atEnd) {
+    if (/^[1-9]$/.test(e.key) && atEnd && !resolved) {
       const n = Number(e.key) - 1;
       if (endMode === "choices" && choices[n]) {
         e.preventDefault();
         pickChoice(choices[n]);
       } else if (endMode === "present" && evidence[n]) {
         e.preventDefault();
-        setPicked(evidence[n].id);
+        selectEvidence(evidence[n].id);
       }
       return;
     }
     if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") {
-      if (onControl && e.key !== "ArrowRight") return; // кнопка сама обработает
+      if (onControl && e.key !== "ArrowRight") return;
       e.preventDefault();
       if (atEnd && endMode === "present") {
         if (e.key === "Enter") presentPicked();
@@ -321,9 +407,16 @@ function DialoguePlayerInner({
 
   /* ---------- Разметка ---------- */
 
-  const accent = speaker?.accent ?? (isPlayer ? "#2ee6c5" : "#bccbe0");
-  const showPresent = atEnd && endMode === "present";
-  const progress = lines.length ? (atEnd ? 1 : (index + (typing ? 0.5 : 1)) / lines.length) : 1;
+  const logEntries: Array<{ entry: Entry; partial?: number }> = [
+    ...history.map((entry) => ({ entry })),
+    ...items.slice(0, index).map((entry) => ({ entry })),
+    ...(item ? [{ entry: item, partial: visible }] : []),
+    ...trailing.map((entry) => ({ entry })),
+  ];
+  const showChoices = atEnd && endMode === "choices" && !resolved;
+  const showPresent = atEnd && endMode === "present" && !resolved;
+  const showNext = !typing && !showChoices && !showPresent && !(atEnd && resolved);
+  const tableCard = table ? evidence.find((e) => e.id === table.id) : undefined;
 
   return (
     <div
@@ -331,382 +424,292 @@ function DialoguePlayerInner({
       tabIndex={-1}
       role={variant === "overlay" ? "dialog" : "region"}
       aria-modal={variant === "overlay" ? true : undefined}
-      aria-label="Сцена диалога"
+      aria-label="Сцена"
       onKeyDown={onKeyDown}
       className={cn(
-        "@container isolate flex flex-col overflow-hidden text-steam outline-none",
-        variant === "overlay" ? "fixed inset-0 z-50" : "absolute inset-0 rounded-[inherit]",
+        "@container isolate overflow-hidden text-ink-1 outline-none",
+        variant === "overlay" ? "fixed inset-0 z-50" : "absolute inset-0 bg-room",
         className
       )}
     >
-      {/* Фон: затемнённый стол, пар над чёрной водой */}
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[#060914]/90 backdrop-blur-lg" />
+      {/* Гашение экрана «Зеркала» (240 мс), затем проявление комнаты (400 мс) */}
       <div
-        aria-hidden
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(90% 60% at 18% 100%, rgb(46 230 197 / 0.10), transparent 60%), radial-gradient(70% 50% at 85% 90%, rgb(255 181 71 / 0.10), transparent 60%), linear-gradient(180deg, rgb(3 5 11 / 0.2) 0%, rgb(3 5 11 / 0.85) 100%)",
-        }}
-      />
-      <SteamLayer className="-z-10" intensity={1.1} />
-      <Vignette className="-z-10" />
-      <GrainLayer className="-z-10" opacity={0.06} />
-
-      {/* Шапка */}
-      <header className="relative z-20 flex items-center gap-3 px-3 pt-3 @xl:px-6 @xl:pt-4">
-        <SectionLabel icon={<MapPin className="size-3 shrink-0 text-sodium" />} className="min-w-0">
-          <span className="truncate">{locationLabel ?? scene.location ?? "Сцена"}</span>
-        </SectionLabel>
-        <div
-          className="mx-2 hidden h-[3px] flex-1 overflow-hidden rounded-full bg-frost-line @2xl:block"
-          role="progressbar"
-          aria-label="Ход сцены"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress * 100)}
-        >
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-aurora/70 to-sodium/80 transition-[width] duration-500"
-            style={{ width: `${progress * 100}%` }}
-          />
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <ControlButton
-            onClick={() => setAuto((a) => !a)}
-            pressed={auto}
-            label={auto ? "Автопрокрутка включена (A)" : "Автопрокрутка выключена (A)"}
-          >
-            {auto ? <Pause /> : <Play />}
-            <span className="hidden @2xl:inline">Авто</span>
-          </ControlButton>
-          <ControlButton
-            onClick={() => setMuted((m) => !m)}
-            pressed={!muted}
-            label={muted ? "Включить озвучку (M)" : "Выключить озвучку (M)"}
-          >
-            {muted ? <VolumeX /> : <Volume2 />}
-          </ControlButton>
-          <ControlButton onClick={skip} label="Пропустить сцену (Esc)">
-            <FastForward />
-            <span className="hidden @2xl:inline">Пропустить</span>
-            <Kbd className="hidden @2xl:inline-flex">Esc</Kbd>
-          </ControlButton>
-        </div>
-      </header>
-
-      {/* Сцена: контейнер размеров — раскладка зависит от места, а не от окна */}
-      <div
-        className="relative z-10 min-h-0 flex-1 cursor-pointer [container-type:size]"
-        onClick={onStageClick}
+        className="absolute inset-0"
+        style={{ animation: variant === "overlay" ? "zs-fade-in 400ms var(--ease-out) 240ms both" : undefined }}
       >
-        {/* Реплика рассказчика — по центру, курсивом */}
-        {isNarrator && !showPresent && (
-          <div className="absolute inset-x-0 top-1/2 mx-auto w-full max-w-2xl -translate-y-1/2 px-6 text-center motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-700">
-            <IceCrack className="mx-auto mb-5 max-w-[16rem] opacity-70" />
-            <p className="font-sans text-lg leading-relaxed text-frost italic @xl:text-xl">
-              <TypedText text={text} visible={visible} typing={typing} />
-            </p>
-            <IceCrack className="mx-auto mt-5 max-w-[16rem] opacity-70" />
-            {atEnd && endMode === "next" && <NextButton onClick={() => onFinish?.()} className="mx-auto mt-6" />}
-          </div>
+        {background && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- картина локации из public/ */}
+            <img src={background} alt="" className="absolute inset-0 size-full object-cover" draggable={false} />
+            <div aria-hidden className="absolute inset-0 bg-room/55" />
+          </>
         )}
 
-        {/* Портрет: узко — по центру над репликой, широко — слева, реплика заходит на него */}
-        <div
-          className={cn(
-            "pointer-events-none absolute bottom-0 left-1/2 aspect-[2/3] h-[min(70cqh,540px)] -translate-x-1/2 transition-opacity duration-500",
-            "[mask-composite:intersect] [mask-image:linear-gradient(to_bottom,transparent,black_9%,black_74%,transparent),linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]",
-            "@xl:left-[max(1rem,4cqw)] @xl:h-[min(92cqh,720px)] @xl:translate-x-0",
-            (!stageCharacter || isNarrator) && "opacity-0",
-            showPresent && "max-@xl:hidden"
-          )}
-        >
-          {stageCharacter && (
-            <PortraitFrame
-              key={stageCharacter.id}
-              character={stageCharacter}
-              emotion={stageEmotion}
-              size="dialogue"
-              speaking={Boolean(speaker) && !atEnd}
-              dimmed={!speaker && !isNarrator}
-              showEmotion={false}
-              basePath={portraitBasePath}
-              className="size-full motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-left-4 motion-safe:duration-500"
-            />
-          )}
-        </div>
-
-        {/* Правая колонка: выбор / предъявление / реплика */}
-        <div
-          className={cn(
-            "absolute inset-x-0 bottom-0 flex max-h-full flex-col justify-end px-3 pb-3",
-            "@xl:pr-[max(1.25rem,4cqw)] @xl:pb-6",
-            stageCharacter
-              ? "@xl:pl-[calc(max(1rem,4cqw)_+_min(92cqh,720px)*0.44)]"
-              : "@xl:pl-[max(1.25rem,4cqw)]"
-          )}
-        >
-          <div className={cn("flex w-full max-w-3xl min-w-0 flex-col gap-3", !stageCharacter && "mx-auto")}>
-            {atEnd && endMode === "choices" && (
-              <ol className="flex flex-col gap-2" aria-label="Варианты ответа">
-                {choices.map((choice, i) => {
-                  const missing = choiceMissing(choice);
-                  const locked = missing.length > 0;
-                  return (
-                    <li
-                      key={choice.id}
-                      className="motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-3 motion-safe:fill-mode-both"
-                      style={{ animationDelay: `${i * 70}ms` }}
-                    >
-                      <button
-                        type="button"
-                        aria-disabled={locked}
-                        onClick={() => pickChoice(choice)}
-                        className={cn(
-                          "group/choice flex w-full items-start gap-3 rounded-md border px-3.5 py-2.5 text-left transition-[transform,border-color,background-color] duration-200",
-                          locked
-                            ? "cursor-not-allowed border-frost-line bg-ink-deep/90 text-frost-dim"
-                            : "frost-panel border-frost-line-strong text-steam hover:translate-x-1 hover:border-sodium/70 hover:bg-ink-high"
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "mt-0.5 grid size-6 shrink-0 place-items-center rounded font-mono text-xs",
-                            locked
-                              ? "border border-frost-line text-frost-faint"
-                              : "bg-sodium/15 text-sodium ring-1 ring-sodium/40 group-hover/choice:bg-sodium group-hover/choice:text-ink-deep"
-                          )}
-                        >
-                          {locked ? <Lock className="size-3" /> : i + 1}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-[15px] leading-snug">{choice.text}</span>
-                          {locked && (
-                            <span className="mt-1 block text-xs text-frost-dim">
-                              {lockedChoiceHint?.(choice, missing) ??
-                                (missing.length === 1
-                                  ? "Нужна улика, которой у вас пока нет"
-                                  : `Не хватает улик: ${missing.length}`)}
-                            </span>
-                          )}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
+        <div className="absolute inset-0 cursor-default [--zone:min(640px,44.4cqw)]" onClick={onStageClick}>
+          {/* Портрет: широко — слева на всю высоту; узко — сверху 42 % */}
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 h-[42%] [--dossier-bottom:16px] [--portrait-pos:50%_22%]",
+              "@3xl:inset-y-0 @3xl:right-auto @3xl:h-auto @3xl:w-(--zone) @3xl:[--dossier-bottom:96px] @3xl:[--portrait-pos:50%_18%]"
+            )}
+          >
+            {stageCharacter && (
+              <PortraitFrame
+                key={stageCharacter.id}
+                character={stageCharacter}
+                emotion={stageEmotion}
+                size="dialogue"
+                speaking={speaking}
+                dimmed={!speaking}
+                basePath={portraitBasePath}
+                className="animate-[zs-fade-in_160ms_linear_both]"
+              />
             )}
 
-            {showPresent && present ? (
-              <section
-                className="frost-panel flex max-h-[min(88cqh,600px)] min-h-0 flex-col rounded-xl motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-300"
-                aria-label="Предъявить улику"
+            {/* Предъявляемая улика лежит предметом на столе перед персонажем */}
+            {tableCard && (
+              <div
+                className="absolute bottom-4 left-1/2 @3xl:bottom-10"
+                style={{
+                  transform: `translateX(-50%) translateY(${table?.raised ? -24 : 0}px) rotate(-1deg)`,
+                  transition: "transform 160ms var(--ease-out)",
+                }}
               >
-                <div className="border-b border-frost-line px-4 pt-4 pb-3 @xl:px-5">
-                  <SectionLabel className="text-signal">Предъявить улику</SectionLabel>
-                  <p className="mt-1.5 text-[15px] leading-snug text-steam">{present.prompt}</p>
+                {/* Широко — 320 px, узко — около 60 % ширины: два масштаба, видим один */}
+                <div className="hidden @3xl:block" style={{ zoom: 320 / EVIDENCE_ITEM_WIDTH[tableCard.kind] } as CSSProperties}>
+                  <EvidenceCard card={tableCard} compact className="shadow-paper" />
                 </div>
-                <div className="scrollbar-ice min-h-0 flex-1 overflow-y-auto p-3 @xl:p-4">
-                  {evidence.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-frost-dim">
-                      У вас нет улик. Вернитесь к данным.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,190px),1fr))] gap-2.5">
-                      {evidence.map((card, i) => (
-                        <EvidenceCard
-                          key={card.id}
-                          card={{ ...card, isNew: false }}
-                          compact
-                          index={i}
-                          hotkey={i < 9 ? i + 1 : undefined}
-                          selected={picked === card.id}
-                          onSelect={setPicked}
-                          onActivate={(id) => presentPicked(id)}
-                        />
-                      ))}
-                    </div>
-                  )}
+                <div aria-hidden className="@3xl:hidden" style={{ zoom: 220 / EVIDENCE_ITEM_WIDTH[tableCard.kind] } as CSSProperties}>
+                  <EvidenceCard card={tableCard} compact className="shadow-paper" />
                 </div>
-                <div className="flex items-center justify-between gap-3 border-t border-frost-line px-4 py-3 @xl:px-5">
-                  <span className="min-w-0 truncate text-xs text-frost-dim">
-                    {picked
-                      ? evidence.find((e) => e.id === picked)?.title
-                      : "Выберите карточку — клик или цифра"}
-                  </span>
-                  <button
-                    type="button"
-                    disabled={!picked}
-                    onClick={() => presentPicked()}
-                    className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-signal px-4 font-display text-xs font-semibold uppercase tracking-[0.12em] text-ink-deep transition-[opacity,transform] hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:bg-signal/15 disabled:text-signal/70 disabled:hover:brightness-100"
-                  >
-                    Предъявить
-                    <Kbd className="border-current/30 bg-transparent text-current">Enter</Kbd>
-                  </button>
-                </div>
-              </section>
-            ) : (
-              !isNarrator &&
-              line && (
-                <DialogueBox
-                  key={isPlayer ? "player" : "npc"}
-                  name={isPlayer ? playerName : (speaker?.shortName ?? line.speaker)}
-                  role={isPlayer ? undefined : speaker?.role}
-                  accent={accent}
-                  align={isPlayer ? "right" : "left"}
-                  voicePlaying={voiceState === "playing"}
-                >
-                  <p className="text-base leading-relaxed text-steam @xl:text-[17px]">
-                    <TypedText text={text} visible={visible} typing={typing} />
-                  </p>
-                  <div className="mt-3 flex min-h-9 items-center justify-end gap-3">
-                    {atEnd && endMode === "next" ? (
-                      <NextButton onClick={() => onFinish?.()} />
-                    ) : atEnd ? null : (
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1.5 text-xs text-frost-dim transition-opacity",
-                          typing ? "opacity-0" : "opacity-100"
-                        )}
-                      >
-                        <Kbd>Пробел</Kbd>
-                        <ChevronRight className="size-3.5 text-sodium motion-safe:animate-pulse" />
-                      </span>
-                    )}
-                  </div>
-                </DialogueBox>
-              )
+              </div>
             )}
           </div>
+
+          {/* Лог: растёт снизу вверх, верх уходит в маску прокрутки */}
+          <div
+            className={cn(
+              "absolute inset-x-0 top-[42%] bottom-0 flex flex-col",
+              "@3xl:top-0 @3xl:right-[max(48px,calc(100cqw_-_var(--zone)_-_672px))] @3xl:left-[calc(var(--zone)_+_64px)]"
+            )}
+          >
+            <div
+              ref={logRef}
+              className="min-h-0 flex-1 overflow-y-auto px-4 pt-16 pb-4 @3xl:px-0 @3xl:pb-12"
+              style={{
+                maskImage: "linear-gradient(transparent, #000 64px)",
+                WebkitMaskImage: "linear-gradient(transparent, #000 64px)",
+              }}
+            >
+              <div className="flex min-h-full max-w-[34em] flex-col justify-end gap-5">
+                {logEntries.map(({ entry, partial }, i) => (
+                  <LogLine
+                    key={entry.key + i}
+                    entry={entry}
+                    partial={partial}
+                    age={logEntries.length - 1 - i}
+                    characters={characters}
+                    playerName={playerName}
+                    next={partial !== undefined && showNext}
+                  />
+                ))}
+
+                {showChoices && (
+                  <ol aria-label="Варианты ответа" className="mt-1 flex flex-col gap-2 @max-3xl:pb-[env(safe-area-inset-bottom)]">
+                    {choices.map((choice, i) => {
+                      const missing = choiceMissing(choice);
+                      const locked = missing.length > 0;
+                      return (
+                        <li key={choice.id}>
+                          <button
+                            type="button"
+                            aria-disabled={locked}
+                            onClick={() => pickChoice(choice)}
+                            className={cn(
+                              "group/choice grid w-full grid-cols-[28px_1fr] text-left font-serif text-[18px] leading-7 @max-3xl:min-h-11 @max-3xl:py-[9px] @max-3xl:text-[17px] @max-3xl:leading-[26px]",
+                              locked ? "cursor-default" : "cursor-pointer"
+                            )}
+                          >
+                            <span className="text-ink-3">
+                              <span className={cn(!locked && "group-hover/choice:hidden group-focus-visible/choice:hidden")}>
+                                {i + 1}.
+                              </span>
+                              {!locked && (
+                                <Glyph
+                                  name="marker"
+                                  size={10}
+                                  className="mt-[9px] hidden text-sodium group-hover/choice:block group-focus-visible/choice:block"
+                                />
+                              )}
+                            </span>
+                            <span
+                              className={cn(
+                                locked
+                                  ? "text-ink-3"
+                                  : "text-ink-2 transition-colors duration-[80ms] ease-linear group-hover/choice:text-ink-1 group-focus-visible/choice:text-ink-1"
+                              )}
+                            >
+                              {typo(choice.text)}
+                              {locked && (
+                                <span className="ml-2 ui-13 text-ink-3">
+                                  {lockedChoiceHint?.(choice, missing) ?? "[нужна улика]"}
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                )}
+
+                {showPresent && present && (
+                  <div aria-label="Предъявление" className="mt-1 flex flex-col gap-3">
+                    <p className="doc-18 text-ink-2 italic @max-3xl:text-[17px] @max-3xl:leading-[26px]">
+                      {typo(present.prompt)}
+                    </p>
+                    {evidence.length === 0 ? (
+                      <p className="ui-13 text-ink-3">Материалов нет.</p>
+                    ) : (
+                      <ol aria-label="Материалы" className="border-t border-line">
+                        {evidence.map((card) => {
+                          const sel = picked === card.id;
+                          return (
+                            <li key={card.id}>
+                              <button
+                                type="button"
+                                aria-pressed={sel}
+                                onClick={() => selectEvidence(card.id)}
+                                className={cn(
+                                  "grid h-10 w-full grid-cols-[16px_40px_48px_minmax(0,1fr)] items-baseline border-b border-line pt-2.5 text-left",
+                                  sel ? "bg-scr-select" : "hover:bg-scr-raise"
+                                )}
+                              >
+                                <span className="self-center pl-1 text-sodium">
+                                  {sel && <Glyph name="marker" size={10} />}
+                                </span>
+                                <span className="mono-12 text-ink-2">{card.at ?? "—"}</span>
+                                <span className="mono-11 text-ink-3">{EVIDENCE_KIND_META[card.kind].code}</span>
+                                <span className="truncate pr-3 ui-14 text-ink-1">{card.title}</span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    )}
+                    <div className="flex items-center gap-4">
+                      <ScreenButton variant="primary" disabled={!picked} onClick={presentPicked}>
+                        Предъявить
+                      </ScreenButton>
+                      {onCancelPresent && (
+                        <ScreenButton variant="text" onClick={onCancelPresent}>
+                          Отмена
+                        </ScreenButton>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Управление: текстом, справа сверху */}
+        <div className="absolute top-3 right-4 flex items-center gap-5 @3xl:top-6 @3xl:right-6">
+          <button
+            type="button"
+            onClick={() => setAuto((a) => !a)}
+            aria-pressed={auto}
+            title="Автопрокрутка (A)"
+            className={cn("ui-12 hover:text-ink-1", auto ? "text-ink-1" : "text-ink-3")}
+          >
+            Авто
+          </button>
+          <button
+            type="button"
+            onClick={() => setMuted((m) => !m)}
+            aria-pressed={!muted}
+            aria-label={muted ? "Включить озвучку (M)" : "Выключить озвучку (M)"}
+            title={muted ? "Включить озвучку (M)" : "Выключить озвучку (M)"}
+            className="flex h-4 items-center text-ink-3 hover:text-ink-1"
+          >
+            <Glyph name={muted ? "speaker-off" : "speaker"} size={12} />
+          </button>
+          <button type="button" onClick={skip} title="Пропустить сцену (Esc)" className="ui-12 text-ink-3 hover:text-ink-1">
+            Пропустить сцену
+          </button>
         </div>
       </div>
+
+      {/* Слой гашения поверх стола (только overlay): 0 → 1 за 240 мс, затем комната проявляется */}
+      {variant === "overlay" && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-room"
+          style={{ animation: "zs-fade-in 240ms var(--ease-in) both" }}
+        />
+      )}
     </div>
   );
 }
 
-/* ---------- Части ---------- */
+/* ---------- Строка лога ---------- */
 
-function TypedText({ text, visible, typing }: { text: string; visible: number; typing: boolean }) {
-  return (
+function LogLine({
+  entry,
+  partial,
+  age,
+  characters,
+  playerName,
+  next,
+}: {
+  entry: Entry;
+  /** Сколько знаков напечатано (у текущей записи) */
+  partial?: number;
+  /** 0 — текущая, 1–5 — предыдущие пять, дальше — старше */
+  age: number;
+  characters: Record<string, CharacterDef>;
+  playerName: string;
+  next: boolean;
+}) {
+  const tone = age === 0 ? "text-ink-1" : age <= 5 ? "text-ink-2" : "text-ink-3";
+  const text = entry.text;
+  const n = partial ?? text.length;
+  const body = (
     <>
-      {/* Читалке экрана — вся реплика сразу, без посимвольного шума */}
-      <span className="sr-only" aria-live="polite">
-        {text}
-      </span>
-      <span aria-hidden>{text.slice(0, visible)}</span>
-      {typing && (
-        <>
-          <span
-            aria-hidden
-            className="ml-px inline-block h-[1.05em] w-[0.5ch] translate-y-[0.15em] bg-sodium/80 motion-safe:animate-caret"
-          />
-          {/* Остаток текста занимает место, чтобы блок не прыгал */}
-          <span aria-hidden className="invisible">
-            {text.slice(visible)}
-          </span>
-        </>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden>{text.slice(0, n)}</span>
+      {n < text.length && (
+        <span aria-hidden className="invisible">
+          {text.slice(n)}
+        </span>
+      )}
+      {next && (
+        <span aria-hidden className="ml-2 inline-block align-[1px] text-ink-3">
+          <Glyph name="next" size={10} />
+        </span>
       )}
     </>
   );
-}
 
-function DialogueBox({
-  name,
-  role,
-  accent,
-  align,
-  voicePlaying,
-  children,
-}: {
-  name: string;
-  role?: string;
-  accent: string;
-  align: "left" | "right";
-  voicePlaying: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "frost-panel relative mt-4 w-full rounded-xl px-4 pt-6 pb-3 @xl:px-6 @xl:pt-7",
-        align === "right" && "@xl:ml-auto @xl:max-w-[88%]",
-        "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-bottom-2 motion-safe:duration-300"
-      )}
-      style={{ "--accent-c": accent } as React.CSSProperties}
-    >
-      <div
-        className={cn(
-          "absolute -top-3.5 flex max-w-[calc(100%-2rem)] items-center gap-2.5 rounded-md border border-(--accent-c)/40 bg-ink-deep px-3 py-1.5 shadow-[0_8px_24px_-12px_var(--accent-c)]",
-          align === "right" ? "right-4 @xl:right-6" : "left-4 @xl:left-6"
-        )}
-      >
-        <span aria-hidden className="h-3.5 w-[3px] rounded-full bg-(--accent-c)" />
-        <span className="shrink-0 font-display text-[13px] font-semibold uppercase tracking-[0.1em] text-(--accent-c)">
-          {name}
-        </span>
-        {role && <span className="hidden min-w-0 truncate text-xs text-frost-dim @lg:inline">{role}</span>}
-        {voicePlaying && <VoiceBars />}
-      </div>
-      {children}
-    </div>
-  );
-}
+  if (entry.kind === "title") {
+    return <p className={cn("mono-13", age === 0 ? "text-ink-2" : "text-ink-3")}>{body}</p>;
+  }
 
-function VoiceBars() {
-  return (
-    <span aria-label="Звучит озвучка" className="flex h-3 items-end gap-[2px]">
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className="h-full w-[2px] origin-bottom rounded-full bg-(--accent-c) motion-safe:animate-voice"
-          style={{ animationDelay: `${i * 150}ms` }}
-        />
-      ))}
-    </span>
-  );
-}
+  const big = "font-serif text-[18px] leading-7 @max-3xl:text-[17px] @max-3xl:leading-[26px]";
 
-function NextButton({ onClick, className }: { onClick: () => void; className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "inline-flex h-9 items-center gap-2 rounded-md bg-sodium px-4 font-display text-xs font-semibold uppercase tracking-[0.12em] text-ink-deep transition-[filter,transform] hover:brightness-110 active:translate-y-px motion-safe:animate-glow-pulse",
-        className
-      )}
-    >
-      Далее
-      <ChevronRight className="size-4" />
-    </button>
-  );
-}
+  if (entry.speaker === NARRATOR) {
+    return <p className={cn(big, "italic", age === 0 ? "text-ink-2" : age <= 5 ? "text-ink-3" : "text-ink-3/80")}>{body}</p>;
+  }
 
-function ControlButton({
-  onClick,
-  pressed,
-  label,
-  children,
-}: {
-  onClick: () => void;
-  pressed?: boolean;
-  label: string;
-  children: React.ReactNode;
-}) {
+  const isPlayer = entry.speaker === PLAYER;
+  const name = isPlayer ? playerName : (characters[entry.speaker ?? ""]?.shortName ?? entry.speaker);
+  const nameTone = isPlayer ? (age === 0 ? "text-sodium" : age <= 5 ? "text-sodium/75" : "text-sodium/55") : "";
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={pressed}
-      aria-label={label}
-      title={label}
-      className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-frost transition-colors hover:bg-steam/8 hover:text-steam [&_svg]:size-4",
-        pressed && "text-aurora"
-      )}
-    >
-      {children}
-    </button>
+    <p className={cn(big, tone)}>
+      <span className={cn("doc-name @max-3xl:text-[16px]", nameTone)}>{name}</span>
+      {" — "}
+      {body}
+    </p>
   );
 }

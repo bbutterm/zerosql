@@ -117,11 +117,11 @@ export function SqlEditor({
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-card">
-        <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
+        <span className="text-xs font-mono text-muted-foreground uppercase">
           SQL Terminal
         </span>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-noir-dim">Ctrl+Enter — выполнить</span>
+          <span className="text-xs text-ink-3">Ctrl+Enter — выполнить</span>
           <button
             onClick={onExecute}
             className="px-3 py-1 text-xs font-mono bg-primary text-primary-foreground rounded hover:opacity-90 transition-opacity"

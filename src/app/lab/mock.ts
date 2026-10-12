@@ -5,6 +5,7 @@
 
 import type { CharacterDef, Scene } from "@/types/story";
 import type { ForeignKey, QueryResult, TableInfo } from "@/types/database";
+import type { HandbookEntry } from "@/types/case";
 import type {
   EvidenceCardData,
   ObjectiveView,
@@ -24,6 +25,8 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     bio: "Двадцать лет в розыске. Не верит в совпадения и в кофе из автомата.",
     emotions: ["neutral", "tired", "thinking", "angry", "smug"],
     voice: "низкий, сухой, с усталой иронией",
+    patronymic: "Андреевна",
+    dossierNote: "Пьёт чай без сахара. Не любит, когда её жалеют.",
   },
   akhmetov: {
     id: "akhmetov",
@@ -35,6 +38,8 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     bio: "Знает машинный зал наизусть. Говорит быстро, когда нервничает.",
     emotions: ["neutral", "scared", "angry", "surprised", "hurt"],
     voice: "быстрый, срывающийся",
+    patronymic: "Рашидович",
+    dossierNote: "Курит у шлюза.",
   },
   kravets: {
     id: "kravets",
@@ -46,6 +51,9 @@ export const CHARACTERS: Record<string, CharacterDef> = {
     bio: "Снимает пар над полыньёй третью зиму подряд. Ищет сюжет — и находит.",
     emotions: ["neutral", "smug", "happy", "thinking", "sad"],
     voice: "звонкий, насмешливый",
+    patronymic: "Олеговна",
+    shortNameAcc: "Кравец",
+    dossierNote: "Снимает с моста. Задаёт правильные вопросы.",
   },
 };
 
@@ -54,7 +62,7 @@ export const CHARACTERS: Record<string, CharacterDef> = {
 export const SCENES: Record<string, Scene> = {
   interrogation: {
     id: "interrogation",
-    location: "Подвал УВД · 14 декабря, 02:31",
+    location: "Подвал УВД. 14 декабря, 02:31",
     lines: [
       {
         id: "c01.interrogation.001",
@@ -110,7 +118,7 @@ export const SCENES: Record<string, Scene> = {
   },
   present: {
     id: "present",
-    location: "Подвал УВД · 14 декабря, 02:40",
+    location: "Подвал УВД. 14 декабря, 02:40",
     lines: [
       {
         id: "c01.present.001",
@@ -134,7 +142,7 @@ export const SCENES: Record<string, Scene> = {
   },
   "present-ok": {
     id: "present-ok",
-    location: "Подвал УВД · 14 декабря, 02:42",
+    location: "Подвал УВД. 14 декабря, 02:42",
     lines: [
       {
         id: "c01.present-ok.001",
@@ -163,7 +171,7 @@ export const SCENES: Record<string, Scene> = {
   },
   "present-fail": {
     id: "present-fail",
-    location: "Подвал УВД · 14 декабря, 02:42",
+    location: "Подвал УВД. 14 декабря, 02:42",
     lines: [
       {
         id: "c01.present-fail.001",
@@ -192,17 +200,29 @@ export const EVIDENCE: EvidenceCardData[] = [
     text: "Карта охранника Д. Рябова открыла северный шлюз ЦОД через пять минут после Лапина. По словам Ахметова, Рябов ушёл в полночь.",
     sourceQuery:
       "SELECT * FROM access_log\nWHERE badge_id = 'B-0417'\n  AND entered_at > '2026-12-14 00:00';",
-    source: "журнал пропусков",
+    source: "access_log",
+    queryNo: 14,
     foundAt: "02:31",
+    at: "01:52",
+    excerpt: {
+      columns: ["id", "badge_id", "gate", "entered_at"],
+      rows: [
+        [1077, "B-0233", "сев. шлюз", "01:47"],
+        [1078, "B-0417", "сев. шлюз", "01:52"],
+        [1079, "B-0519", "маш. зал", "02:10"],
+      ],
+      mark: [1, 1],
+    },
     isNew: true,
   },
   {
     id: "ev-cameras",
     kind: "lead",
-    title: "Камеры «на профилактике»",
+    title: "Кто подписал заявку на камеры?",
     text: "Камеры северного шлюза отключены с 01:30 до 03:00 по заявке. Подпись под заявкой неразборчива.",
     source: "реестр заявок ЦОД",
     foundAt: "02:18",
+    at: "01:30",
   },
   {
     id: "ev-heat",
@@ -210,32 +230,51 @@ export const EVIDENCE: EvidenceCardData[] = [
     title: "Сводка теплосети",
     text: "В ночь исчезновения сброс тёплой воды в залив вырос с 41 до 86 МВт. Плановых работ в журнале нет.",
     sourceQuery: "SELECT measured_at, megawatts\nFROM heat_output\nORDER BY megawatts DESC LIMIT 3;",
-    source: "отчёт ЦОД «Северный узел»",
+    source: "ЦОД «Северный узел»",
+    queryNo: 9,
     foundAt: "02:05",
+    at: "02:00",
+  },
+  {
+    id: "ev-gate-cam",
+    kind: "photo",
+    title: "Кадр камеры 07, 02:10",
+    text: "Человек в рабочей куртке у северного шлюза. Лицо закрыто капюшоном.",
+    camera: "КАМ 07 СЕВ.ШЛЮЗ 14-12-2026 02:10:44",
+    caption: "Северный шлюз, последний кадр перед отключением",
+    source: "видеоархив ЦОД",
+    foundAt: "02:20",
+    at: "02:10",
   },
   {
     id: "ev-photo",
     kind: "photo",
     title: "Снимок с моста",
     text: "Кравец сфотографировала пар над полыньёй в 02:05. На льду у кромки виден луч фонаря.",
+    caption: "пар над полыньёй, 02:05",
     source: "архив Л. Кравец",
     foundAt: "01:58",
+    at: "02:05",
   },
   {
     id: "ev-call",
     kind: "audio",
     title: "Звонок в 02:12",
-    text: "Короткий звонок с телефона Лапина на номер, оформленный на ООО «Тепловой контур». 14 секунд, тишина и ветер.",
+    text: "— Открывай третий. — Сейчас? — Сейчас. Потом ветер, четырнадцать секунд тишины.",
+    duration: "00:14",
     sourceQuery: "SELECT * FROM calls\nWHERE caller = '+7 914 220-31-07'\n  AND started_at LIKE '2026-12-14 02:%';",
-    source: "оператор связи",
+    source: "calls",
+    queryNo: 17,
     foundAt: "01:44",
+    at: "02:12",
   },
   {
     id: "ev-akhmetov",
     kind: "testimony",
     title: "Показания Ахметова",
-    text: "«Всю смену был в машинном зале, Лапина не видел. Рябов ушёл в полночь».",
-    source: "допрос 14.12, 02:35",
+    text: "«Всю смену был в машинном зале, Лапина не видел. Рябов ушёл в полночь, я сам видел, как он сдал карту на посту».",
+    author: "Т. Р. Ахметов",
+    source: "опрос 14.12, 02:35",
     foundAt: "02:36",
   },
 ];
@@ -243,11 +282,21 @@ export const EVIDENCE: EvidenceCardData[] = [
 export const EXTRA_EVIDENCE: EvidenceCardData = {
   id: "ev-valve",
   kind: "record",
-  title: "Ручное открытие клапана",
-  text: "В 01:58 клапан сброса №3 переведён в ручной режим с терминала машинного зала.",
+  title: "Ручное открытие клапана 3",
+  text: "В 01:58 клапан сброса № 3 переведён в ручной режим с терминала машинного зала.",
   sourceQuery: "SELECT * FROM heat_output\nWHERE outlet = 'клапан-3'\n  AND measured_at BETWEEN '2026-12-14 01:50' AND '2026-12-14 02:10';",
-  source: "телеметрия теплосети",
+  source: "heat_output",
+  queryNo: 21,
   foundAt: "02:50",
+  at: "01:58",
+  excerpt: {
+    columns: ["measured_at", "outlet", "megawatts"],
+    rows: [
+      ["01:55", "клапан-3", 41.2],
+      ["01:58", "клапан-3", 86.4],
+    ],
+    mark: [1, 2],
+  },
   isNew: true,
 };
 
@@ -515,9 +564,10 @@ export const OBJECTIVES: ObjectiveView[] = [
         speaker: "akhmetov",
         text: "Если человек не вышел, в `exited_at` пусто. Это проверяется не через `= NULL`, а через `IS NULL`.",
       },
-      { text: "Соедините условия: `entered_at > '2026-12-14 01:47'` и `exited_at IS NULL`." },
+      { speaker: "sokolova", text: "Соедини оба условия через AND: `entered_at > '2026-12-14 01:47'` и `exited_at IS NULL`." },
       {
-        text: "`SELECT * FROM access_log WHERE entered_at > '2026-12-14 01:47' AND exited_at IS NULL;`",
+        speaker: "sokolova",
+        text: "Ладно, пиши: `SELECT * FROM access_log WHERE entered_at > '2026-12-14 01:47' AND exited_at IS NULL;`",
       },
     ],
     hintsRevealed: 2,
@@ -531,7 +581,7 @@ export const OBJECTIVES: ObjectiveView[] = [
     optional: true,
     hints: [
       { speaker: "kravets", text: "Я снимала пар около двух ночи. Посмотрите, что было в `heat_output` тогда." },
-      { text: "Отсортируйте по `megawatts` по убыванию и возьмите первую строку." },
+      { speaker: "kravets", text: "Отсортируйте по `megawatts` по убыванию и возьмите первую строку." },
     ],
     hintsRevealed: 0,
   },
@@ -559,10 +609,10 @@ export const PROTOCOL: ProtocolQuestionView[] = [
     id: "q1",
     text: "Последним в ЦОД вошёл {p-who} — в {p-when}, через северный шлюз.",
     blanks: [
-      { id: "p-who", label: "кто", options: PEOPLE },
+      { id: "p-who", label: "фамилия, имя", options: PEOPLE },
       {
         id: "p-when",
-        label: "когда",
+        label: "время",
         options: [
           { value: "0147", label: "01:47" },
           { value: "0152", label: "01:52" },
@@ -575,7 +625,7 @@ export const PROTOCOL: ProtocolQuestionView[] = [
   {
     id: "q2",
     text: "Камеры шлюза отключили по заявке, которую подписал {p-signer}.",
-    blanks: [{ id: "p-signer", label: "кто подписал", options: PEOPLE }],
+    blanks: [{ id: "p-signer", label: "фамилия, имя", options: PEOPLE }],
   },
   {
     id: "q3",
@@ -602,10 +652,46 @@ export const PROTOCOL_ANSWERS: Record<string, string> = {
   "p-cause": "valve",
 };
 
-/* ---------- Справочник ---------- */
+/* ---------- Справка ---------- */
 
-export const CHEATSHEET: Array<{ title: string; code: string; note: string }> = [
-  { title: "Отбор строк", code: "SELECT * FROM staff\nWHERE shift = 'ночь';", note: "WHERE оставляет только подходящие строки." },
-  { title: "Пустые значения", code: "WHERE exited_at IS NULL", note: "NULL не равен ничему, даже самому себе — только IS NULL." },
-  { title: "Соединение", code: "JOIN staff s\n  ON s.badge_id = a.badge_id", note: "JOIN склеивает строки двух таблиц по общему ключу." },
+export const HANDBOOK: HandbookEntry[] = [
+  {
+    id: "where",
+    title: "Отбор строк: WHERE",
+    summary: "WHERE оставляет только строки, для которых условие истинно.",
+    syntax: "SELECT столбцы FROM таблица\nWHERE условие;",
+    example: "SELECT * FROM staff\nWHERE shift = 'ночь';",
+    pitfalls: ["Текст пишется в одинарных кавычках: 'ночь'. Двойные кавычки в SQLite — имена."],
+  },
+  {
+    id: "null",
+    title: "Пустые значения: IS NULL",
+    summary: "NULL — это «неизвестно». Он не равен ничему, даже самому себе, поэтому = NULL не находит ничего.",
+    syntax: "WHERE столбец IS NULL",
+    example: "SELECT * FROM access_log\nWHERE exited_at IS NULL;",
+    pitfalls: ["exited_at = NULL вернёт 0 строк без ошибки.", "Противоположное условие — IS NOT NULL."],
+  },
+  {
+    id: "join",
+    title: "Соединение таблиц: JOIN",
+    summary: "JOIN склеивает строки двух таблиц по общему ключу.",
+    syntax: "FROM a JOIN b ON b.ключ = a.ключ",
+    example: "SELECT r.full_name, a.entered_at\nFROM access_log a\nJOIN staff s ON s.badge_id = a.badge_id\nJOIN residents r ON r.id = s.resident_id;",
+  },
+  {
+    id: "order",
+    title: "Сортировка: ORDER BY",
+    summary: "ORDER BY упорядочивает результат; DESC — по убыванию.",
+    syntax: "ORDER BY столбец [DESC]",
+    example: "SELECT measured_at, megawatts\nFROM heat_output\nORDER BY megawatts DESC\nLIMIT 3;",
+  },
+];
+
+export const HANDBOOK_NOTES: Record<string, string> = {
+  null: "Сто раз на этом попадалась. Пустой выход — не «вышел», а «никто не отметил».",
+};
+
+export const IDLE_LINES = [
+  "Зеркало подключено. Доступно таблиц: 6 из 8.",
+  "Последняя синхронизация зеркала: 14.12.2026 02:30.",
 ];

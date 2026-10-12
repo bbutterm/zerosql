@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import type { CharacterDef, Emotion } from "@/types/story";
 import { cn } from "@/lib/utils";
+import { hashId } from "@/components/kit/typo";
 import {
   isMediaMissing,
   markMediaMissing,
@@ -25,90 +26,29 @@ export const EMOTION_LABELS: Record<Emotion, string> = {
   hurt: "боль",
 };
 
+/** Год мира игры: из возраста персонажа вычисляется год рождения в учётной карточке */
+const WORLD_YEAR = 2026;
+
 export interface PortraitFrameProps {
-  /** Персонаж; без него — «неизвестный» силуэт */
+  /** Персонаж; без него — пустая карточка */
   character?: CharacterDef | null;
   emotion?: Emotion;
-  /** dialogue — высокий 2:3, avatar — квадрат, card — досье 3:4 с табличкой */
+  /** dialogue — зона портрета в сцене, card — карточка 3:4, avatar — малый размер (только имя) */
   size?: PortraitSize;
   className?: string;
-  /** Сейчас говорит — подсветка акцентным цветом */
+  /** Говорит: brightness(1) */
   speaking?: boolean;
-  /** Слушает — приглушить */
+  /** Слушает: brightness(.72) saturate(.85) */
   dimmed?: boolean;
-  /** Подпись эмоции на заглушке (по умолчанию: dialogue и card) */
+  /** Устарело: подписи эмоций нет */
   showEmotion?: boolean;
-  /** Табличка с именем (по умолчанию: card) */
+  /** Устарело: имя всегда в карточке */
   showName?: boolean;
   /** Корень папки портретов */
   basePath?: string;
 }
 
-/* ---------- Свет по эмоции: ключ (тёплый, справа), контровой (холодный, слева) ---------- */
-
-interface Lighting {
-  key: string;
-  keyOpacity: number;
-  rim: string;
-  rimOpacity: number;
-  /** Наклон головы, градусы */
-  tilt: number;
-  /** Сдвиг головы по вертикали */
-  lift: number;
-}
-
-const BASE_LIGHT: Lighting = {
-  key: "#ffb547",
-  keyOpacity: 0.62,
-  rim: "#2ee6c5",
-  rimOpacity: 0.8,
-  tilt: 0,
-  lift: 0,
-};
-
-const EMOTION_LIGHT: Record<Emotion, Partial<Lighting>> = {
-  neutral: {},
-  happy: { keyOpacity: 0.85, tilt: -2, lift: -2 },
-  sad: { keyOpacity: 0.28, tilt: 4, lift: 4 },
-  angry: { key: "#ff6a2b", keyOpacity: 0.82, lift: 2 },
-  scared: { rim: "#8b5cf6", keyOpacity: 0.3, tilt: -3, lift: 3 },
-  surprised: { keyOpacity: 0.72, lift: -5 },
-  smug: { keyOpacity: 0.72, tilt: -5 },
-  thinking: { keyOpacity: 0.48, tilt: 6 },
-  tired: { keyOpacity: 0.32, rimOpacity: 0.6, tilt: 3, lift: 4 },
-  hurt: { key: "#ff6a2b", keyOpacity: 0.5, tilt: 5, lift: 2 },
-};
-
-/* ---------- Силуэт: голова и плечи, три варианта по id персонажа ---------- */
-
-const TORSO =
-  "M12 300 C14 250 38 214 80 205 C87 203 89 196 89 170 L111 170 C111 196 113 203 120 205 C162 214 186 250 188 300 Z";
-const HEAD =
-  "M67 120 C67 93 81 78 100 78 C119 78 133 93 133 120 C133 145 120 165 100 167 C80 165 67 145 67 120 Z";
-
-const HAIR_BACK: Record<number, string | null> = {
-  0: null,
-  // длинные волосы
-  1: "M61 118 C57 82 79 64 101 64 C127 64 146 84 141 120 C145 150 150 184 158 210 C141 205 129 196 125 180 L75 180 C71 196 59 205 42 210 C51 184 56 150 61 118 Z",
-  // капюшон парки
-  2: "M54 132 C48 84 74 56 100 56 C126 56 152 84 146 132 C146 164 136 186 120 196 L80 196 C64 186 54 164 54 132 Z",
-};
-
-const HAIR_FRONT: Record<number, string | null> = {
-  // короткая стрижка
-  0: "M64 121 C59 88 78 68 102 68 C127 68 142 88 137 118 C131 103 122 94 108 92 C95 99 80 97 70 106 C67 111 65 116 64 121 Z",
-  // чёлка
-  1: "M66 116 C64 86 82 70 102 70 C124 70 138 86 135 114 C126 98 114 90 98 92 C86 96 74 104 66 116 Z",
-  // меховая оторочка капюшона
-  2: "M44 232 C38 200 58 176 84 172 L116 172 C142 176 162 200 156 232 C142 214 122 206 100 206 C78 206 58 214 44 232 Z",
-};
-
-function hashId(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h;
-}
-
+/** Устарело: аватаров из инициалов нет. Оставлено для совместимости импорта */
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -116,12 +56,11 @@ export function initialsOf(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-const ASPECT: Record<PortraitSize, string> = {
-  dialogue: "aspect-[2/3]",
-  avatar: "aspect-square",
-  card: "aspect-[3/4]",
-};
-
+/**
+ * Портрет (раздел 7.15): масляная живопись 3:4, радиус 0, без рамки, сливается с комнатой.
+ * Цепочка: эмоция → neutral → бумажная учётная карточка (предмет, а не силуэт).
+ * Говорит / слушает — только яркость, 200 мс. Колец, свечения и наклонов нет.
+ */
 export function PortraitFrame({
   character,
   emotion,
@@ -129,88 +68,78 @@ export function PortraitFrame({
   className,
   speaking = false,
   dimmed = false,
-  showEmotion,
-  showName,
   basePath = "/portraits",
 }: PortraitFrameProps) {
   useMediaCacheVersion();
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const mood: Emotion = emotion ?? character?.emotions[0] ?? "neutral";
-  const accent = character?.accent ?? "#8593b0";
-
-  // Кандидаты: нужная эмоция → основная эмоция персонажа. Пропавшие не повторяем.
+  const mood: Emotion = emotion ?? "neutral";
   const candidates: string[] = [];
   if (character) {
     candidates.push(portraitUrl(character.id, mood, basePath));
-    const primary = character.emotions[0] ?? "neutral";
-    if (primary !== mood) candidates.push(portraitUrl(character.id, primary, basePath));
+    if (mood !== "neutral") candidates.push(portraitUrl(character.id, "neutral", basePath));
   }
   const src = candidates.find((url) => !isMediaMissing(url)) ?? null;
 
-  // Ошибка могла случиться до гидрации — onError тогда не сработает.
+  // Ошибка могла случиться до гидрации — onError тогда не сработает
   useEffect(() => {
     const img = imgRef.current;
     if (src && img && img.complete && img.naturalWidth === 0) markMediaMissing(src);
   }, [src]);
 
-  const withEmotion = showEmotion ?? size === "dialogue";
-  const withName = showName ?? size === "card";
+  const light: CSSProperties = {
+    filter: dimmed && !speaking ? "brightness(.72) saturate(.85)" : "brightness(1)",
+    transition: "filter 200ms var(--ease-out)",
+  };
+
+  if (size === "avatar") {
+    // Малые размеры портретов не используют: человек обозначается именем
+    return (
+      <span className={cn("inline-flex items-center ui-13 text-ink-2", className)}>
+        {character?.shortName ?? "—"}
+      </span>
+    );
+  }
 
   return (
     <figure
       className={cn(
-        "group/portrait relative isolate m-0 overflow-hidden bg-[#080c18] [container-type:inline-size]",
-        ASPECT[size],
-        size === "avatar" ? "rounded-md" : "rounded-lg",
-        "ring-1 ring-frost-line transition-[filter,box-shadow,opacity] duration-500",
-        speaking && "ring-(--accent-c)/70 shadow-[0_0_0_1px_var(--accent-c),0_18px_60px_-20px_var(--accent-c)]",
-        dimmed && "brightness-[0.55] saturate-[0.6]",
+        "relative isolate m-0 overflow-hidden",
+        size === "card" ? "aspect-[3/4] w-full" : "size-full [container-type:size]",
         className
       )}
-      style={{ "--accent-c": accent } as CSSProperties}
-      aria-label={character ? `${character.name} — ${EMOTION_LABELS[mood]}` : "Неизвестный"}
+      aria-label={character ? `${character.name}, ${EMOTION_LABELS[mood]}` : "Портрета нет"}
     >
-      <PortraitPlaceholder
-        character={character}
-        mood={mood}
-        accent={accent}
-        size={size}
-      />
-
-      {src && (
-        // eslint-disable-next-line @next/next/no-img-element -- портреты из public/, размер задаёт рамка
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element -- портреты из public/, размер задаёт зона
         <img
           ref={imgRef}
           key={src}
           src={src}
-          alt={character ? `${character.name}, ${EMOTION_LABELS[mood]}` : ""}
-          className="absolute inset-0 z-10 size-full object-cover text-transparent motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-700"
+          alt=""
+          className="absolute inset-0 size-full object-cover text-transparent"
+          style={{
+            ...light,
+            objectPosition: size === "dialogue" ? "var(--portrait-pos, 50% 18%)" : "50% 18%",
+            animation: "zs-fade-in 160ms linear both",
+          }}
           draggable={false}
           decoding="async"
           onError={() => markMediaMissing(src)}
         />
-      )}
-
-      {/* Кромка рамки поверх всего: лёгкий внутренний свет */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-20 rounded-[inherit] shadow-[inset_0_0_0_1px_rgb(255_255_255/0.04),inset_0_-40px_60px_-30px_rgb(0_0_0/0.7)]"
-      />
-
-      {!src && withEmotion && (
-        <figcaption className="absolute right-[4cqw] bottom-[4cqw] z-30 rounded-sm bg-ink-deep/75 px-[2.4cqw] py-[1cqw] font-mono text-[max(9px,4.2cqw)] lowercase leading-none text-frost backdrop-blur-sm">
-          {EMOTION_LABELS[mood]}
-        </figcaption>
-      )}
-
-      {withName && character && (
-        <div className="absolute inset-x-0 bottom-0 z-30 bg-gradient-to-t from-ink-deep via-ink-deep/85 to-transparent px-[6cqw] pt-[14cqw] pb-[5cqw]">
-          <div className="font-display text-[max(11px,7cqw)] font-semibold leading-tight text-(--accent-c)">
-            {character.shortName}
-          </div>
-          <div className="mt-[1cqw] line-clamp-2 text-[max(10px,5cqw)] leading-snug text-frost">
-            {character.role}
+      ) : size === "card" ? (
+        <div className="absolute inset-0" style={light}>
+          <DossierCard character={character} />
+        </div>
+      ) : (
+        // В зоне портрета карточка лежит по центру, нижний край в 96 px от низа, −0,8°
+        <div className="absolute inset-x-0 bottom-[var(--dossier-bottom,96px)] flex justify-center px-6" style={light}>
+          {/* 360×480; в низкой зоне (мобильный, 42 % высоты) карточка уменьшается по высоте */}
+          <div
+            className="-rotate-[0.8deg] shadow-paper"
+            style={{ width: "min(360px, 100cqw - 48px, (100cqh - var(--dossier-bottom, 96px) - 48px) * 0.75)" }}
+          >
+            <DossierCard character={character} />
           </div>
         </div>
       )}
@@ -218,141 +147,95 @@ export function PortraitFrame({
   );
 }
 
-/* ---------- Заглушка «в стиле»: живописный силуэт со сплит-светом ---------- */
+/* ---------- Учётная карточка: заглушка портрета ---------- */
 
-function PortraitPlaceholder({
-  character,
-  mood,
-  accent,
-  size,
-}: {
-  character?: CharacterDef | null;
-  mood: Emotion;
-  accent: string;
-  size: PortraitSize;
-}) {
-  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const light = { ...BASE_LIGHT, ...EMOTION_LIGHT[mood] };
-  const variant = character ? hashId(character.id) % 3 : 0;
-  const initials = character ? initialsOf(character.name) : "?";
-  const headTransform = `rotate(${light.tilt} 100 175) translate(0 ${light.lift})`;
-  const isAvatar = size === "avatar";
+function splitName(c: CharacterDef) {
+  const parts = c.name.trim().split(/\s+/);
+  const surname = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+  const given = parts.length > 1 ? parts.slice(0, -1).join(" ") : "";
+  return { surname, given: [given, c.patronymic].filter(Boolean).join(" ") };
+}
 
-  const parts: Array<{ d: string; head: boolean }> = [];
-  const back = HAIR_BACK[variant];
-  if (back) parts.push({ d: back, head: true });
-  parts.push({ d: TORSO, head: false });
-  parts.push({ d: HEAD, head: true });
-  const front = HAIR_FRONT[variant];
-  if (front) parts.push({ d: front, head: variant !== 2 });
+/** Размеры заданы для листа 360×480 и масштабируются вместе с карточкой (единица --u) */
+const u = (px: number) => `calc(var(--u) * ${px})`;
 
-  const shapes = (props: { fill?: string; transform?: string }) =>
-    parts.map((p, i) => (
-      <path
-        key={i}
-        d={p.d}
-        fill={props.fill}
-        transform={[props.transform, p.head ? headTransform : undefined].filter(Boolean).join(" ") || undefined}
-      />
-    ));
+export function DossierCard({ character, className }: { character?: CharacterDef | null; className?: string }) {
+  const name = character ? splitName(character) : null;
+  const no = character ? String((hashId(character.id) % 9000) + 100).padStart(4, "0") : "—";
+  const year = character?.age ? String(WORLD_YEAR - character.age) : "";
 
   return (
-    <div aria-hidden className="absolute inset-0">
-      {/* Фон: акцентное свечение + холод слева + тепло справа */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: [
-            `radial-gradient(70% 55% at 62% 34%, ${accent}40, transparent 70%)`,
-            "linear-gradient(90deg, rgb(46 230 197 / 0.14), transparent 32%, transparent 64%, rgb(255 181 71 / 0.14))",
-            "linear-gradient(180deg, #0d1427 0%, #080c18 70%, #05070f 100%)",
-          ].join(","),
-        }}
-      />
-
-      <svg
-        className="absolute inset-0 size-full"
-        viewBox="0 0 200 300"
-        preserveAspectRatio={isAvatar ? "xMidYMid slice" : "xMidYMax slice"}
-      >
-        <defs>
-          <filter id={`${uid}-paint`} x="-10%" y="-10%" width="120%" height="120%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed={variant + 3} result="n" />
-            <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" />
-            <feGaussianBlur stdDeviation="0.7" />
-          </filter>
-          <filter id={`${uid}-soft`} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="9" />
-          </filter>
-          <linearGradient id={`${uid}-base`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#1a2240" />
-            <stop offset="0.55" stopColor="#0e1428" />
-            <stop offset="1" stopColor="#070a14" />
-          </linearGradient>
-          <linearGradient id={`${uid}-key`} x1="1" y1="0" x2="0" y2="0">
-            <stop offset="0" stopColor={light.key} stopOpacity={light.keyOpacity} />
-            <stop offset="0.32" stopColor={light.key} stopOpacity={light.keyOpacity * 0.45} />
-            <stop offset="0.55" stopColor={light.key} stopOpacity="0" />
-          </linearGradient>
-          <linearGradient id={`${uid}-shade`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0.45" stopColor="#000" stopOpacity="0" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.65" />
-          </linearGradient>
-          <clipPath id={`${uid}-clip`}>{shapes({})}</clipPath>
-        </defs>
-
-        {/* Мазки кистью */}
-        <g filter={`url(#${uid}-soft)`} opacity="0.5">
-          <path d="M-10 70 C40 40 120 30 210 60" stroke={accent} strokeOpacity="0.35" strokeWidth="26" fill="none" />
-          <path d="M150 300 C160 230 190 200 220 190" stroke={light.key} strokeOpacity="0.28" strokeWidth="30" fill="none" />
-          <path d="M-20 260 C10 220 30 210 50 160" stroke={light.rim} strokeOpacity="0.22" strokeWidth="22" fill="none" />
-        </g>
-
-        {/* Ореол контрового света за силуэтом */}
-        <g filter={`url(#${uid}-soft)`} opacity="0.3">
-          {shapes({ fill: light.rim, transform: "translate(-4 0)" })}
-        </g>
-
-        {/* Силуэт: контровой холодный край слева, тёплый ключ справа */}
-        <g filter={`url(#${uid}-paint)`}>
-          <g clipPath={`url(#${uid}-clip)`}>
-            <rect width="200" height="300" fill={light.rim} opacity={light.rimOpacity} />
-            {shapes({ fill: `url(#${uid}-base)`, transform: "translate(2.6 0.5)" })}
-            <rect width="200" height="300" fill={`url(#${uid}-key)`} style={{ mixBlendMode: "screen" }} />
-            <ellipse
-              cx="121"
-              cy="118"
-              rx="15"
-              ry="30"
-              fill={light.key}
-              opacity={light.keyOpacity * 0.45}
-              transform={headTransform}
-              filter={`url(#${uid}-soft)`}
-            />
-            <rect width="200" height="300" fill={`url(#${uid}-shade)`} />
-          </g>
-        </g>
-      </svg>
-
-      {/* Инициалы: водяной знак на высоких рамках, главный знак на аватаре */}
-      {isAvatar ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-ink-deep/35">
-          <span className="font-display text-[34cqw] font-bold leading-none tracking-tight text-steam/90 [text-shadow:0_0_12px_rgb(0_0_0/0.6)]">
-            {initials}
+    <div className={cn("aspect-[3/4] w-full paper toner [container-type:inline-size]", className)}>
+      <div className="flex h-full flex-col" style={{ "--u": "calc(100cqw / 360)", padding: u(20) } as CSSProperties}>
+        <div className="flex items-baseline justify-between">
+          <span className="font-serif font-bold tracking-[0.04em] uppercase" style={{ fontSize: u(13), lineHeight: u(18) }}>
+            Учётная карточка
+          </span>
+          <span className="font-mono text-print-2" style={{ fontSize: u(11), lineHeight: u(16) }}>
+            №&nbsp;{no}
           </span>
         </div>
-      ) : (
-        <span
-          className="absolute top-[4cqw] left-[5cqw] font-display text-[22cqw] font-black leading-none tracking-tight opacity-20"
-          style={{ color: accent }}
-        >
-          {initials}
-        </span>
-      )}
+        <span className="block bg-print-3" style={{ height: 1, marginTop: u(8) }} />
 
-      {/* Зерно и виньетка */}
-      <div className="absolute inset-0 bg-grain opacity-[0.09] mix-blend-overlay" />
-      <div className="absolute inset-0 bg-[radial-gradient(110%_80%_at_55%_40%,transparent_50%,rgb(2_4_10/0.7)_100%)]" />
+        <div className="grid" style={{ gridTemplateColumns: `${u(120)} 1fr`, columnGap: u(16), marginTop: u(16) }}>
+          <div
+            className="flex items-center justify-center border border-print-3 text-center font-serif text-print-2"
+            style={{ height: u(160), fontSize: u(11), lineHeight: u(14), padding: u(8) }}
+          >
+            Место для фотографии 3×4
+          </div>
+          <div className="flex flex-col" style={{ gap: u(10), paddingTop: u(2) }}>
+            <Field label="Фамилия" mono value={name?.surname.toUpperCase()} />
+            <Field label="Имя, отчество" mono value={name?.given} />
+            <Field label="Год рождения" mono value={year} />
+          </div>
+        </div>
+
+        <div style={{ marginTop: u(14) }}>
+          <Field label="Должность, место работы" value={character?.role} />
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col" style={{ marginTop: u(12) }}>
+          <span className="block font-serif text-print-2 italic" style={{ fontSize: u(11), lineHeight: u(14) }}>
+            Примечание
+          </span>
+          {/* Рука предшественницы поверх линеек бланка */}
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            <div aria-hidden className="absolute inset-0 flex flex-col">
+              {Array.from({ length: 6 }, (_, i) => (
+                <span key={i} className="block shrink-0 border-b border-print-3" style={{ height: u(28) }} />
+              ))}
+            </div>
+            <p
+              className="relative font-script text-pencil"
+              style={{ fontSize: u(20), lineHeight: u(28), paddingTop: u(1) }}
+            >
+              {character?.dossierNote ?? "\u00A0"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2" style={{ columnGap: u(16), marginTop: u(10) }}>
+          <Field label="Заполнил" />
+          <Field label="Дата заполнения" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, mono = false }: { label: string; value?: string; mono?: boolean }) {
+  return (
+    <div>
+      <div
+        className={cn("border-b border-print-3", mono ? "font-mono" : "font-serif")}
+        style={{ fontSize: u(13), lineHeight: u(22), minHeight: u(22) }}
+      >
+        {value || " "}
+      </div>
+      <span className="block font-serif text-print-2 italic" style={{ fontSize: u(11), lineHeight: u(14) }}>
+        {label}
+      </span>
     </div>
   );
 }

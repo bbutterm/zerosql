@@ -51,8 +51,8 @@ export function TopBar({
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-1 z-50 min-w-[280px] bg-card border border-border rounded-md shadow-lg py-1">
-            <div className="px-3 py-1.5 text-xs font-mono text-muted-foreground uppercase tracking-wider border-b border-border">
+          <div className="absolute top-full left-0 mt-1 z-50 min-w-[280px] bg-card border border-border rounded-sm shadow-lg py-1">
+            <div className="px-3 py-1.5 text-xs font-mono text-muted-foreground uppercase border-b border-border">
               Навигация по делам
             </div>
             {missions.map((m, idx) => {
@@ -80,7 +80,7 @@ export function TopBar({
                 >
                   <span className="flex-shrink-0 w-5 text-center font-mono text-xs">
                     {isCompleted ? (
-                      <span className="text-noir-green">✓</span>
+                      <span className="text-cold">✓</span>
                     ) : isCurrent ? (
                       <span className="text-primary">●</span>
                     ) : isAccessible ? (
@@ -107,8 +107,8 @@ export function TopBar({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <span
-            className={`inline-block w-2 h-2 rounded-full ${
-              dbReady ? "bg-noir-green" : "bg-noir-red animate-pulse"
+            className={`inline-block w-2 h-2 ${
+              dbReady ? "bg-cold" : "bg-alarm"
             }`}
           />
           <span className="text-xs font-mono text-muted-foreground">

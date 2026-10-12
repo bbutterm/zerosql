@@ -35,7 +35,7 @@ export function CasePanel({
               className="flex items-center gap-2 w-full text-left mb-1"
             >
               <span className="text-muted-foreground text-xs">{briefingOpen ? "▾" : "▸"}</span>
-              <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
+              <span className="text-xs font-mono text-muted-foreground uppercase">
                 Брифинг
               </span>
             </button>
@@ -51,7 +51,7 @@ export function CasePanel({
           {/* ЦЕЛИ */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
+              <span className="text-xs font-mono text-muted-foreground uppercase">
                 Цели
               </span>
               <span className="text-xs font-mono text-muted-foreground">
@@ -79,7 +79,7 @@ export function CasePanel({
                       key={obj.id}
                       className={`px-2.5 py-2 rounded text-sm transition-colors ${
                         done
-                          ? "bg-noir-green/10 border border-noir-green/20"
+                          ? "bg-cold/10 border border-cold/20"
                           : active
                           ? "bg-primary/5 border border-primary/20"
                           : "bg-muted/20 border border-border/50"
@@ -88,7 +88,7 @@ export function CasePanel({
                       <div className="flex items-start gap-2">
                         <span className="mt-0.5 flex-shrink-0 text-sm">
                           {done ? (
-                            <span className="text-noir-green">✓</span>
+                            <span className="text-cold">✓</span>
                           ) : locked ? (
                             <span className="text-muted-foreground/40">🔒</span>
                           ) : (
@@ -108,7 +108,7 @@ export function CasePanel({
                         </span>
                       </div>
                       {feedback && (
-                        <p className="mt-1 ml-6 text-xs text-noir-green italic">
+                        <p className="mt-1 ml-6 text-xs text-cold italic">
                           {feedback.message}
                         </p>
                       )}
@@ -122,7 +122,7 @@ export function CasePanel({
 
           {/* УЛИКИ */}
           <div>
-            <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase block mb-2">
+            <span className="text-xs font-mono text-muted-foreground uppercase block mb-2">
               Улики
             </span>
             <div className="space-y-1.5">
@@ -145,7 +145,7 @@ export function CasePanel({
                       {done ? (
                         <>
                           <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-noir-green">✓</span>
+                            <span className="text-cold">✓</span>
                             <span className="text-primary font-bold font-mono">
                               {obj.description}
                             </span>
@@ -173,7 +173,7 @@ export function CasePanel({
           {/* ПОДСКАЗКИ */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
+              <span className="text-xs font-mono text-muted-foreground uppercase">
                 Подсказки
               </span>
               {hintsRevealed < mission.hints.length && (
@@ -195,7 +195,7 @@ export function CasePanel({
                 </p>
               ))}
               {hintsRevealed === 0 && (
-                <p className="text-xs text-noir-dim italic">
+                <p className="text-xs text-ink-3 italic">
                   Подсказки скрыты. Попробуйте сами.
                 </p>
               )}

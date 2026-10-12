@@ -1,134 +1,131 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pin } from "lucide-react";
-import type { EvidenceCardData, EvidenceKind } from "@/types/ui";
-import { EVIDENCE_KINDS } from "@/types/ui";
+import type { EvidenceCardData } from "@/types/ui";
 import { cn } from "@/lib/utils";
-import { plural, pluralize } from "@/lib/plural";
-import { SectionLabel } from "@/components/kit/atmosphere";
-import { EVIDENCE_KIND_META, EvidenceCard } from "./evidence-card";
+import { TabBar, screenButtonClass } from "@/components/kit/screen";
+import { EVIDENCE_KIND_META } from "./evidence-card";
 
 export interface EvidenceBoardProps {
   cards: EvidenceCardData[];
-  /** Клик по карточке (например, открыть подробности) */
+  /** Клик по записи: открыть предмет на стене */
   onCardClick?: (id: string) => void;
   selectedId?: string | null;
-  /** Фильтр по типам улик (по умолчанию включён, если типов больше одного) */
+  /** Текстовые вкладки «Все | Данные | Люди | Документы» */
   filterable?: boolean;
-  /** Скрыть заголовок (если доска уже внутри вкладки «Улики») */
+  /** Скрыть вкладки-фильтры и подпись */
   hideHeader?: boolean;
   emptyText?: string;
+  /** Ссылка «Стена» внизу реестра */
+  onOpenWall?: () => void;
   className?: string;
 }
 
+type Filter = "all" | "data" | "people" | "docs";
+
+const FILTERS: Array<{ id: Filter; label: string }> = [
+  { id: "all", label: "Все" },
+  { id: "data", label: "Данные" },
+  { id: "people", label: "Люди" },
+  { id: "docs", label: "Документы" },
+];
+
+/** Минуты от начала ночи (18:00): 22:00 < 23:59 < 00:10 < 06:00 */
+export function nightMinutes(at?: string): number | null {
+  const m = at?.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return (Number(m[1]) * 60 + Number(m[2]) - 18 * 60 + 1440) % 1440;
+}
+
+/**
+ * Материалы (раздел 7.11): реестр улик — экранная таблица, строка 44 px в две линии.
+ * Сортировка по времени ночи. Новая запись подсвечена натрием и гаснет.
+ * Цветов и значков по видам нет: вид — код PT Mono (БД, ФОТО, ПОКАЗ…).
+ */
 export function EvidenceBoard({
   cards,
   onCardClick,
   selectedId,
   filterable = true,
   hideHeader = false,
-  emptyText = "Улик пока нет. Закрепляйте важные строки результатов булавкой — они появятся здесь.",
+  emptyText = "Материалов нет. Строку результата можно приобщить к делу.",
+  onOpenWall,
   className,
 }: EvidenceBoardProps) {
-  const [filter, setFilter] = useState<EvidenceKind | "all">("all");
+  const [filter, setFilter] = useState<Filter>("all");
 
+  const sorted = useMemo(
+    () =>
+      cards
+        .map((c, i) => ({ c, i, t: nightMinutes(c.at) }))
+        .sort((a, b) => (a.t ?? 9999) - (b.t ?? 9999) || a.i - b.i)
+        .map((x) => x.c),
+    [cards]
+  );
   const counts = useMemo(() => {
-    const map = new Map<EvidenceKind, number>();
-    for (const c of cards) map.set(c.kind, (map.get(c.kind) ?? 0) + 1);
-    return map;
+    const m: Record<Filter, number> = { all: cards.length, data: 0, people: 0, docs: 0 };
+    for (const c of cards) m[EVIDENCE_KIND_META[c.kind].group] += 1;
+    return m;
   }, [cards]);
 
-  const kinds = EVIDENCE_KINDS.filter((k) => counts.has(k));
-  const active = filter !== "all" && counts.has(filter) ? filter : "all";
-  const visible = active === "all" ? cards : cards.filter((c) => c.kind === active);
-  const newCount = cards.filter((c) => c.isNew).length;
+  const visible = filter === "all" ? sorted : sorted.filter((c) => EVIDENCE_KIND_META[c.kind].group === filter);
 
   return (
-    <section className={cn("flex min-w-0 flex-col gap-3", className)} aria-label="Доска улик">
-      {!hideHeader && (
-        <header className="flex items-baseline justify-between gap-3">
-          <SectionLabel icon={<Pin className="size-3 text-signal" />}>Улики</SectionLabel>
-          <span className="text-xs text-frost-dim">
-            {pluralize(cards.length, ["улика", "улики", "улик"])}
-            {newCount > 0 && (
-              <span className="ml-1.5 text-signal">
-                +{newCount} {plural(newCount, ["новая", "новые", "новых"])}
-              </span>
-            )}
-          </span>
-        </header>
-      )}
-
-      {filterable && kinds.length > 1 && (
-        <div className="flex flex-wrap gap-1.5" role="toolbar" aria-label="Фильтр по типу улик">
-          <FilterChip active={active === "all"} onClick={() => setFilter("all")} count={cards.length}>
-            Все
-          </FilterChip>
-          {kinds.map((k) => (
-            <FilterChip
-              key={k}
-              active={active === k}
-              onClick={() => setFilter(k)}
-              count={counts.get(k) ?? 0}
-              color={EVIDENCE_KIND_META[k].color}
-            >
-              {EVIDENCE_KIND_META[k].plural}
-            </FilterChip>
-          ))}
-        </div>
+    <section aria-label="Материалы" className={cn("flex min-w-0 flex-col", className)}>
+      {!hideHeader && filterable && cards.length > 0 && (
+        <TabBar
+          items={FILTERS.map((f) => ({ id: f.id, label: f.label, count: counts[f.id] }))}
+          value={filter}
+          onChange={setFilter}
+          label="Вид материалов"
+          size="sm"
+          superscript
+          className="h-8 shrink-0 border-b border-line px-3"
+        />
       )}
 
       {cards.length === 0 ? (
-        <div className="relative overflow-hidden rounded-lg border border-dashed border-frost-line-strong px-5 py-10 text-center">
-          <Pin className="mx-auto mb-3 size-5 text-frost-faint" aria-hidden />
-          <p className="mx-auto max-w-xs text-sm leading-relaxed text-frost-dim">{emptyText}</p>
-        </div>
+        <p className="p-3 ui-13 text-ink-3">{emptyText}</p>
+      ) : visible.length === 0 ? (
+        <p className="p-3 ui-13 text-ink-3">Записей нет.</p>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,232px),1fr))] gap-3">
-          {visible.map((card, i) => (
-            <EvidenceCard
-              key={card.id}
-              card={card}
-              index={i}
-              selected={selectedId === card.id}
-              onSelect={onCardClick}
-            />
-          ))}
+        <ol aria-label="Реестр материалов">
+          {visible.map((card) => {
+            const meta = EVIDENCE_KIND_META[card.kind];
+            const selected = selectedId === card.id;
+            return (
+              <li key={card.id}>
+                <button
+                  type="button"
+                  onClick={() => onCardClick?.(card.id)}
+                  aria-current={selected || undefined}
+                  className={cn(
+                    "grid h-11 w-full grid-cols-[40px_48px_minmax(0,1fr)] grid-rows-[20px_16px] content-center items-baseline border-b border-line px-3 text-left",
+                    selected ? "bg-scr-select" : "hover:bg-scr-raise",
+                    card.isNew && !selected && "anim-wash"
+                  )}
+                >
+                  <span className="mono-12 text-ink-2">{card.at ?? "—"}</span>
+                  <span className="mono-11 text-ink-3">{meta.code}</span>
+                  <span className="truncate ui-14 text-ink-1">{card.title}</span>
+                  <span className="col-start-3 truncate ui-12 text-ink-3">
+                    {card.source}
+                    {card.queryNo !== undefined && `, запрос № ${card.queryNo}`}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+
+      {onOpenWall && (
+        <div className="px-3 py-2">
+          <button type="button" onClick={onOpenWall} className={screenButtonClass("text")}>
+            Стена
+          </button>
         </div>
       )}
     </section>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  count,
-  color,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  count: number;
-  color?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-xs transition-colors",
-        active
-          ? "border-frost-line-strong bg-ink-high text-steam"
-          : "border-frost-line text-frost-dim hover:border-frost-line-strong hover:text-frost"
-      )}
-    >
-      {color && <span aria-hidden className="size-1.5 rounded-full" style={{ background: color }} />}
-      {children}
-      <span className="font-mono text-[10px] tabular-nums text-frost-dim">{count}</span>
-    </button>
   );
 }

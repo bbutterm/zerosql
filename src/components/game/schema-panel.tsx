@@ -31,7 +31,7 @@ export function SchemaPanel({ schema, foreignKeys, unlockedTables }: SchemaPanel
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       <div className="px-3 py-2 border-b border-border flex-shrink-0">
-        <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase">
+        <span className="text-xs font-mono text-muted-foreground uppercase">
           Схема БД
         </span>
       </div>
@@ -86,7 +86,7 @@ export function SchemaPanel({ schema, foreignKeys, unlockedTables }: SchemaPanel
                           {col.type}
                         </span>
                         {!col.notnull && !col.pk && (
-                          <span className="text-noir-amber/50 text-[10px] italic">NULL?</span>
+                          <span className="text-sodium/50 text-[10px] italic">NULL?</span>
                         )}
                       </div>
                     ))}
@@ -100,7 +100,7 @@ export function SchemaPanel({ schema, foreignKeys, unlockedTables }: SchemaPanel
         {/* ER Relations */}
         {relevantFks.length > 0 && (
           <div className="px-3 pt-3 pb-2 border-t border-border mt-2">
-            <span className="text-xs font-mono text-muted-foreground tracking-wider uppercase block mb-2">
+            <span className="text-xs font-mono text-muted-foreground uppercase block mb-2">
               ER-связи
             </span>
             <div className="space-y-1.5">

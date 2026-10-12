@@ -95,7 +95,7 @@ export default function GamePage() {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent animate-spin mx-auto" />
           <div className="space-y-1">
             <p className="text-foreground font-mono text-sm">
               ЗАГРУЗКА БАЗЫ ДАННЫХ...
@@ -116,8 +116,8 @@ export default function GamePage() {
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-8">
           <div className="max-w-lg bg-card border border-primary/30 rounded-lg p-8 space-y-6">
             <div className="flex items-center gap-2">
-              <span className="inline-block w-3 h-3 rounded-full bg-noir-green" />
-              <h2 className="text-primary font-bold text-lg uppercase tracking-wider">
+              <span className="inline-block w-3 h-3 bg-cold" />
+              <h2 className="text-primary font-bold text-lg uppercase">
                 Дело закрыто
               </h2>
             </div>

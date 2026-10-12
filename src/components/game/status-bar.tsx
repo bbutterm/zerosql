@@ -16,8 +16,8 @@ export function StatusBar({
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-1.5">
           <span
-            className={`inline-block w-2 h-2 rounded-full ${
-              dbReady ? "bg-noir-green" : "bg-noir-red animate-pulse"
+            className={`inline-block w-2 h-2 ${
+              dbReady ? "bg-cold" : "bg-alarm"
             }`}
           />
           <span className="text-muted-foreground">

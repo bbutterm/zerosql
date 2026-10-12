@@ -5,14 +5,14 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import { cn } from "@/lib/utils";
 
 /**
- * Тёмная подсказка в стиле «иней». Триггер — переданный элемент
- * (через render), чтобы не плодить вложенные кнопки.
+ * Подсказка «Зеркала» (раздел 7.17): --scr-chrome, рамка --line-strong, Golos 12,
+ * задержка 500 мс, появляется без анимации. Триггер — переданный элемент (через render).
  */
 export function HintTooltip({
   content,
   children,
   side = "top",
-  delay = 250,
+  delay = 500,
   className,
 }: {
   content: ReactNode;
@@ -26,11 +26,10 @@ export function HintTooltip({
     <Tooltip.Root>
       <Tooltip.Trigger delay={delay} render={children} />
       <Tooltip.Portal>
-        <Tooltip.Positioner side={side} sideOffset={6} className="z-[70]">
+        <Tooltip.Positioner side={side} sideOffset={4} className="z-[70]">
           <Tooltip.Popup
             className={cn(
-              "max-w-64 origin-(--transform-origin) rounded-md border border-frost-line-strong bg-ink-high px-2.5 py-1.5 text-xs leading-snug text-steam shadow-[0_12px_32px_-12px_rgb(0_0_0/0.8)]",
-              "transition-[opacity,transform] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
+              "max-w-72 border border-line-strong bg-scr-chrome px-2 py-1 ui-12 text-ink-1",
               className
             )}
           >

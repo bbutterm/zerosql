@@ -6,7 +6,7 @@ export default function HomePage() {
       <div className="max-w-2xl text-center space-y-8">
         {/* Logo */}
         <div className="space-y-2">
-          <h1 className="text-5xl font-bold tracking-tighter">
+          <h1 className="text-5xl font-bold">
             <span className="text-primary">Zero</span>
             <span className="text-foreground">SQL</span>
           </h1>
@@ -39,7 +39,7 @@ export default function HomePage() {
         {/* Start button */}
         <Link
           href="/game"
-          className="inline-block px-8 py-3 bg-primary text-primary-foreground font-mono font-bold text-sm uppercase tracking-wider rounded hover:opacity-90 transition-opacity"
+          className="inline-block px-8 py-3 bg-primary text-primary-foreground font-mono font-bold text-sm uppercase rounded hover:opacity-90 transition-opacity"
         >
           Начать расследование
         </Link>

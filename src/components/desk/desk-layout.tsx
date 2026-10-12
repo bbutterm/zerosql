@@ -1,32 +1,34 @@
 "use client";
 
-import { useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import {
-  BookOpen,
-  Clock3,
-  Database,
-  Menu,
-  Pin,
-  ScrollText,
-  ShieldHalf,
-  Target,
-  TerminalSquare,
-  type LucideIcon,
-} from "lucide-react";
-import type { DeskPanelId } from "@/types/ui";
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
+import type { DeskCenterView, DeskPanelId } from "@/types/ui";
 import { cn } from "@/lib/utils";
+import { FieldDivider, PanelHeader, TabBar, screenButtonClass } from "@/components/kit/screen";
+import { MirrorMenuBar, MirrorMenuButton, type DeskMenuAction, type DeskMenuGroup } from "./menu-bar";
+import { StatusBar, type StatusMessage } from "./status-bar";
+
+export type { DeskMenuAction, DeskMenuGroup } from "./menu-bar";
+export type { StatusMessage } from "./status-bar";
 
 export interface DeskLayoutProps {
   /** «Тёплая вода» */
   caseTitle: string;
-  /** «Дело № 01» */
+  /** «Дело 01» */
   caseCode?: string;
-  /** Внутриигровые дата и время: «пн, 14 декабря 2026 · 02:14» */
+  /** Игровые дата и время для строки состояния: «14.12.2026 02:44» */
   dateTime?: string;
-  /** Звание игрока: «стажёр-аналитик» */
+  /** Устарело: роль игрока теперь видна как логин в строке состояния */
   rank?: string;
+  /** Открыто меню (мобильный «Зеркало») */
   onMenu?: () => void;
-  /** Дополнительные элементы в шапке справа */
+  /** Дополнительные элементы в строке окна справа */
   topBarExtra?: ReactNode;
   /** Левая колонка — обычно SchemaPanel */
   schema: ReactNode;
@@ -34,37 +36,59 @@ export interface DeskLayoutProps {
   terminal: ReactNode;
   /** Центр снизу — ResultsGrid */
   results: ReactNode;
-  /** Вкладки правой колонки */
+  /** Содержимое вкладок. protocol показывается в центре (бланк на столе), остальное — справа */
   panels: Partial<Record<DeskPanelId, ReactNode>>;
-  /** Счётчики на вкладках: новые улики, открытые задачи */
+  /** Счётчики на вкладках: «Материалы 7» */
   badges?: Partial<Record<DeskPanelId, number | string>>;
-  /** Активная вкладка (управляемый режим) */
+  /** Вкладки, чей счётчик горит натрием (есть непросмотренное) */
+  badgeAlerts?: DeskPanelId[];
+  /** Активная вкладка правой колонки (управляемый режим) */
   panel?: DeskPanelId;
   onPanelChange?: (panel: DeskPanelId) => void;
   defaultPanel?: DeskPanelId;
-  /** Доля высоты терминала в центре (0.2–0.75) */
+  /** Вид центральной зоны (управляемый режим): запрос, заключение, стена */
+  centerView?: DeskCenterView;
+  onCenterViewChange?: (view: DeskCenterView) => void;
+  defaultCenterView?: DeskCenterView;
+  /** Центральный вид «Стена» — обычно EvidenceWall */
+  wall?: ReactNode;
+  /** Доля высоты запроса в центре (0.2–0.75); по умолчанию — 8 строк редактора */
   defaultSplit?: number;
-  /** Слой поверх стола: диалог, заставка */
+  /** Строка состояния */
+  login?: string;
+  accessMode?: string;
+  sessions?: number;
+  sessionsAlarm?: boolean;
+  statusMessage?: StatusMessage | null;
+  /** Строка меню: свои пункты и обработчик команд */
+  menus?: DeskMenuGroup[];
+  onMenuAction?: (action: DeskMenuAction) => void;
+  /** Слой поверх стола: диалог, блокировка */
   overlay?: ReactNode;
   className?: string;
 }
 
-const PANELS: Array<{ id: DeskPanelId; label: string; short: string; icon: LucideIcon }> = [
-  { id: "tasks", label: "Задачи", short: "Задачи", icon: Target },
-  { id: "evidence", label: "Улики", short: "Улики", icon: Pin },
-  { id: "protocol", label: "Протокол", short: "Протокол", icon: ScrollText },
-  { id: "reference", label: "Справочник", short: "Справка", icon: BookOpen },
+const SIDE_PANELS: Array<{ id: Exclude<DeskPanelId, "protocol">; label: string }> = [
+  { id: "tasks", label: "Задания" },
+  { id: "evidence", label: "Материалы" },
+  { id: "reference", label: "Справка" },
 ];
 
-type MobileView = "query" | "schema" | DeskPanelId;
+type MobileView = "schema" | "query" | "case" | "protocol";
 
-const clampSplit = (v: number) => Math.min(0.75, Math.max(0.2, v));
+/** Заголовок 28 + 8 строк редактора по 22 + отступы 10/10 */
+const DEFAULT_TERMINAL = 224;
+const MIN_TERMINAL = 28 + 22 * 3 + 20;
 
+/**
+ * Стол (раздел 6.2): строка окна, три колонки (схема 248 | центр | дело 384), строка состояния.
+ * Центр показывает один вид из трёх: запрос, бланк заключения, стену. Переключение мгновенное.
+ * Ниже 1024 px — одна колонка и нижние вкладки (раздел 6.4).
+ */
 export function DeskLayout({
   caseTitle,
   caseCode,
   dateTime,
-  rank,
   onMenu,
   topBarExtra,
   schema,
@@ -72,31 +96,82 @@ export function DeskLayout({
   results,
   panels,
   badges = {},
+  badgeAlerts = [],
   panel,
   onPanelChange,
   defaultPanel = "tasks",
-  defaultSplit = 0.4,
+  centerView,
+  onCenterViewChange,
+  defaultCenterView = "query",
+  wall,
+  defaultSplit,
+  login,
+  accessMode,
+  sessions,
+  sessionsAlarm,
+  statusMessage,
+  menus,
+  onMenuAction,
   overlay,
   className,
 }: DeskLayoutProps) {
-  const [innerPanel, setInnerPanel] = useState<DeskPanelId>(defaultPanel);
-  const activePanel = panel ?? innerPanel;
+  const [innerPanel, setInnerPanel] = useState<DeskPanelId>(defaultPanel === "protocol" ? "tasks" : defaultPanel);
+  const sidePanel = panel && panel !== "protocol" ? panel : innerPanel;
+  const [innerCenter, setInnerCenter] = useState<DeskCenterView>(
+    defaultPanel === "protocol" ? "protocol" : defaultCenterView
+  );
+  const center = centerView ?? (panel === "protocol" ? "protocol" : innerCenter);
   const [mobileView, setMobileView] = useState<MobileView>("query");
-  const [split, setSplit] = useState(clampSplit(defaultSplit));
+  const [schemaOpen, setSchemaOpen] = useState(false);
+
+  const [terminalPx, setTerminalPx] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
   const centerRef = useRef<HTMLDivElement>(null);
 
+  const hasProtocol = panels.protocol !== undefined;
+
   const selectPanel = (id: DeskPanelId) => {
+    if (id === "protocol") {
+      setCenter("protocol");
+      return;
+    }
     setInnerPanel(id);
     onPanelChange?.(id);
   };
-
-  const selectMobile = (view: MobileView) => {
-    setMobileView(view);
-    if (view !== "query" && view !== "schema") selectPanel(view);
+  const setCenter = (view: DeskCenterView) => {
+    setInnerCenter(view);
+    onCenterViewChange?.(view);
+    if (view === "protocol") onPanelChange?.("protocol");
   };
 
-  /* ---------- Разделитель терминал / результат ---------- */
+  const handleMenu = (action: DeskMenuAction) => {
+    if (action === "tasks" || action === "evidence" || action === "reference") {
+      selectPanel(action);
+      setMobileView("case");
+    } else if (action === "protocol") {
+      setCenter("protocol");
+      setMobileView("protocol");
+    } else if (action === "wall") {
+      setCenter("wall");
+      setMobileView("query");
+    } else if (action === "run" || action === "clear" || action === "history") {
+      setCenter("query");
+      setMobileView("query");
+    }
+    onMenuAction?.(action);
+  };
+
+  /* ---------- Граница запрос / результат: 1 px, зона захвата 7 px, стрелки — по строке ---------- */
+
+  const clampTerminal = (px: number) => {
+    const total = centerRef.current?.getBoundingClientRect().height ?? 800;
+    return Math.round(Math.min(total - 28 - 24 - 72, Math.max(MIN_TERMINAL, px)));
+  };
+  const currentTerminal = () =>
+    terminalPx ??
+    (defaultSplit !== undefined && centerRef.current
+      ? centerRef.current.getBoundingClientRect().height * defaultSplit
+      : DEFAULT_TERMINAL);
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -105,246 +180,302 @@ export function DeskLayout({
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (!dragging || !centerRef.current) return;
     const rect = centerRef.current.getBoundingClientRect();
-    setSplit(clampSplit((e.clientY - rect.top) / rect.height));
+    setTerminalPx(clampTerminal(e.clientY - rect.top));
   };
   const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
     e.currentTarget.releasePointerCapture(e.pointerId);
     setDragging(false);
   };
   const onSplitKey = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "ArrowUp") setSplit((s) => clampSplit(s - 0.05));
-    else if (e.key === "ArrowDown") setSplit((s) => clampSplit(s + 0.05));
-    else if (e.key === "Home") setSplit(0.2);
-    else if (e.key === "End") setSplit(0.75);
+    const cur = currentTerminal();
+    if (e.key === "ArrowUp") setTerminalPx(clampTerminal(cur - 22));
+    else if (e.key === "ArrowDown") setTerminalPx(clampTerminal(cur + 22));
+    else if (e.key === "Home") setTerminalPx(clampTerminal(MIN_TERMINAL));
+    else if (e.key === "End") setTerminalPx(clampTerminal(10_000));
     else return;
     e.preventDefault();
   };
 
-  const sidePanelActive = mobileView !== "query" && mobileView !== "schema";
+  const terminalBasis = {
+    "--term":
+      terminalPx !== null
+        ? `${terminalPx}px`
+        : defaultSplit !== undefined
+          ? `${Math.min(0.75, Math.max(0.2, defaultSplit)) * 100}%`
+          : `${DEFAULT_TERMINAL}px`,
+  } as CSSProperties;
+
+  const caseLabel = caseCode ? `${caseCode}. ${caseTitle}` : caseTitle;
+  const time = dateTime?.match(/\d{1,2}:\d{2}/)?.[0];
+
+  /* ---------- Центр: один вид из трёх ---------- */
+
+  const queryView = (
+    <div
+      ref={centerRef}
+      className={cn("flex h-full min-h-0 min-w-0 flex-col", dragging && "cursor-row-resize select-none")}
+      style={terminalBasis}
+    >
+      <div className="flex min-h-0 shrink-0 flex-col max-lg:h-[calc(40%+44px)] max-lg:min-h-[204px] lg:h-(--term)">
+        {terminal}
+      </div>
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label="Граница запроса и результата"
+        aria-valuemin={MIN_TERMINAL}
+        aria-valuenow={Math.round(terminalPx ?? DEFAULT_TERMINAL)}
+        tabIndex={0}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onKeyDown={onSplitKey}
+        className="relative z-10 hidden h-px shrink-0 cursor-row-resize touch-none bg-line outline-none before:absolute before:inset-x-0 before:-top-[3px] before:h-[7px] focus-visible:bg-ink-1 lg:block"
+      />
+      <div className="flex min-h-0 flex-1 flex-col max-lg:border-t max-lg:border-line">{results}</div>
+    </div>
+  );
+
+  const backToQuery = (
+    <button type="button" onClick={() => setCenter("query")} className={screenButtonClass("text")}>
+      Вернуться к запросу
+    </button>
+  );
+
+  const protocolView = (
+    <div
+      className="flex h-full min-h-0 flex-col bg-room"
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && !e.defaultPrevented) setCenter("query");
+      }}
+    >
+      <PanelHeader title="Заключение" className="bg-scr-base max-lg:hidden">
+        {backToQuery}
+      </PanelHeader>
+      <div className="min-h-0 flex-1 overflow-y-auto">{panels.protocol}</div>
+    </div>
+  );
+
+  const wallView = (
+    <div
+      className="flex h-full min-h-0 flex-col"
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && !e.defaultPrevented) setCenter("query");
+      }}
+    >
+      <PanelHeader title="Стена" className="bg-scr-base">
+        {backToQuery}
+      </PanelHeader>
+      <div className="relative min-h-0 flex-1">{wall}</div>
+    </div>
+  );
+
+  const centerContent =
+    center === "protocol" && hasProtocol ? protocolView : center === "wall" && wall ? wallView : queryView;
+
+  /* ---------- Правая колонка ---------- */
+
+  const sideTabs = SIDE_PANELS.map((p) => ({
+    id: p.id,
+    label: p.label,
+    count: badges[p.id],
+    alert: badgeAlerts.includes(p.id),
+    controls: `desk-panel-${p.id}`,
+    // Цель полёта приобщённой строки
+    attrs: p.id === "evidence" ? { "data-pin-target": "" } : undefined,
+  }));
+
+  const sidePanels = SIDE_PANELS.map((p) => (
+    <div
+      key={p.id}
+      role="tabpanel"
+      id={`desk-panel-${p.id}`}
+      aria-labelledby={`desk-tab-${p.id}`}
+      hidden={sidePanel !== p.id}
+      className="min-h-0 flex-1 overflow-y-auto"
+    >
+      {panels[p.id] ?? <p className="p-3 ui-13 text-ink-3">Записей нет.</p>}
+    </div>
+  ));
+
+  const wallLink = wall && sidePanel === "evidence" && (
+    <div className="flex h-8 shrink-0 items-center border-t border-line px-3 max-lg:h-11">
+      <button
+        type="button"
+        onClick={() => {
+          setCenter("wall");
+          setMobileView("query");
+        }}
+        className={screenButtonClass("text")}
+      >
+        Стена
+      </button>
+    </div>
+  );
 
   return (
     <div
+      data-desk
       className={cn(
-        "relative isolate flex h-dvh min-h-0 w-full min-w-0 flex-col overflow-hidden bg-ink text-foreground",
+        "relative isolate flex h-dvh min-h-0 w-full min-w-0 flex-col overflow-hidden bg-room text-ink-1",
         className
       )}
     >
-      {/* Глубина: холодное сияние сверху слева, тёплый натрий справа снизу */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(60% 40% at 0% 0%, rgb(46 230 197 / 0.05), transparent 70%), radial-gradient(50% 40% at 100% 100%, rgb(255 181 71 / 0.05), transparent 70%)",
-        }}
+      {/* ---------- Строка окна ---------- */}
+      <MirrorMenuBar
+        menus={menus}
+        onAction={handleMenu}
+        className="max-lg:hidden"
+        right={
+          <>
+            {topBarExtra}
+            <span className="truncate ui-13 text-ink-2">{caseLabel}</span>
+          </>
+        }
       />
-
-      {/* ---------- Шапка ---------- */}
-      <header className="relative z-20 flex h-12 shrink-0 items-center gap-3 border-b border-frost-line bg-ink-deep/85 px-3 backdrop-blur sm:px-4">
-        <div className="flex shrink-0 items-center gap-2" aria-label="ZeroSQL">
-          <LogoMark />
-          <span className="hidden font-display text-[13px] font-bold tracking-tight text-steam md:inline">
-            Zero<span className="text-aurora">SQL</span>
-          </span>
-        </div>
-        <span aria-hidden className="h-5 w-px shrink-0 bg-frost-line-strong" />
-        <div className="flex min-w-0 flex-1 flex-col justify-center sm:flex-row sm:items-baseline sm:gap-2.5">
-          {caseCode && (
-            <span className="hidden shrink-0 font-mono text-[11px] text-frost-dim uppercase sm:inline">{caseCode}</span>
-          )}
-          <h1 className="truncate font-display text-[13px] leading-tight font-semibold text-steam sm:text-sm">
-            {caseTitle}
-          </h1>
-          {dateTime && (
-            <span className="truncate text-[10.5px] leading-tight text-frost-dim sm:hidden">{dateTime}</span>
-          )}
-        </div>
-
-        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-          {dateTime && (
-            <span className="hidden items-center gap-1.5 text-xs text-frost sm:inline-flex">
-              <Clock3 className="size-3.5 text-sodium" aria-hidden />
-              <span className="tabular-nums">{dateTime}</span>
-            </span>
-          )}
-          {rank && (
-            <span className="hidden items-center gap-1.5 rounded-full border border-frost-line-strong bg-ink-raised px-2.5 py-1 text-[11px] text-frost md:inline-flex">
-              <ShieldHalf className="size-3.5 text-aurora" aria-hidden />
-              {rank}
-            </span>
-          )}
-          {topBarExtra}
-          {onMenu && (
-            <button
-              type="button"
-              onClick={onMenu}
-              aria-label="Меню"
-              className="grid size-8 place-items-center rounded-md text-frost transition-colors hover:bg-steam/[0.06] hover:text-steam"
-            >
-              <Menu className="size-4.5" />
-            </button>
-          )}
-        </div>
-      </header>
+      <div className="flex h-8 shrink-0 items-center gap-4 border-b border-line bg-scr-chrome px-4 lg:hidden">
+        <MirrorMenuButton menus={menus} onAction={handleMenu} onOpen={onMenu} />
+        <span className="min-w-0 flex-1 truncate ui-13 text-ink-2">{caseCode ?? caseTitle}</span>
+        {time && <span className="mono-12 text-ink-2">{time}</span>}
+      </div>
 
       {/* ---------- Три колонки ---------- */}
-      <div className="relative z-10 min-h-0 flex-1 lg:grid lg:grid-cols-[clamp(220px,19vw,290px)_minmax(0,1fr)_clamp(330px,27vw,440px)]">
+      <div
+        className={cn(
+          "relative min-h-0 flex-1 lg:grid",
+          schemaOpen
+            ? "lg:grid-cols-[216px_minmax(0,1fr)_336px]"
+            : "lg:grid-cols-[28px_minmax(0,1fr)_336px]",
+          "xl:grid-cols-[232px_minmax(560px,1fr)_352px] min-[1440px]:grid-cols-[248px_minmax(560px,1fr)_384px]"
+        )}
+      >
         {/* Схема */}
         <aside
           className={cn(
-            "h-full min-h-0 min-w-0 flex-col border-frost-line bg-ink-raised/50 lg:flex lg:border-r",
+            "h-full min-h-0 min-w-0 flex-col border-line bg-scr-side lg:flex lg:border-r",
             mobileView === "schema" ? "flex" : "hidden"
           )}
         >
-          {schema}
+          {/* 1024–1279: свёрнутая полоса с вертикальной надписью */}
+          <button
+            type="button"
+            onClick={() => setSchemaOpen(true)}
+            aria-label="Показать схему"
+            className={cn(
+              "hidden h-full w-7 items-start justify-center pt-3 ui-13 font-medium text-ink-2 hover:bg-scr-raise hover:text-ink-1 xl:hidden",
+              !schemaOpen && "lg:flex"
+            )}
+          >
+            <span className="[writing-mode:vertical-rl]">Схема</span>
+          </button>
+          <div className={cn("flex min-h-0 flex-1 flex-col", !schemaOpen && "lg:max-xl:hidden")}>
+            {schema}
+            <div className="hidden h-6 shrink-0 items-center border-t border-line px-3 lg:max-xl:flex">
+              <button
+                type="button"
+                onClick={() => setSchemaOpen(false)}
+                className="ui-12 text-ink-3 hover:text-ink-1"
+              >
+                Свернуть схему
+              </button>
+            </div>
+          </div>
         </aside>
 
-        {/* Терминал + результат */}
+        {/* Центр */}
         <main
-          ref={centerRef}
           className={cn(
-            "h-full min-h-0 min-w-0 flex-col p-2 sm:p-3 lg:flex",
-            mobileView === "query" ? "flex" : "hidden",
-            dragging && "cursor-row-resize select-none"
+            "h-full min-h-0 min-w-0 flex-col bg-scr-base lg:flex",
+            mobileView === "query" || mobileView === "protocol" ? "flex" : "hidden"
           )}
         >
-          <div className="flex min-h-0 flex-col" style={{ flex: `0 0 ${split * 100}%` }}>
-            {terminal}
-          </div>
-          <div
-            role="separator"
-            aria-orientation="horizontal"
-            aria-label="Граница терминала и результата"
-            aria-valuemin={20}
-            aria-valuemax={75}
-            aria-valuenow={Math.round(split * 100)}
-            tabIndex={0}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            onKeyDown={onSplitKey}
-            className="group/split relative flex h-3 shrink-0 cursor-row-resize touch-none items-center justify-center"
-          >
-            <span
-              aria-hidden
-              className={cn(
-                "ice-crack absolute inset-x-6 opacity-50 transition-opacity group-hover/split:opacity-100",
-                dragging && "opacity-100"
-              )}
-            />
-            <span
-              aria-hidden
-              className={cn(
-                "relative h-1 w-10 rounded-full bg-frost-line-strong transition-colors group-hover/split:bg-aurora/60",
-                dragging && "bg-aurora"
-              )}
-            />
-          </div>
-          <div className="flex min-h-0 flex-1 flex-col">{results}</div>
+          {centerContent}
         </main>
 
-        {/* Правая колонка: вкладки */}
+        {/* Правая колонка «Дело» */}
         <aside
           className={cn(
-            "h-full min-h-0 min-w-0 flex-col border-frost-line bg-ink-raised/40 lg:flex lg:border-l",
-            sidePanelActive ? "flex" : "hidden"
+            "h-full min-h-0 min-w-0 flex-col border-line bg-scr-side lg:flex lg:border-l",
+            mobileView === "case" ? "flex" : "hidden"
           )}
         >
-          <div
-            role="tablist"
-            aria-label="Материалы дела"
-            className="hidden h-11 shrink-0 items-stretch border-b border-frost-line px-1.5 lg:flex"
-          >
-            {PANELS.map((p) => {
-              const selected = activePanel === p.id;
-              const badge = badges[p.id];
-              return (
+          <div className="flex h-8 shrink-0 items-stretch gap-3 border-b border-line px-3 max-lg:h-10">
+            <TabBar
+              items={sideTabs}
+              value={sidePanel as Exclude<DeskPanelId, "protocol">}
+              onChange={selectPanel}
+              label="Дело"
+              idPrefix="desk"
+              className="h-full shrink-0 gap-3 [&>button]:h-full"
+            />
+            {hasProtocol && (
+              <>
+                <FieldDivider className="self-center max-xl:hidden" />
                 <button
-                  key={p.id}
                   type="button"
-                  role="tab"
-                  id={`desk-tab-${p.id}`}
-                  aria-selected={selected}
-                  aria-controls={`desk-panel-${p.id}`}
-                  onClick={() => selectPanel(p.id)}
+                  aria-pressed={center === "protocol"}
+                  onClick={() => setCenter(center === "protocol" ? "query" : "protocol")}
                   className={cn(
-                    "relative flex min-w-0 flex-1 items-center justify-center gap-1.5 px-1.5 text-[12.5px] transition-colors",
-                    selected ? "text-steam" : "text-frost-dim hover:text-frost"
+                    "-mb-px flex h-full items-center border-b-2 ui-13 font-medium whitespace-nowrap transition-colors duration-[80ms] ease-linear max-lg:hidden",
+                    center === "protocol"
+                      ? "border-ink-1 text-ink-1"
+                      : "border-transparent text-ink-3 hover:text-ink-2"
                   )}
                 >
-                  <p.icon className={cn("hidden size-3.5 shrink-0 2xl:block", selected && "text-sodium")} aria-hidden />
-                  <span className="truncate">{p.label}</span>
-                  {badge !== undefined && badge !== 0 && <Badge value={badge} hot={p.id === "evidence"} />}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-sodium transition-opacity",
-                      selected ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                  Заключение
                 </button>
-              );
-            })}
+              </>
+            )}
           </div>
-          {PANELS.map((p) => (
-            <div
-              key={p.id}
-              role="tabpanel"
-              id={`desk-panel-${p.id}`}
-              aria-labelledby={`desk-tab-${p.id}`}
-              hidden={activePanel !== p.id}
-              className="scrollbar-ice min-h-0 flex-1 overflow-y-auto p-3 sm:p-4"
-            >
-              {panels[p.id] ?? (
-                <p className="py-10 text-center text-sm text-frost-dim">Пока пусто.</p>
-              )}
-            </div>
-          ))}
+          {sidePanels}
+          {wallLink}
         </aside>
+
       </div>
 
-      {/* ---------- Нижняя навигация на узких экранах ---------- */}
+      {/* ---------- Строка состояния (десктоп) ---------- */}
+      <StatusBar
+        className="max-lg:hidden"
+        login={login}
+        mode={accessMode}
+        sessions={sessions}
+        sessionsAlarm={sessionsAlarm}
+        message={statusMessage}
+        dateTime={dateTime}
+      />
+
+      {/* ---------- Нижние вкладки (мобильный) ---------- */}
       <nav
         aria-label="Разделы стола"
-        className="relative z-20 grid shrink-0 grid-cols-6 border-t border-frost-line bg-ink-deep/95 pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="grid shrink-0 grid-cols-4 border-t border-line bg-scr-chrome pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {(
           [
-            { id: "query", label: "Запрос", icon: TerminalSquare },
-            { id: "schema", label: "Схема", icon: Database },
-            ...PANELS.map((p) => ({ id: p.id, label: p.short, icon: p.icon })),
-          ] as Array<{ id: MobileView; label: string; icon: LucideIcon }>
+            { id: "schema", label: "Схема" },
+            { id: "query", label: "Запрос" },
+            { id: "case", label: "Дело" },
+            ...(hasProtocol ? [{ id: "protocol", label: "Заключ." }] : []),
+          ] as Array<{ id: MobileView; label: string }>
         ).map((item) => {
           const selected = mobileView === item.id;
-          const badge = item.id !== "query" && item.id !== "schema" ? badges[item.id] : undefined;
           return (
             <button
               key={item.id}
               type="button"
               aria-pressed={selected}
-              onClick={() => selectMobile(item.id)}
+              data-pin-target={item.id === "case" ? true : undefined}
+              onClick={() => {
+                setMobileView(item.id);
+                if (item.id === "protocol") setCenter("protocol");
+                else if (item.id === "query" && center === "protocol") setCenter("query");
+              }}
               className={cn(
-                "relative flex h-14 min-w-0 flex-col items-center justify-center gap-1 text-[10px] transition-colors",
-                selected ? "text-steam" : "text-frost-dim"
+                "relative flex h-14 items-center justify-center border-t-2 ui-12 font-medium",
+                selected ? "border-ink-1 text-ink-1" : "border-transparent text-ink-3"
               )}
             >
-              <span className="relative">
-                <item.icon className={cn("size-[18px]", selected && "text-sodium")} aria-hidden />
-                {badge !== undefined && badge !== 0 && (
-                  <span className="absolute -top-1.5 -right-2.5">
-                    <Badge value={badge} hot={item.id === "evidence"} />
-                  </span>
-                )}
-              </span>
-              <span className="max-w-full truncate px-0.5">{item.label}</span>
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute inset-x-3 top-0 h-0.5 rounded-full bg-sodium transition-opacity",
-                  selected ? "opacity-100" : "opacity-0"
-                )}
-              />
+              {item.label}
             </button>
           );
         })}
@@ -355,34 +486,3 @@ export function DeskLayout({
   );
 }
 
-function Badge({ value, hot }: { value: number | string; hot?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "inline-grid h-4 min-w-4 place-items-center rounded-full px-1 font-mono text-[9.5px] leading-none font-semibold",
-        hot ? "bg-signal text-ink-deep" : "bg-frost-line-strong text-steam"
-      )}
-    >
-      {value}
-    </span>
-  );
-}
-
-/** Знак: ноль-полынья — круг с трещиной и паром */
-export function LogoMark({ className }: { className?: string }) {
-  const gid = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-mark`;
-  return (
-    <svg viewBox="0 0 32 32" className={cn("size-7 shrink-0", className)} aria-hidden>
-      <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#2ee6c5" />
-          <stop offset="1" stopColor="#8b5cf6" />
-        </linearGradient>
-      </defs>
-      <ellipse cx="16" cy="17" rx="10" ry="11.5" fill="#03050b" stroke={`url(#${gid})`} strokeWidth="2.4" />
-      <path d="M9.5 24.5 L14 18.5 L12.5 15 L17 10.5 L16 7" fill="none" stroke="#bccbe0" strokeOpacity="0.55" strokeWidth="1" />
-      <path d="M19 12 C17.5 10 20.5 8.5 19 6.5" fill="none" stroke="#eef3fa" strokeOpacity="0.6" strokeWidth="1.2" strokeLinecap="round" />
-      <circle cx="21" cy="21" r="1.6" fill="#ffb547" />
-    </svg>
-  );
-}

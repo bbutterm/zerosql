@@ -32,6 +32,31 @@ export interface EvidenceCardData {
   foundAt?: string;
   /** Только что получена — подсветить и проиграть появление */
   isNew?: boolean;
+  /** Время события в ночи дела «01:52» — место на ленте ночи и в реестре. Без него — «Без времени» */
+  at?: string;
+  /** Номер запроса, которым найдена запись: «> запрос № 14» на распечатке */
+  queryNo?: number;
+  /** Отрывок результата для распечатки (вид record) */
+  excerpt?: EvidenceExcerpt;
+  /** Изображение (вид photo): кадр камеры или личное фото */
+  image?: string;
+  /** Строка камеры поверх кадра: «КАМ 07 СЕВ.ШЛЮЗ 14-12-2026 02:10:44» — фото станет распечаткой кадра */
+  camera?: string;
+  /** Длительность записи (вид audio): «00:47» */
+  duration?: string;
+  /** Огибающая волны 0..1 (вид audio), рисуется из данных */
+  waveform?: number[];
+  /** Чьи слова (вид testimony): «Т. Р. Ахметов» */
+  author?: string;
+  /** Подпись под предметом на стене: у личного фото — ручкой на поле, у кадра — печатью */
+  caption?: string;
+}
+
+export interface EvidenceExcerpt {
+  columns: string[];
+  rows: Array<Array<string | number | null>>;
+  /** Ключевое значение под маркером: [строка, столбец] */
+  mark?: [number, number];
 }
 
 /* ---------- Задачи ---------- */
@@ -94,9 +119,24 @@ export interface ProtocolMessage {
   text: string;
 }
 
+/** Отметка о сверке: оттиск датера на бланке заключения */
+export interface ProtocolCheck {
+  /** Номер попытки, с 1 */
+  attempt: number;
+  /** Сколько пунктов пачки совпало */
+  matched: number;
+  /** Сколько пунктов было в пачке */
+  total: number;
+  /** Игровое время сверки «02:44» */
+  at?: string;
+}
+
 /* ---------- Стол ---------- */
 
 export type DeskPanelId = "tasks" | "evidence" | "protocol" | "reference";
+
+/** Вид центральной зоны стола: запрос, бланк заключения или стена улик */
+export type DeskCenterView = "query" | "protocol" | "wall";
 
 export interface QueryBudget {
   /** Сколько запросов осталось */

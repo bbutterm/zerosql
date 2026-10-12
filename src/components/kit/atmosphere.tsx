@@ -1,108 +1,141 @@
-import type { CSSProperties, ReactNode } from "react";
+"use client";
+
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Атмосферные слои: пар над чёрной водой, зерно, виньетка, трещина во льду.
- * Чистая разметка без состояния — можно рендерить на сервере.
+ * Единственная процедурная атмосфера в игре (раздел 5.8, 7.1): пар над полыньёй
+ * в запасном варианте холодного открытия, пока нет ключевой картины.
+ *
+ * Canvas 30 к/с, 6–8 полупрозрачных (0.03–0.05) полос шума, подъём ~6 px/с.
+ * Останавливается вне экрана и в скрытой вкладке, выключен при prefers-reduced-motion.
+ * Свечения, звёзд и сияния нет.
  */
+export function SteamCanvas({ className, bands = 7 }: { className?: string; bands?: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
 
-const PLUMES: Array<{ left: string; size: string; delay: string; duration: string; bottom: string }> = [
-  { left: "4%", size: "38%", delay: "0s", duration: "13s", bottom: "-18%" },
-  { left: "26%", size: "30%", delay: "-4s", duration: "11s", bottom: "-14%" },
-  { left: "48%", size: "42%", delay: "-8s", duration: "15s", bottom: "-20%" },
-  { left: "70%", size: "32%", delay: "-2s", duration: "12s", bottom: "-16%" },
-  { left: "84%", size: "28%", delay: "-6s", duration: "10s", bottom: "-12%" },
-];
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-export function SteamLayer({
-  className,
-  intensity = 1,
-}: {
-  className?: string;
-  /** 0..1.5 — плотность пара */
-  intensity?: number;
-}) {
-  return (
-    <div aria-hidden className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
-      {PLUMES.map((p, i) => (
-        <span
-          key={i}
-          className="absolute aspect-square rounded-full blur-3xl motion-safe:animate-steam-rise"
-          style={
-            {
-              left: p.left,
-              bottom: p.bottom,
-              width: p.size,
-              animationDelay: p.delay,
-              animationDuration: p.duration,
-              backgroundColor: `rgb(238 243 250 / ${(0.09 * intensity).toFixed(3)})`,
-            } satisfies CSSProperties
-          }
-        />
-      ))}
-    </div>
-  );
-}
+    // Детерминированный шум: одна и та же «погода» при каждом запуске
+    let seed = 2026;
+    const rand = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
 
-export function GrainLayer({ className, opacity = 0.07 }: { className?: string; opacity?: number }) {
-  return (
-    <div
-      aria-hidden
-      className={cn("pointer-events-none absolute inset-0 bg-grain mix-blend-overlay", className)}
-      style={{ opacity }}
-    />
-  );
-}
+    // Текстура пара: вытянутый по горизонтали value-noise, 256×64
+    const tex = document.createElement("canvas");
+    tex.width = 256;
+    tex.height = 64;
+    const tctx = tex.getContext("2d");
+    if (!tctx) return;
+    const img = tctx.createImageData(256, 64);
+    // Два октава периодического шума: крупные клубы и рваный край
+    const octave = (gx: number, gy: number) => {
+      const grid = Array.from({ length: gx * gy }, () => rand());
+      const at = (x: number, y: number) => grid[(((y % gy) + gy) % gy) * gx + (((x % gx) + gx) % gx)];
+      const smooth = (t: number) => t * t * (3 - 2 * t);
+      return (px: number, py: number) => {
+        const fx = (px / 256) * gx;
+        const fy = (py / 64) * gy;
+        const x0 = Math.floor(fx);
+        const y0 = Math.floor(fy);
+        const tx = smooth(fx - x0);
+        const ty = smooth(fy - y0);
+        const a = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * tx;
+        const b = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * tx;
+        return a + (b - a) * ty;
+      };
+    };
+    const big = octave(8, 3);
+    const small = octave(24, 8);
+    for (let y = 0; y < 64; y++) {
+      // Края полосы гаснут сверху и снизу мягко (sin²)
+      const edge = Math.sin((y / 63) * Math.PI) ** 2;
+      for (let x = 0; x < 256; x++) {
+        const v = big(x, y) * 0.7 + small(x, y) * 0.3;
+        const i = (y * 256 + x) * 4;
+        img.data[i] = 230;
+        img.data[i + 1] = 228;
+        img.data[i + 2] = 222;
+        img.data[i + 3] = Math.round(255 * Math.max(0, v * 1.6 - 0.45) * edge);
+      }
+    }
+    tctx.putImageData(img, 0, 0);
 
-export function Vignette({ className, strength = 0.65 }: { className?: string; strength?: number }) {
-  return (
-    <div
-      aria-hidden
-      className={cn("pointer-events-none absolute inset-0", className)}
-      style={{
-        background: `radial-gradient(120% 90% at 50% 45%, transparent 55%, rgb(2 4 10 / ${strength}) 100%)`,
-      }}
-    />
-  );
-}
+    const list = Array.from({ length: bands }, () => ({
+      start: rand(),
+      speed: 5 + rand() * 2.5,
+      alpha: 0.03 + rand() * 0.02,
+      height: 0.18 + rand() * 0.22,
+      sx: rand() * 128,
+      drift: (rand() - 0.5) * 3,
+    }));
 
-/** Разделитель «трещина во льду» */
-export function IceCrack({ className }: { className?: string }) {
-  return <div aria-hidden className={cn("ice-crack w-full", className)} />;
-}
+    let raf = 0;
+    let last = 0;
+    let visible = true;
+    const t0 = performance.now();
 
-/** Подпись секции: мелкие капители, широкий шрифт */
-export function SectionLabel({
-  children,
-  className,
-  icon,
-}: {
-  children: ReactNode;
-  className?: string;
-  icon?: ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 font-display text-[10px] font-medium uppercase tracking-[0.2em] text-frost-dim",
-        className
-      )}
-    >
-      {icon}
-      {children}
-    </span>
-  );
-}
+    const resize = () => {
+      const { width, height } = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.round(width * dpr));
+      canvas.height = Math.max(1, Math.round(height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
 
-export function Kbd({ children, className }: { children: ReactNode; className?: string }) {
-  return (
-    <kbd
-      className={cn(
-        "inline-flex h-5 min-w-5 items-center justify-center rounded border border-frost-line-strong bg-ink-deep/80 px-1 font-mono text-[10px] leading-none text-frost",
-        className
-      )}
-    >
-      {children}
-    </kbd>
-  );
+    const draw = (now: number) => {
+      raf = requestAnimationFrame(draw);
+      if (!visible || document.hidden || now - last < 1000 / 30) return;
+      last = now;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      const t = (now - t0) / 1000;
+      ctx.clearRect(0, 0, w, h);
+      for (const b of list) {
+        const bh = b.height * h;
+        const travel = h + bh;
+        const pos = (b.start * travel + t * b.speed) % travel;
+        const y = h - pos;
+        const life = Math.sin(Math.min(1, Math.max(0, pos / travel)) * Math.PI);
+        ctx.globalAlpha = b.alpha * life;
+        const sx = (((b.sx + t * b.drift) % 128) + 128) % 128;
+        ctx.drawImage(tex, sx, 0, 128, 64, -w * 0.05, y, w * 1.1, bh);
+      }
+      ctx.globalAlpha = 1;
+      // Пар растворяется к краям полосы воды: горизонтальная маска по самому холсту
+      ctx.globalCompositeOperation = "destination-in";
+      const fade = ctx.createLinearGradient(0, 0, w, 0);
+      fade.addColorStop(0, "rgba(0,0,0,0.6)");
+      fade.addColorStop(0.25, "rgba(0,0,0,1)");
+      fade.addColorStop(0.6, "rgba(0,0,0,1)");
+      fade.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "source-over";
+    };
+    raf = requestAnimationFrame(draw);
+
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+    });
+    io.observe(canvas);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+    };
+  }, [bands]);
+
+  return <canvas ref={ref} aria-hidden className={cn("pointer-events-none block", className)} />;
 }

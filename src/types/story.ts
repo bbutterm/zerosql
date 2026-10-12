@@ -44,6 +44,12 @@ export interface CharacterDef {
   emotions: Emotion[];
   /** Краткая характеристика голоса для манифеста озвучки */
   voice?: string;
+  /** Отчество — для учётной карточки (заглушка портрета) */
+  patronymic?: string;
+  /** «Примечание» в учётной карточке рукой предшественницы, до 12 слов: «Курит у шлюза.» */
+  dossierNote?: string;
+  /** Короткое имя в винительном падеже, если склонение неочевидно: «Спросить Кравец» */
+  shortNameAcc?: string;
 }
 
 export interface DialogueLine {

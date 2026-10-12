@@ -3,10 +3,10 @@
 import { useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { sql, SQLite } from "@codemirror/lang-sql";
-import { EditorView, keymap } from "@codemirror/view";
+import { drawSelection, EditorView, keymap } from "@codemirror/view";
 import { EditorState, Prec } from "@codemirror/state";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import type { Completion, CompletionContext } from "@codemirror/autocomplete";
+import { autocompletion, type Completion, type CompletionContext } from "@codemirror/autocomplete";
 import { tags as t } from "@lezer/highlight";
 import type { TableInfo } from "@/types/database";
 
@@ -27,77 +27,129 @@ export interface SqlCodeMirrorProps {
   ariaLabel?: string;
 }
 
-const MONO = "var(--font-jetbrains), 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace";
-
-const polarTheme = EditorView.theme(
+/*
+ * Тема «Зеркала» (раздел 7.6). Самые яркие в запросе — слова игрока (имена таблиц и столбцов),
+ * ключевые слова тише, литералы — холодные «данные», каретка — единственное тёплое: человек.
+ */
+const mirrorTheme = EditorView.theme(
   {
     "&": {
-      backgroundColor: "transparent",
-      color: "#e4eaf4",
-      fontSize: "14px",
+      backgroundColor: "var(--scr-base)",
+      color: "var(--ink-1)",
       height: "100%",
     },
     "&.cm-focused": { outline: "none" },
     ".cm-scroller": {
-      fontFamily: MONO,
-      lineHeight: "1.7",
-      scrollbarWidth: "thin",
-      scrollbarColor: "rgb(188 203 224 / 0.22) transparent",
+      fontFamily: "var(--font-mono)",
+      fontSize: "var(--editor-size, 14px)",
+      lineHeight: "var(--editor-leading, 22px)",
     },
-    ".cm-content": { caretColor: "#2ee6c5", padding: "12px 0" },
-    ".cm-line": { padding: "0 14px 0 4px" },
-    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#2ee6c5", borderLeftWidth: "2px" },
+    ".cm-content": { padding: "10px 0", caretColor: "var(--sodium)" },
+    ".cm-line": { padding: "0 12px 0 0" },
+    ".cm-cursor, .cm-dropCursor": { borderLeft: "2px solid var(--sodium)", marginLeft: "-1px" },
     ".cm-gutters": {
-      backgroundColor: "transparent",
-      color: "#56627e",
+      backgroundColor: "var(--scr-base)",
+      color: "var(--ink-4)",
       border: "none",
-      paddingLeft: "4px",
     },
-    ".cm-lineNumbers .cm-gutterElement": { padding: "0 8px 0 6px", minWidth: "26px" },
-    ".cm-activeLineGutter": { backgroundColor: "transparent", color: "#ffb547" },
-    ".cm-activeLine": { backgroundColor: "rgb(188 203 224 / 0.035)" },
-    ".cm-selectionBackground, &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection":
-      { backgroundColor: "rgb(46 230 197 / 0.24) !important" },
-    ".cm-selectionMatch": { backgroundColor: "rgb(139 92 246 / 0.22)" },
+    ".cm-lineNumbers .cm-gutterElement": {
+      minWidth: "40px",
+      padding: "0 12px 0 0",
+      textAlign: "right",
+      boxSizing: "border-box",
+    },
+    ".cm-activeLineGutter": { backgroundColor: "#171b1e", color: "var(--ink-3)" },
+    ".cm-activeLine": { backgroundColor: "#171b1e" },
+    ".cm-selectionBackground": { backgroundColor: "#22292c !important" },
+    "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground": {
+      backgroundColor: "#2b3539 !important",
+    },
+    ".cm-content ::selection": { backgroundColor: "#2b3539" },
+    ".cm-selectionMatch": { backgroundColor: "transparent" },
     ".cm-matchingBracket, &.cm-focused .cm-matchingBracket": {
-      backgroundColor: "rgb(255 181 71 / 0.16)",
-      color: "#ffb547",
-      outline: "none",
+      backgroundColor: "transparent",
+      color: "inherit",
+      outline: "1px solid var(--ink-3)",
     },
-    ".cm-placeholder": { color: "#56627e", fontStyle: "italic" },
+    ".cm-nonmatchingBracket": { backgroundColor: "transparent", outline: "1px dashed var(--alarm)" },
+    ".cm-searchMatch": { backgroundColor: "var(--sodium-wash)", outline: "none" },
+    ".cm-lintRange-error": {
+      backgroundImage: "none",
+      textDecoration: "underline dashed var(--alarm) 1px",
+      textUnderlineOffset: "3px",
+    },
+    ".cm-placeholder": { color: "var(--ink-4)", fontStyle: "normal" },
+
+    /* Автодополнение: окно «Зеркала», без иконок типов */
     ".cm-tooltip": {
-      backgroundColor: "#141c33",
-      border: "1px solid rgb(188 203 224 / 0.18)",
-      borderRadius: "8px",
-      boxShadow: "0 18px 40px -16px rgb(0 0 0 / 0.8)",
-      overflow: "hidden",
+      backgroundColor: "var(--scr-chrome)",
+      border: "1px solid var(--line-strong)",
+      borderRadius: "0",
+      boxShadow: "var(--shadow-menu)",
+      color: "var(--ink-1)",
     },
-    ".cm-tooltip-autocomplete > ul": { fontFamily: MONO, fontSize: "12.5px", maxHeight: "16em" },
-    ".cm-tooltip-autocomplete > ul > li": { padding: "4px 10px !important", color: "#bccbe0", lineHeight: "1.5" },
-    ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
-      backgroundColor: "rgb(46 230 197 / 0.16) !important",
-      color: "#eef3fa !important",
+    ".cm-tooltip.cm-tooltip-autocomplete > ul": {
+      fontFamily: "var(--font-mono)",
+      fontSize: "13px",
+      maxHeight: "calc(22px * 10)",
+      minWidth: "220px",
+      padding: "0",
     },
-    ".cm-completionIcon": { opacity: "0.75", color: "#b9a0ff", width: "1.2em" },
-    ".cm-completionDetail": { color: "#8593b0", fontStyle: "normal", marginLeft: "8px" },
-    ".cm-completionMatchedText": { textDecoration: "none", color: "#2ee6c5", fontWeight: "600" },
-    ".cm-panels": { backgroundColor: "#10172b", color: "#e4eaf4" },
+    ".cm-tooltip.cm-tooltip-autocomplete > ul > li": {
+      display: "flex",
+      alignItems: "center",
+      height: "22px",
+      lineHeight: "22px",
+      padding: "0 10px",
+      color: "var(--ink-1)",
+    },
+    ".cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected]": {
+      backgroundColor: "var(--scr-select)",
+      color: "var(--ink-1)",
+    },
+    ".cm-completionLabel": { flex: "0 1 auto" },
+    ".cm-completionMatchedText": { textDecoration: "none", color: "var(--ink-1)" },
+    ".cm-completionDetail": {
+      marginLeft: "auto",
+      paddingLeft: "16px",
+      fontFamily: "var(--font-sans)",
+      fontSize: "12px",
+      fontStyle: "normal",
+      color: "var(--ink-3)",
+    },
+    ".cm-completionIcon": { display: "none" },
+    ".cm-tooltip-hover, .cm-tooltip-lint": {
+      fontFamily: "var(--font-sans)",
+      fontSize: "12px",
+      lineHeight: "16px",
+      padding: "4px 8px",
+    },
+    ".cm-panels": { backgroundColor: "var(--scr-chrome)", color: "var(--ink-1)" },
   },
   { dark: true }
 );
 
-const polarHighlight = HighlightStyle.define([
-  { tag: t.keyword, color: "#2ee6c5", fontWeight: "600" },
-  { tag: [t.operatorKeyword, t.modifier, t.controlKeyword], color: "#2ee6c5" },
-  { tag: [t.string, t.special(t.string)], color: "#ffb547" },
-  { tag: [t.number, t.bool, t.null, t.atom], color: "#b9a0ff" },
-  { tag: [t.lineComment, t.blockComment, t.comment], color: "#5f6c89", fontStyle: "italic" },
-  { tag: [t.typeName, t.standard(t.name)], color: "#8fd3ff" },
-  { tag: [t.function(t.variableName), t.function(t.name)], color: "#eef3fa", fontWeight: "500" },
-  { tag: [t.operator, t.compareOperator, t.arithmeticOperator], color: "#bccbe0" },
-  { tag: [t.punctuation, t.paren, t.separator, t.bracket, t.squareBracket], color: "#8593b0" },
-  { tag: t.special(t.name), color: "#f3cf9a" },
-  { tag: [t.name, t.variableName, t.propertyName], color: "#e4eaf4" },
+const mirrorHighlight = HighlightStyle.define([
+  { tag: [t.keyword, t.operatorKeyword, t.modifier, t.controlKeyword, t.definitionKeyword], color: "var(--ink-2)" },
+  { tag: [t.string, t.special(t.string), t.number, t.bool, t.null, t.atom], color: "var(--cold)" },
+  { tag: [t.lineComment, t.blockComment, t.comment], color: "var(--ink-3)", fontStyle: "normal" },
+  {
+    tag: [
+      t.name,
+      t.variableName,
+      t.propertyName,
+      t.typeName,
+      t.special(t.name),
+      t.standard(t.name),
+      t.function(t.variableName),
+      t.function(t.name),
+    ],
+    color: "var(--ink-1)",
+  },
+  {
+    tag: [t.operator, t.compareOperator, t.arithmeticOperator, t.punctuation, t.paren, t.separator, t.bracket, t.squareBracket],
+    color: "var(--ink-3)",
+  },
 ]);
 
 /**
@@ -105,20 +157,24 @@ const polarHighlight = HighlightStyle.define([
  * столбцы только после «таблица.», а новичку нужно и просто «WHERE se…» → seconds.
  */
 function columnCompletion(schema: TableInfo[]) {
-  const byColumn = new Map<string, string[]>();
+  const byColumn = new Map<string, { tables: string[]; type: string }>();
   for (const table of schema) {
     for (const col of table.columns) {
-      byColumn.set(col.name, [...(byColumn.get(col.name) ?? []), table.name]);
+      const prev = byColumn.get(col.name);
+      byColumn.set(col.name, {
+        tables: [...(prev?.tables ?? []), table.name],
+        type: prev?.type ?? col.type.toLowerCase(),
+      });
     }
   }
-  const options: Completion[] = [...byColumn].map(([name, tables]) => ({
+  const options: Completion[] = [...byColumn].map(([name, info]) => ({
     label: name,
     type: "property",
-    detail: tables.join(", "),
+    detail: info.tables.length === 1 ? `${info.tables[0]}, ${info.type || "столбец"}` : info.tables.join(", "),
     boost: -1,
   }));
   return (ctx: CompletionContext) => {
-    const word = ctx.matchBefore(/[\w\u0400-\u04FF]+/);
+    const word = ctx.matchBefore(/[\wЀ-ӿ]+/);
     if (!word || (word.from === word.to && !ctx.explicit)) return null;
     if (ctx.state.sliceDoc(word.from - 1, word.from) === ".") return null;
     return { from: word.from, options, validFor: /^\w*$/ };
@@ -145,11 +201,32 @@ const BASIC_SETUP = {
   highlightActiveLineGutter: true,
   bracketMatching: true,
   closeBrackets: true,
-  autocompletion: true,
+  autocompletion: false,
+  drawSelection: false,
   foldGutter: false,
   searchKeymap: false,
   syntaxHighlighting: false,
+  highlightSelectionMatches: false,
 } as const;
+
+/**
+ * CodeMirror меряет высоты строк при создании; если в этот момент шрифт ещё запасной,
+ * номера строк остаются со старыми высотами. Повторяем полный замер так же, как сам
+ * CodeMirror делает по document.fonts.ready, — после первой отрисовки и после догрузки шрифтов.
+ */
+function remeasureAfterFonts(view: EditorView) {
+  const refresh = () => {
+    if (!view.dom.isConnected) {
+      document.fonts?.removeEventListener("loadingdone", refresh);
+      return;
+    }
+    const state = (view as unknown as { viewState?: { mustMeasureContent?: unknown } }).viewState;
+    if (state && "mustMeasureContent" in state) state.mustMeasureContent = "refresh";
+    view.requestMeasure();
+  };
+  requestAnimationFrame(() => requestAnimationFrame(refresh));
+  document.fonts?.addEventListener("loadingdone", refresh);
+}
 
 export default function SqlCodeMirror({
   value,
@@ -202,8 +279,11 @@ export default function SqlCodeMirror({
     const schemaObj: Record<string, string[]> = {};
     for (const table of schema ?? []) schemaObj[table.name] = table.columns.map((c) => c.name);
     return [
-      polarTheme,
-      syntaxHighlighting(polarHighlight),
+      mirrorTheme,
+      syntaxHighlighting(mirrorHighlight),
+      // Каретка: 2 px натрия, мигание 530 мс включена / 530 мс выключена
+      drawSelection({ cursorBlinkRate: 1060 }),
+      autocompletion({ icons: false }),
       sql({ dialect: SQLite, schema: schemaObj, upperCaseKeywords: true }),
       SQLite.language.data.of({ autocomplete: columnCompletion(schema ?? []) }),
       runKeymap,
@@ -217,7 +297,7 @@ export default function SqlCodeMirror({
   }, [schemaKey, readOnly, ariaLabel]);
 
   return (
-    <div ref={wrapRef} className="h-full">
+    <div ref={wrapRef} className="zs-editor h-full">
       <CodeMirror
         value={value}
         onChange={onChange}
@@ -229,6 +309,7 @@ export default function SqlCodeMirror({
         basicSetup={BASIC_SETUP}
         onCreateEditor={(view) => {
           viewRef.current = view;
+          remeasureAfterFonts(view);
         }}
       />
     </div>

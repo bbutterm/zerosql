@@ -23,9 +23,9 @@ const DIFFICULTY_LABELS: Record<Mission["difficulty"], string> = {
 
 const DIFFICULTY_COLORS: Record<Mission["difficulty"], string> = {
   tutorial: "bg-blue-900/50 text-blue-300",
-  easy: "bg-noir-green/20 text-green-300",
-  medium: "bg-noir-amber/20 text-amber-300",
-  hard: "bg-noir-red/20 text-red-300",
+  easy: "bg-cold/20 text-green-300",
+  medium: "bg-sodium/20 text-amber-300",
+  hard: "bg-alarm/20 text-red-300",
 };
 
 export function MissionPanel({
@@ -44,7 +44,7 @@ export function MissionPanel({
     <div className="flex flex-col h-full bg-card border-r border-border overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex-shrink-0">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-sm font-bold text-primary tracking-wide uppercase">
+          <h2 className="text-sm font-bold text-primary uppercase">
             Дело
           </h2>
           <Badge className={DIFFICULTY_COLORS[mission.difficulty]} variant="secondary">
@@ -61,7 +61,7 @@ export function MissionPanel({
           <div>
             <button
               onClick={() => setBriefingExpanded(!briefingExpanded)}
-              className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+              className="flex items-center gap-2 text-xs uppercase text-muted-foreground hover:text-foreground transition-colors w-full text-left"
             >
               <span>{briefingExpanded ? "▾" : "▸"}</span>
               Брифинг
@@ -78,11 +78,11 @@ export function MissionPanel({
           {/* Objectives */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs uppercase text-muted-foreground">
                 Задания ({completedCount}/{totalObjectives})
               </span>
               {allComplete && (
-                <Badge className="bg-noir-green/20 text-green-300" variant="secondary">
+                <Badge className="bg-cold/20 text-green-300" variant="secondary">
                   Выполнено
                 </Badge>
               )}
@@ -100,7 +100,7 @@ export function MissionPanel({
                       key={obj.id}
                       className={`p-2 rounded border text-sm transition-colors ${
                         done
-                          ? "border-noir-green/30 bg-noir-green/5"
+                          ? "border-cold/30 bg-cold/5"
                           : "border-border bg-background/50"
                       }`}
                     >
@@ -108,7 +108,7 @@ export function MissionPanel({
                         <span
                           className={`mt-0.5 inline-block w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center text-xs ${
                             done
-                              ? "border-noir-green bg-noir-green text-background"
+                              ? "border-cold bg-cold text-background"
                               : "border-muted-foreground"
                           }`}
                         >
@@ -123,7 +123,7 @@ export function MissionPanel({
                         </span>
                       </div>
                       {feedback && (
-                        <p className="mt-1 ml-6 text-xs text-noir-green italic">
+                        <p className="mt-1 ml-6 text-xs text-cold italic">
                           {feedback.message}
                         </p>
                       )}
@@ -138,7 +138,7 @@ export function MissionPanel({
           {/* Hints */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs uppercase text-muted-foreground">
                 Подсказки
               </span>
               {hintsRevealed < mission.hints.length && (
@@ -160,7 +160,7 @@ export function MissionPanel({
                 </p>
               ))}
               {hintsRevealed === 0 && (
-                <p className="text-xs text-noir-dim italic">
+                <p className="text-xs text-ink-3 italic">
                   Подсказки скрыты. Попробуйте сами.
                 </p>
               )}
@@ -169,7 +169,7 @@ export function MissionPanel({
 
           {/* SQL Concepts */}
           <div>
-            <span className="text-xs uppercase tracking-wider text-muted-foreground block mb-2">
+            <span className="text-xs uppercase text-muted-foreground block mb-2">
               Концепции SQL
             </span>
             <div className="flex flex-wrap gap-1">
@@ -189,9 +189,9 @@ export function MissionPanel({
 
       {/* Progress bar */}
       <div className="px-4 py-2 border-t border-border flex-shrink-0">
-        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-muted overflow-hidden">
           <div
-            className="h-full bg-primary rounded-full transition-all duration-500"
+            className="h-full bg-primary transition-[width] duration-500"
             style={{
               width: `${(completedCount / totalObjectives) * 100}%`,
             }}
