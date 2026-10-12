@@ -32,7 +32,7 @@ export function ResultsTable({ result }: ResultsTableProps) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground font-mono text-sm">
         <div className="text-center space-y-2">
-          <p className="text-noir-dim">// Введите SQL-запрос и нажмите Ctrl+Enter</p>
+          <p className="text-noir-dim">{"// Введите SQL-запрос и нажмите Ctrl+Enter"}</p>
           <p className="text-noir-dim text-xs">Результаты появятся здесь</p>
         </div>
       </div>
