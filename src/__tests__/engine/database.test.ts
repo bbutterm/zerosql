@@ -22,10 +22,10 @@ describe("executeQuery", () => {
     expect(result.rows).toHaveLength(3);
   });
 
-  it("пустой результат: rowCount=0, columns=[]", () => {
-    const result = executeQuery(db, "SELECT * FROM suspects WHERE id = 999");
+  it("пустой результат: rowCount=0, заголовки столбцов сохраняются", () => {
+    const result = executeQuery(db, "SELECT id, name FROM suspects WHERE id = 999");
     expect(result.error).toBeNull();
-    expect(result.columns).toEqual([]);
+    expect(result.columns).toEqual(["id", "name"]);
     expect(result.rows).toEqual([]);
     expect(result.rowCount).toBe(0);
   });
@@ -94,5 +94,24 @@ describe("getForeignKeys", () => {
     expect(crimesFk).toBeDefined();
     expect(crimesFk!.to).toBe("locations");
     expect(crimesFk!.toColumn).toBe("id");
+  });
+});
+
+describe("executeQuery — лимит строк", () => {
+  it("обрезает огромный результат и помечает truncated", () => {
+    const result = executeQuery(db, "SELECT a.id FROM suspects a, suspects b, suspects c", 100);
+    expect(result.rowCount).toBe(100);
+    expect(result.truncated).toBe(true);
+  });
+
+  it("результат в пределах лимита не помечен", () => {
+    const result = executeQuery(db, "SELECT * FROM suspects", 100);
+    expect(result.truncated).toBeUndefined();
+  });
+
+  it("несколько инструкций → результат последней, вернувшей столбцы", () => {
+    const result = executeQuery(db, "SELECT 1 AS a; SELECT 2 AS b;");
+    expect(result.columns).toEqual(["b"]);
+    expect(result.rows).toEqual([[2]]);
   });
 });

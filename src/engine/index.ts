@@ -4,18 +4,19 @@
  */
 
 import type { Database } from "sql.js";
-import { getDatabase, executeQuery, getTableSchema, getForeignKeys as _getForeignKeys } from "./database";
+import { createDatabase, executeQuery, getTableSchema, getForeignKeys as _getForeignKeys } from "./database";
 import { SCHEMA_SQL } from "./schema";
 import { SEED_SQL } from "./seed";
-import { checkTableAccess } from "./table-guard";
+import { checkSqlPolicy } from "./table-guard";
+import { explainSqlError } from "./sql-errors";
 import { checkObjectives, isMissionComplete as _isMissionComplete } from "./mission-runner";
 
 import type { QueryResult, TableInfo, ForeignKey } from "@/types/database";
-import type { Mission, ValidationOutcome } from "@/types/mission";
+import type { Mission } from "@/types/mission";
 import type { ObjectiveResult } from "./mission-runner";
 
 // --- Re-export types for external consumers ---
-export type { QueryResult, TableInfo, ForeignKey } from "@/types/database";
+export type { QueryResult, TableInfo, ForeignKey, SqlErrorHelp, QueryErrorKind } from "@/types/database";
 export type { Mission, ValidationOutcome } from "@/types/mission";
 export type { ObjectiveResult } from "./mission-runner";
 
@@ -27,37 +28,67 @@ export async function initEngine(): Promise<{
   schema: TableInfo[];
   foreignKeys: ForeignKey[];
 }> {
-  const db = await getDatabase();
-  executeQuery(db, SCHEMA_SQL);
-
-  // Seed only if tables are empty (idempotent)
-  const check = executeQuery(db, "SELECT COUNT(*) as c FROM suspects");
-  if (check.rows.length === 0 || (check.rows[0][0] as number) === 0) {
-    executeQuery(db, SEED_SQL);
-  }
+  const db = await createDatabase();
+  db.run(SCHEMA_SQL);
+  db.run(SEED_SQL);
 
   const schema = getTableSchema(db);
   const foreignKeys = _getForeignKeys(db);
   return { db, schema, foreignKeys };
 }
 
-/** Проверка доступа + выполнение SQL в одном вызове */
+export interface ExecuteOptions {
+  /** Разрешить INSERT/UPDATE/DELETE/DDL (по умолчанию архив только для чтения) */
+  allowWrites?: boolean;
+  /** Схема для подсказок в ошибках (только доступные игроку таблицы) */
+  schema?: TableInfo[];
+}
+
+/** Проверка доступа + выполнение SQL в одном вызове. Ошибки — в QueryResult, не исключения */
 export function executeSQL(
   db: Database,
   sql: string,
-  unlockedTables: string[] | null
+  unlockedTables: string[] | null,
+  options: ExecuteOptions = {}
 ): QueryResult {
-  const access = checkTableAccess(sql, unlockedTables);
+  const access = checkSqlPolicy(sql, { unlockedTables, allowWrites: options.allowWrites });
   if (!access.allowed) {
+    const base = { columns: [], rows: [], rowCount: 0, executionTimeMs: 0 };
+    if (access.reason === "read_only") {
+      return {
+        ...base,
+        error: `[ТОЛЬКО ЧТЕНИЕ] Команда ${access.blockedKeyword} недоступна: архив нельзя изменять.`,
+        errorKind: "read_only",
+        errorHelp: {
+          title: "Архив только для чтения",
+          explanation: `Команды, меняющие данные или структуру (${access.blockedKeyword}), в этом деле запрещены — улики нельзя трогать.`,
+          suggestion: "Используйте SELECT, чтобы найти нужное. Если очень хочется — WITH … SELECT тоже можно.",
+        },
+      };
+    }
     return {
-      columns: [],
-      rows: [],
-      rowCount: 0,
-      executionTimeMs: 0,
-      error: `[ДОСТУП ЗАПРЕЩЁН] Таблица «${access.blockedTable}» ещё не разблокирована. Продолжайте расследование — новые данные откроются в следующих делах.`,
+      ...base,
+      error: `[ДОСТУП ЗАПРЕЩЁН] Таблица «${access.blockedTable}» ещё не разблокирована.`,
+      errorKind: "locked_table",
+      errorHelp: {
+        title: "Доступ закрыт",
+        explanation: `Таблица «${access.blockedTable}» пока засекречена.`,
+        suggestion: "Продолжайте расследование — доступ к новым данным откроется по ходу дела.",
+      },
     };
   }
-  return executeQuery(db, sql);
+
+  const result = executeQuery(db, sql);
+  if (result.error) {
+    const visible = (options.schema ?? []).filter(
+      (t) => unlockedTables === null || unlockedTables.includes(t.name)
+    );
+    result.errorHelp = explainSqlError(result.error, {
+      tables: visible.map((t) => t.name),
+      columns: visible.flatMap((t) => t.columns.map((c) => c.name)),
+    });
+  }
+  return result;
 }
 
 /** Проверка целей миссии — прокси к mission-runner */

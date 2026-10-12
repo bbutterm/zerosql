@@ -1,57 +1,92 @@
 import initSqlJs, { type Database, type SqlJsStatic } from "sql.js";
 import type { QueryResult, TableInfo, ForeignKey } from "@/types/database";
+import { registerUnicodeFunctions } from "./sql-functions";
 
-let db: Database | null = null;
-let initPromise: Promise<Database> | null = null;
+/**
+ * Предел строк в результате. Защищает вкладку от зависания, если игрок
+ * случайно соберёт декартово произведение больших таблиц: SQLite отдаёт
+ * строки лениво, и мы просто перестаём их читать.
+ */
+export const MAX_RESULT_ROWS = 5000;
 
-export async function getDatabase(): Promise<Database> {
-  if (db) return db;
-  if (initPromise) return initPromise;
+let sqlPromise: Promise<SqlJsStatic> | null = null;
 
-  initPromise = initSqlJs({
-    locateFile: () => "/sql-wasm.wasm",
-  }).then((SQL) => {
-    db = new SQL.Database();
-    return db;
-  });
-
-  return initPromise;
+function loadSqlJs(): Promise<SqlJsStatic> {
+  if (!sqlPromise) {
+    // В браузере wasm лежит в /public, в Node (тесты, скрипты) sql.js находит его сам
+    const options = typeof window === "undefined" ? undefined : { locateFile: () => "/sql-wasm.wasm" };
+    sqlPromise = initSqlJs(options).catch((e) => {
+      sqlPromise = null;
+      throw e;
+    });
+  }
+  return sqlPromise;
 }
 
-export function executeQuery(database: Database, sql: string): QueryResult {
+/** Новая пустая БД с Unicode-версиями LIKE / lower / upper */
+export async function createDatabase(data?: Uint8Array): Promise<Database> {
+  const SQL = await loadSqlJs();
+  const db = new SQL.Database(data);
+  registerUnicodeFunctions(db);
+  return db;
+}
+
+function elapsedSince(start: number): number {
+  return Math.round((performance.now() - start) * 100) / 100;
+}
+
+export function executeQuery(
+  database: Database,
+  sql: string,
+  maxRows: number = MAX_RESULT_ROWS
+): QueryResult {
   const start = performance.now();
+  let columns: string[] = [];
+  let rows: unknown[][] = [];
+  let truncated = false;
+
   try {
-    const results = database.exec(sql);
-    const elapsed = performance.now() - start;
-
-    if (results.length === 0) {
-      return {
-        columns: [],
-        rows: [],
-        rowCount: 0,
-        executionTimeMs: Math.round(elapsed * 100) / 100,
-        error: null,
-      };
+    for (const stmt of database.iterateStatements(sql)) {
+      try {
+        const stmtColumns = stmt.getColumnNames();
+        const stmtRows: unknown[][] = [];
+        let cut = false;
+        while (stmt.step()) {
+          if (stmtRows.length >= maxRows) {
+            cut = true;
+            break;
+          }
+          stmtRows.push(stmt.get());
+        }
+        // Как и раньше, результатом считается последняя инструкция, вернувшая столбцы
+        if (stmtColumns.length > 0) {
+          columns = stmtColumns;
+          rows = stmtRows;
+          truncated = cut;
+        }
+      } finally {
+        stmt.free();
+      }
     }
-
-    const last = results[results.length - 1];
-    return {
-      columns: last.columns,
-      rows: last.values,
-      rowCount: last.values.length,
-      executionTimeMs: Math.round(elapsed * 100) / 100,
-      error: null,
-    };
   } catch (e) {
-    const elapsed = performance.now() - start;
     return {
       columns: [],
       rows: [],
       rowCount: 0,
-      executionTimeMs: Math.round(elapsed * 100) / 100,
+      executionTimeMs: elapsedSince(start),
       error: e instanceof Error ? e.message : String(e),
+      errorKind: "sql",
     };
   }
+
+  return {
+    columns,
+    rows,
+    rowCount: rows.length,
+    executionTimeMs: elapsedSince(start),
+    error: null,
+    ...(truncated ? { truncated: true } : {}),
+  };
 }
 
 export function getTableSchema(database: Database): TableInfo[] {
@@ -67,7 +102,7 @@ export function getTableSchema(database: Database): TableInfo[] {
         ? pragma[0].values.map(([, colName, colType, notNull, , pk]) => ({
             name: String(colName),
             type: String(colType),
-            pk: Number(pk) === 1,
+            pk: Number(pk) > 0,
             notnull: Number(notNull) === 1,
           }))
         : [];
@@ -101,13 +136,4 @@ export function getForeignKeys(database: Database): ForeignKey[] {
 
 export function exportDatabase(database: Database): Uint8Array {
   return database.export();
-}
-
-let _SQL: SqlJsStatic | null = null;
-
-export async function importDatabase(data: Uint8Array): Promise<Database> {
-  if (!_SQL) {
-    _SQL = await initSqlJs({ locateFile: () => "/sql-wasm.wasm" });
-  }
-  return new _SQL.Database(data);
 }
