@@ -45,6 +45,7 @@ export const objective = (patch: Partial<CaseObjective> & Pick<CaseObjective, "i
   validation: { type: "row_count", expected: 4, comparison: "eq" },
   hints: hints(),
   success: `Готово: ${patch.id}`,
+  solution: "SELECT * FROM people",
   ...patch,
 });
 

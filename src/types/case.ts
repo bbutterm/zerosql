@@ -51,6 +51,11 @@ export interface CaseObjective {
   sceneAfter?: string;
   /** Дополнительная задача: не блокирует дело, проверяется на каждом запросе */
   optional?: boolean;
+  /**
+   * Эталонное решение. Игроку не показывается; используется тестами,
+   * автоматическим прохождением (QA) и как последний уровень подсказки.
+   */
+  solution: string;
 }
 
 export interface ProtocolBlank {
