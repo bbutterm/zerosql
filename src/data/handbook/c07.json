@@ -1,1 +1,55 @@
-[]
+[
+  {
+    "id": "h.cte",
+    "title": "WITH: именованный подзапрос",
+    "summary": "`WITH имя AS (SELECT …)` выносит подзапрос в начало и даёт ему имя. Дальше в том же запросе имя работает как таблица: из него выбирают, его соединяют, к нему обращаются несколько раз.",
+    "syntax": "WITH имя AS (\n  SELECT …\n),\nдругое AS (\n  SELECT … FROM имя …\n)\nSELECT … FROM другое;",
+    "example": "WITH night AS (\n  SELECT camera_id, plate FROM plate_reads\n  WHERE time(read_at) < '05:00:00'\n)\nSELECT camera_id, COUNT(*) AS проездов\nFROM night\nGROUP BY camera_id\nORDER BY проездов DESC;",
+    "pitfalls": [
+      "CTE живёт ровно один запрос. В следующем запросе `flats` уже нет: WITH пишется заново или копируется из прошлого запроса.",
+      "Несколько CTE разделяются запятой после закрывающей скобки, а слово WITH пишется один раз: `WITH a AS (…), b AS (…) SELECT …`.",
+      "Переписать подзапрос через WITH — значит поменять читаемость, а не результат. Если строк стало больше или меньше, ошибка в переносе.",
+      "NOT IN по столбцу с NULL даёт ноль строк — и внутри WITH тоже. В `employment` у внешних подрядчиков `person_id` пуст. Надёжнее NOT EXISTS.",
+      "Обычный WITH — не рекурсия. `WITH RECURSIVE` — отдельная история, до неё ещё дойдёт."
+    ]
+  },
+  {
+    "id": "h.union",
+    "title": "UNION: склеить выборки без повторов",
+    "summary": "`UNION` ставит строки второй выборки под строки первой и выбрасывает одинаковые. Число столбцов в частях должно совпадать, имена берутся из первой части.",
+    "syntax": "SELECT a, b FROM … WHERE …\nUNION\nSELECT a, b FROM … WHERE …\nORDER BY a;",
+    "example": "SELECT plate FROM plate_reads WHERE camera_id = 3\nUNION\nSELECT plate FROM plate_reads WHERE camera_id = 7;",
+    "pitfalls": [
+      "UNION молча схлопывает одинаковые строки. Если два настоящих события совпали до копейки — два возврата одним днём, — останется одно, и счёт разойдётся.",
+      "Одинаковость считается по всем столбцам строки. Добавь время до секунды или id — и «дубли» перестанут быть дублями.",
+      "Столбцы сопоставляются по порядку, а не по имени: `SELECT amount, purpose` и `SELECT purpose, amount` склеятся как попало, без ошибки.",
+      "ORDER BY и LIMIT пишутся один раз, в самом конце, и относятся ко всему результату. Части в скобки SQLite брать не даёт."
+    ]
+  },
+  {
+    "id": "h.union_all",
+    "title": "UNION ALL: склеить всё",
+    "summary": "`UNION ALL` склеивает выборки и ничего не выбрасывает: сколько строк в частях, столько и в результате. Для лент, журналов и подсчётов нужен именно он.",
+    "syntax": "SELECT … FROM … WHERE …\nUNION ALL\nSELECT … FROM … WHERE …;",
+    "example": "SELECT date(ts) AS день, amount, purpose FROM transactions\nWHERE account_id = 'ACC-30518' AND amount > 0\nUNION ALL\nSELECT date(ts), amount, purpose FROM transactions\nWHERE account_id = 'ACC-30518' AND amount < 0\nORDER BY день;",
+    "pitfalls": [
+      "Проверка на пальцах: строк в UNION ALL ровно столько, сколько в частях вместе. Если меньше — где-то UNION без ALL.",
+      "UNION ALL ещё и быстрее: ему не нужно искать повторы.",
+      "Чтобы в ленте было видно, откуда строка, добавь в каждую часть метку: `'платёж' AS вид` в первой и `'возврат'` во второй."
+    ]
+  },
+  {
+    "id": "h.except_intersect",
+    "title": "EXCEPT и INTERSECT: вычитание и пересечение",
+    "summary": "`EXCEPT` оставляет строки первой выборки, которых нет во второй. `INTERSECT` — строки, которые есть в обеих. Строки сравниваются целиком, повторы убираются.",
+    "syntax": "SELECT ключ FROM … WHERE …\nEXCEPT\nSELECT ключ FROM … WHERE …;\n\nSELECT ключ FROM …\nINTERSECT\nSELECT ключ FROM …;",
+    "example": "-- прописаны сейчас, но нигде сейчас не работают\nSELECT person_id FROM registrations WHERE to_date IS NULL\nEXCEPT\nSELECT person_id FROM employment WHERE to_date IS NULL;\n\n-- и владеют недвижимостью, и держат счёт\nSELECT owner_person_id FROM properties\nINTERSECT\nSELECT holder_person_id FROM accounts;",
+    "pitfalls": [
+      "Обе части должны отдавать одно и то же: `persons.id` с `persons.id`. id против ФИО дадут пустое пересечение — и никакой ошибки.",
+      "Фильтр по периоду нужен в обеих частях. Вычтешь возвраты за все годы — пропадёт тот, кто брал в 2015–2017, а вернул в 2026-м.",
+      "Сравнивается вся строка. Если в первой части есть сумма или дата, а во второй — другая, строка не вычтется. Оставляй в частях только ключ.",
+      "В отличие от NOT IN, EXCEPT и INTERSECT считают NULL равным NULL: пустые значения не обнуляют результат.",
+      "Для EXCEPT важен порядок: `A EXCEPT B` — не то же, что `B EXCEPT A`. INTERSECT от порядка не зависит."
+    ]
+  }
+]
