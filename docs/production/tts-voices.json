@@ -252,6 +252,16 @@
       "casting": {
         "variant": "doc_2",
         "generated_voice_id": "yFlApcPU7yqzaHjUR6lK"
+      },
+      "scene_settings": {
+        "night": {
+          "speed": 0.92,
+          "style": 0.08
+        },
+        "night_*": {
+          "speed": 0.92,
+          "style": 0.08
+        }
       }
     }
   }

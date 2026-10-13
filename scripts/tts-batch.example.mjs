@@ -256,6 +256,12 @@ const sceneVoiced = (l) => {
   return !scenes || scenes.some((s) => (s.endsWith("*") ? l.scene.startsWith(s.slice(0, -1)) : s === l.scene));
 };
 
+// speakers.<id>.scene_settings — поправки голоса для сцен (ночной регистр рассказчика: медленнее и ровнее)
+const sceneSettings = (speaker, l) =>
+  Object.entries(speaker.scene_settings ?? {})
+    .filter(([s]) => (s.endsWith("*") ? l.scene.startsWith(s.slice(0, -1)) : s === l.scene))
+    .reduce((acc, [, v]) => ({ ...acc, ...v }), {});
+
 let queue = allLines.filter(
   (l) =>
     !skipSpeakers.has(l.speaker) &&
@@ -320,7 +326,7 @@ for (const line of queue) {
   const body = {
     text,
     model_id: model,
-    voice_settings: { ...(defaults.voice_settings ?? {}), ...(speaker.voice_settings ?? {}) },
+    voice_settings: { ...(defaults.voice_settings ?? {}), ...(speaker.voice_settings ?? {}), ...sceneSettings(speaker, line) },
     seed,
   };
   if (speaker.language_code ?? defaults.language_code) body.language_code = speaker.language_code ?? defaults.language_code;
