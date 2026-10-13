@@ -2,19 +2,747 @@
   "scenes": [
     {
       "id": "intro",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
       "lines": [
         {
           "id": "c03.intro.001",
           "speaker": "narrator",
-          "text": "Девятое декабря, середина дня. За окном под потолком та же темнота, что и в полночь."
+          "text": "Девятое декабря, три часа дня. За окном под потолком та же темнота, что и в полночь."
+        },
+        {
+          "id": "c03.intro.002",
+          "speaker": "narrator",
+          "text": "Звонит городской. Даша снимает трубку раньше, чем успевает выругаться."
+        },
+        {
+          "id": "c03.intro.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "ОЦР, Ким. Слушаю.",
+          "direction": "быстро, с жвачкой"
+        },
+        {
+          "id": "c03.intro.004",
+          "speaker": "valentina",
+          "emotion": "neutral",
+          "text": "Здравствуйте. Вальц Валентина Сергеевна. Я по поводу наезда на Полярной. Восемнадцатого ноября.",
+          "direction": "в трубке; тихо, отчётливо, учительская дикция"
+        },
+        {
+          "id": "c03.intro.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Наезд на Полярной… Так. Там, вижу, материал приостановлен, угон, виновный…"
+        },
+        {
+          "id": "c03.intro.006",
+          "speaker": "valentina",
+          "emotion": "neutral",
+          "text": "…не установлен. Я знаю. Мне это повторяют с девятнадцатого ноября.",
+          "direction": "договаривает за Дашу; без нажима"
+        },
+        {
+          "id": "c03.intro.007",
+          "speaker": "valentina",
+          "emotion": "determined",
+          "text": "Это сорок первый звонок. Я буду звонить, пока кто-нибудь не откроет папку."
+        },
+        {
+          "id": "c03.intro.008",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Открою. Сегодня. Я сама перезвоню, Валентина Сергеевна.",
+          "direction": "короче, чем собиралась"
+        },
+        {
+          "id": "c03.intro.009",
+          "speaker": "narrator",
+          "text": "Гудки. Даша смотрит на трубку дольше, чем нужно."
+        },
+        {
+          "id": "c03.intro.010",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Сорок первый раз. Мать. Я бы тоже звонила."
+        },
+        {
+          "id": "c03.intro.011",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Ну-с. Полярная… Там всё ясно, коллега. Материал проверен в установленном порядке.",
+          "direction": "в дверях, с подстаканником; полсекунды паузы перед «всё ясно»; книжный регистр (ложь)",
+          "lie": true
+        },
+        {
+          "id": "c03.intro.012",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Тогда полчаса — и закроем обратно. Мать успокоим."
+        },
+        {
+          "id": "c03.intro.013",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "…Полчаса.",
+          "direction": "выдох; уходит, не дожидаясь ответа"
+        },
+        {
+          "id": "c03.intro.014",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Так. Наезд и угон в одну ночь. Начнём с машины. Ноль, склей мне их."
+        }
+      ]
+    },
+    {
+      "id": "taiga",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.taiga.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Одна строка. А наезд куда делся?"
+        },
+        {
+          "id": "c03.taiga.002",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "У наезда поле vehicle_id пустое. Строки без пары INNER JOIN не выводит.",
+          "direction": "ровно, чуть слишком дружелюбно"
+        },
+        {
+          "id": "c03.taiga.003",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Кто сбил — не записано. А угон в ту же ночь — с номером, с маркой. «Тайга», «Щит». Клюёт."
+        }
+      ]
+    },
+    {
+      "id": "route",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.route.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Выезд с базы без восьми одиннадцать. Полярная — за две минуты до наезда."
+        },
+        {
+          "id": "c03.route.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Объездная, и в двадцать три тридцать четыре — обратно на базу. Угонщик, который возвращает машину хозяину?"
+        },
+        {
+          "id": "c03.route.003",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Угонщики, голубчик, так не ездят. Они от хозяина ездят, а не к нему.",
+          "direction": "из-за стеллажа; постукивает пальцем по столу"
+        }
+      ]
+    },
+    {
+      "id": "tokha",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.tokha.001",
+          "speaker": "narrator",
+          "text": "Тоха заглядывает в дверь с банкой энергетика и смотрит на экран через плечо."
+        },
+        {
+          "id": "c03.tokha.002",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "О, «Щит». ЧОПовские тачки вечно угоняют, короч. Ключи под козырьком, хе.",
+          "direction": "быстро, слишком легко; нервный смешок"
+        },
+        {
+          "id": "c03.tokha.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Под козырьком. А директор сам заявление пишет. Ночью."
+        },
+        {
+          "id": "c03.tokha.004",
+          "speaker": "tokha",
+          "emotion": "uneasy",
+          "text": "Ну… бывает. Ладно, у меня там сервер греется.",
+          "direction": "отводит глаза; уходит быстрее, чем пришёл"
+        },
+        {
+          "id": "c03.tokha.005",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Бурцев. «Бурый», который брал за подстанцию? Позову его. Вежливо."
+        }
+      ]
+    },
+    {
+      "id": "kusp",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.kusp.001",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Ох. Номер у угона после сообщения в двадцать три сорок. А время стоит — десять сорок. Так не бывает, голубчик."
+        },
+        {
+          "id": "c03.kusp.002",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Номер дежурный ставит, когда пишет. Время потом поправить можно. Номер — нет. Это всё не по описи."
+        },
+        {
+          "id": "c03.kusp.003",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Значит, заявили после наезда. А время подвинули на час назад."
+        },
+        {
+          "id": "c03.kusp.004",
+          "speaker": "narrator",
+          "text": "Звонок с проходной: Бурцев внизу. Пришёл сам, без адвоката, раньше, чем его позвали."
+        },
+        {
+          "id": "c03.kusp.005",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ну пойдём. Ноль, карточки — мне в планшет. Говорить буду я."
+        }
+      ],
+      "next": "int_burtsev"
+    },
+    {
+      "id": "int_burtsev",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "interrogation": {
+        "suspect": "burtsev",
+        "interrogator": "dasha",
+        "mode": "unwinnable",
+        "patience": 3,
+        "breakSteps": [
+          "neutral",
+          "cold",
+          "thinking"
+        ],
+        "lieTell": "звуковой приметы нет: голос не меняется — ложь видна только по данным",
+        "liveQuery": true,
+        "closedScene": "int_burtsev_closed",
+        "points": [
+          {
+            "line": "c03.int_burtsev.002",
+            "press": "int_burtsev_press_time",
+            "present": {
+              "prompt": "Чем пробить «заявил в десять сорок»?",
+              "correct": [
+                "ev.c03.kusp_order"
+              ],
+              "cards": [
+                {
+                  "table": "incidents",
+                  "all": [
+                    {
+                      "column": "kusp_no",
+                      "eq": 4517
+                    },
+                    {
+                      "column": "reported_at",
+                      "prefix": "2026-11-18 23:40"
+                    }
+                  ]
+                }
+              ],
+              "success": "int_burtsev_break_kusp",
+              "failure": "int_burtsev_miss"
+            }
+          },
+          {
+            "line": "c03.int_burtsev.004",
+            "press": "int_burtsev_press_keys"
+          },
+          {
+            "line": "c03.int_burtsev.006",
+            "press": "int_burtsev_press_seen",
+            "present": {
+              "prompt": "Чем пробить «больше мы его не видели»?",
+              "correct": [
+                "ev.c03.route"
+              ],
+              "cards": [
+                {
+                  "table": "plate_reads",
+                  "all": [
+                    {
+                      "column": "plate",
+                      "eq": "К404ТО"
+                    },
+                    {
+                      "column": "read_at",
+                      "prefix": "2026-11-18 23:34"
+                    }
+                  ]
+                }
+              ],
+              "success": "int_burtsev_break_route",
+              "failure": "int_burtsev_miss"
+            }
+          }
+        ]
+      },
+      "lines": [
+        {
+          "id": "c03.int_burtsev.001",
+          "speaker": "narrator",
+          "text": "Бурцев садится, не снимая кожанки. Спичка в углу рта. Левая кисть ложится на стол: безымянный короче остальных."
+        },
+        {
+          "id": "c03.int_burtsev.002",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Угнали в десять сорок. Заявил сразу.",
+          "direction": "через фильтр «за стеклом»; почти шёпот, очень медленно",
+          "lie": true
+        },
+        {
+          "id": "c03.int_burtsev.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "А ключи?"
+        },
+        {
+          "id": "c03.int_burtsev.004",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Ключи в салоне. Водитель новый. Уволил.",
+          "direction": "без паузы; ровно"
+        },
+        {
+          "id": "c03.int_burtsev.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "И что было дальше с машиной?"
+        },
+        {
+          "id": "c03.int_burtsev.006",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Больше мы его не видели.",
+          "direction": "спичка перекатывается в другой угол рта",
+          "lie": true
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_press_time",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_press_time.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Десять сорок — точно? Не одиннадцать, не двенадцать?"
+        },
+        {
+          "id": "c03.int_burtsev_press_time.002",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Точно. Я на часы смотрел.",
+          "direction": "медленно; смотрит на Дашу, не мигая"
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_press_keys",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_press_keys.001",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Ключи в салоне ЧОПа. Охрана, которая сама себя не охраняет."
+        },
+        {
+          "id": "c03.int_burtsev_press_keys.002",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Бывает. Водителя уволил. Фамилию не помню. Не надо.",
+          "direction": "без интонации"
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_press_seen",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_press_seen.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Совсем не видели? Ни на камерах, ни во дворе?"
+        },
+        {
+          "id": "c03.int_burtsev_press_seen.002",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Потом сгорела где-то. Хулиганьё. Ваши нашли.",
+          "direction": "чуть медленнее обычного"
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_break_kusp",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_break_kusp.001",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "У вашего заявления номер после вызова в двадцать три сорок. В десять сорок вас в журнале не было."
+        },
+        {
+          "id": "c03.int_burtsev_break_kusp.002",
+          "speaker": "burtsev",
+          "emotion": "cold",
+          "text": "Дежурный напутал. Спросите дежурного.",
+          "direction": "ни на тон громче; спичка замирает"
+        },
+        {
+          "id": "c03.int_burtsev_break_kusp.003",
+          "speaker": "narrator",
+          "text": "Он убирает левую руку со стола. Медленно, как убирают со стола крошки."
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_break_route",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_break_route.001",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Двадцать три тридцать четыре. Ваша камера, ваши ворота. «Угнанная» машина въезжает домой."
+        },
+        {
+          "id": "c03.int_burtsev_break_route.002",
+          "speaker": "burtsev",
+          "emotion": "thinking",
+          "text": "Камеры тоже путают.",
+          "direction": "долгая пауза перед ответом"
+        },
+        {
+          "id": "c03.int_burtsev_break_route.003",
+          "speaker": "burtsev",
+          "emotion": "thinking",
+          "text": "Не надо.",
+          "direction": "почти шёпот; это не просьба"
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_miss",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_miss.001",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Не надо.",
+          "direction": "даже не смотрит на планшет"
+        },
+        {
+          "id": "c03.int_burtsev_miss.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Не то, Ноль. Мне нужен номер или время, а не картинки."
+        }
+      ]
+    },
+    {
+      "id": "int_burtsev_closed",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.int_burtsev_closed.001",
+          "speaker": "burtsev",
+          "emotion": "cold",
+          "text": "Я всё сказал. Не надо.",
+          "direction": "встаёт, не торопясь"
+        },
+        {
+          "id": "c03.int_burtsev_closed.002",
+          "speaker": "narrator",
+          "text": "У Даши в гарнитуре вызов. Ратников."
+        },
+        {
+          "id": "c03.int_burtsev_closed.003",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Ким. Закрываем. Не лезь.",
+          "direction": "по телефону; глухо"
+        },
+        {
+          "id": "c03.int_burtsev_closed.004",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "…Есть."
+        }
+      ]
+    },
+    {
+      "id": "ratnikov_call",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c03.ratnikov_call.001",
+          "speaker": "narrator",
+          "text": "У Даши в гарнитуре вызов. Ратников."
+        },
+        {
+          "id": "c03.ratnikov_call.002",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Ким. Закрываем. Не лезь.",
+          "direction": "по телефону; глухо, без «ну-с»"
+        },
+        {
+          "id": "c03.ratnikov_call.003",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Лев Борисович, у меня пробой и по журналу, и по камерам…"
+        },
+        {
+          "id": "c03.ratnikov_call.004",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Материал проверен надлежащим образом. Оснований для возобновления не усматриваю.",
+          "direction": "книжный регистр (ложь); полсекунды паузы перед ответом",
+          "lie": true
+        },
+        {
+          "id": "c03.ratnikov_call.005",
+          "speaker": "ratnikov",
+          "emotion": "hurt",
+          "text": "Отпусти человека, Даша. Пожалуйста.",
+          "direction": "тихо; впервые по имени"
+        },
+        {
+          "id": "c03.ratnikov_call.006",
+          "speaker": "burtsev",
+          "emotion": "neutral",
+          "text": "Я пойду. Не надо.",
+          "direction": "встаёт сам, раньше, чем Даша что-то скажет"
+        },
+        {
+          "id": "c03.ratnikov_call.007",
+          "speaker": "narrator",
+          "text": "Дверь закрывается мягко. На столе остаётся спичка."
+        },
+        {
+          "id": "c03.ratnikov_call.008",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Закрыли. Приказом."
+        },
+        {
+          "id": "c03.ratnikov_call.009",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "А кто под этой «Тайгой» лежал — так никто и не спросил. Спросим мы. Потерпевшая, Ноль."
+        }
+      ]
+    },
+    {
+      "id": "morgue",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.morgue.001",
+          "speaker": "narrator",
+          "text": "Строка морга: «Вальц Ирина Петровна», person_id 4127. Поступила 19.11 в 00:40. При себе — ключ с биркой «Б0-03»."
+        },
+        {
+          "id": "c03.morgue.002",
+          "speaker": "narrator",
+          "text": "Б0-03 — табличка на двери кабинета, в котором сидит Ноль."
+        },
+        {
+          "id": "c03.morgue.003",
+          "speaker": "dasha",
+          "emotion": "scared",
+          "text": "Вальц. Как та, что звонит… Мать. И логин на этом столе — i.valts.",
+          "direction": "сбивается; жвачку перестаёт жевать"
+        },
+        {
+          "id": "c03.morgue.004",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "NULL — это не пустота, голубчик.",
+          "direction": "тихо, не глядя на экран"
+        },
+        {
+          "id": "c03.morgue.005",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Это то, что кто-то не захотел записать."
+        },
+        {
+          "id": "c03.morgue.006",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Ирочку не обижай. Она хорошая была.",
+          "direction": "«была» — оговорка; пауза, будто сама услышала"
+        },
+        {
+          "id": "c03.morgue.007",
+          "speaker": "narrator",
+          "text": "Нина уходит к себе, не забрав сушки. Фикус на батарее открывает один глаз."
+        },
+        {
+          "id": "c03.morgue.008",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "«Уволилась». Мне сказали — уволилась."
+        },
+        {
+          "id": "c03.morgue.009",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Протокол. Пока у нас его не отобрали."
+        }
+      ]
+    },
+    {
+      "id": "burnt",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.burnt.001",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Через полтора суток «Тайгу» нашли сгоревшей. Удобно."
+        },
+        {
+          "id": "c03.burnt.002",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Сгоревшая машина, голубчик, — это машина, которую никто не осмотрит."
+        }
+      ]
+    },
+    {
+      "id": "cars",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c03.cars.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Такси, доставка, скорая. У всех своя работа, все по делу."
+        },
+        {
+          "id": "c03.cars.002",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "А «Тайга» в двадцать три ноль восемь — по какому делу ехала?"
         }
       ]
     },
     {
       "id": "outro",
+      "location": "gu_corridor",
+      "music": "desk_low",
       "lines": [
         {
           "id": "c03.outro.001",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Сверено. Четыре позиции.",
+          "direction": "ровно; одной интонацией"
+        },
+        {
+          "id": "c03.outro.002",
+          "speaker": "narrator",
+          "text": "Протокол сходится. Через час на папку ложится штамп: «ЗАКРЫТО ПРИКАЗОМ»."
+        },
+        {
+          "id": "c03.outro.003",
+          "speaker": "narrator",
+          "text": "Коридор первого этажа. Валентина Сергеевна стоит у окна, фотография дочери — в файлике."
+        },
+        {
+          "id": "c03.outro.004",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Валентина Сергеевна. Я по Полярной. Мы посмотрели всё, что было."
+        },
+        {
+          "id": "c03.outro.005",
+          "speaker": "valentina",
+          "emotion": "hurt",
+          "text": "Мне сказали, что она бегала вечером. Что сама выскочила на дорогу."
+        },
+        {
+          "id": "c03.outro.006",
+          "speaker": "valentina",
+          "emotion": "determined",
+          "text": "Она не бегала по ночам. Её ждали.",
+          "direction": "тихо, каждое слово отдельно"
+        },
+        {
+          "id": "c03.outro.007",
+          "speaker": "narrator",
+          "text": "По коридору проходит Бурцев. Ни на кого не смотрит. Левая рука — в кармане кожанки."
+        },
+        {
+          "id": "c03.outro.008",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "…",
+          "direction": "дыхание без слов; провожает его взглядом до хлопка двери"
+        },
+        {
+          "id": "c03.outro.009",
+          "speaker": "valentina",
+          "emotion": "neutral",
+          "text": "Вы мне позвоните. Не я — вы.",
+          "direction": "не вопрос"
+        },
+        {
+          "id": "c03.outro.010",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Позвоню. Сорок второго раза не будет."
+        },
+        {
+          "id": "c03.outro.011",
+          "speaker": "narrator",
+          "text": "В блокноте аномалий остаётся строка: КУСП 4518."
+        },
+        {
+          "id": "c03.outro.012",
           "speaker": "narrator",
           "text": "Телефон на столе молчит. Сорок второго звонка не будет."
         }
