@@ -202,6 +202,8 @@
     { "group": "Коды и имена таблиц", "match": "draft_statements", "say": "дра́фт сте́йтментс", "mode": "phrase" },
     { "group": "Коды и имена таблиц", "match": "draft_persons", "say": "дра́фт пе́рсонс", "mode": "phrase" },
     { "group": "Коды и имена таблиц", "match": "draft_publication", "say": "дра́фт паблике́йшн", "mode": "phrase" },
-    { "group": "Коды и имена таблиц", "match": "evidence_package", "say": "э́виденс па́кедж", "mode": "phrase" }
+    { "group": "Коды и имена таблиц", "match": "evidence_package", "say": "э́виденс па́кедж", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "Б0-03", "say": "бэ-но́ль но́ль-три́", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "WS-03", "say": "вэ-э́с но́ль-три́", "mode": "phrase" }
   ]
 }

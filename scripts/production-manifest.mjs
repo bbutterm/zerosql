@@ -80,8 +80,12 @@ const fxFor = (line) => {
   for (const [fx, re] of FX_RULES) if (re.test(direction)) return fx;
   return "dry";
 };
-/** Тик лжи Ратникова — полсекундная пауза перед ответом (§2.1): голова файла 600 мс вместо 100 */
-const headMsFor = (line) => (line.lie || /ложь/i.test(line.direction ?? "") ? 600 : 100);
+/**
+ * Тик лжи Ратникова — полсекундная пауза перед ответом (§2.1): голова файла 600 мс вместо 100.
+ * Рассказчик вступает после смены сцены — 300 мс тишины.
+ */
+const headMsFor = (line) =>
+  line.lie || /ложь/i.test(line.direction ?? "") ? 600 : line.speaker === "narrator" ? 300 : 100;
 const voicedLinesOf = (list) => list.filter(isVoiced);
 
 const canonSlots = portraitSlots();

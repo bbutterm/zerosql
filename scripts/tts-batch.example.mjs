@@ -40,6 +40,7 @@ const { values: opt } = parseArgs({
     csv: { type: "string", default: "docs/production/voice-lines.csv" },
     voices: { type: "string", default: "docs/production/tts-voices.json" },
     dict: { type: "string", default: "docs/production/pronunciation.json" },
+    overrides: { type: "string", default: "docs/production/tts-overrides.json" },
     out: { type: "string", default: "voice-raw" },
     only: { type: "string" }, // ratnikov,dasha
     ids: { type: "string" }, // c00.desk.011,c03.int_burtsev.002
@@ -223,6 +224,9 @@ const stressMode = opt.stress ?? defaults.stress ?? "acute";
 const delayMs = Number(opt.delay ?? defaults.delay_ms ?? 700);
 const take = Number(opt.take) || 1;
 const dict = compileDictionary(fromRoot(opt.dict));
+// Текст только для синтеза (даты и номера словами); субтитр в игре не меняется
+const overridesPath = fromRoot(opt.overrides);
+const overrides = existsSync(overridesPath) ? JSON.parse(readFileSync(overridesPath, "utf8")).lines ?? {} : {};
 
 const keyEnv = config.api?.key_env ?? "ELEVENLABS_API_KEY";
 const apiKey = process.env[keyEnv];
@@ -299,10 +303,11 @@ for (const line of queue) {
     continue;
   }
 
-  if (/\d/.test(line.text)) console.warn(`[tts] ${line.id}: в тексте есть цифры — по §11.3 числа пишутся словами`);
+  const source = overrides[line.id] ?? line.text;
+  if (/\d/.test(applyDictionary(source, dict))) console.warn(`[tts] ${line.id}: в тексте есть цифры — по §11.3 числа пишутся словами`);
   if (line.text.length > 160) console.warn(`[tts] ${line.id}: ${line.text.length} знаков — больше 160 (§11.3)`);
 
-  let text = renderStress(applyDictionary(line.text, dict), stressMode);
+  let text = renderStress(applyDictionary(source, dict), stressMode);
   if (opt["v3-tags"] && model.startsWith("eleven_v3")) {
     const tags = v3Prefix(line.direction ?? "");
     if (tags) text = `${tags} ${text}`;
