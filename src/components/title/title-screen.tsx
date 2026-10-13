@@ -138,8 +138,9 @@ export function TitleScreen({
               </div>
             </div>
 
-            <footer className="flex items-center gap-2 border-t border-line px-3 py-2.5 max-lg:flex-wrap">
-              <span className="mr-auto truncate mono-12 text-ink-3">{version}</span>
+            <footer className="flex items-center gap-2 border-t border-line px-3 py-2.5 max-lg:flex-wrap max-lg:justify-end">
+              {/* Узко: версия своей строкой, кнопки — справа под ней, как в настоящем диалоге */}
+              <span className="mr-auto truncate mono-12 text-ink-3 max-lg:mr-0 max-lg:mb-1 max-lg:basis-full">{version}</span>
               <button
                 ref={submitRef}
                 type="submit"

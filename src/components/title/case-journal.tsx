@@ -89,7 +89,7 @@ export function CaseJournal({
       </header>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-full border-separate border-spacing-0">
+        <table className="w-full table-fixed border-separate border-spacing-0">
           <thead>
             <tr className="text-left">
               <th scope="col" className="sticky top-0 h-7 w-14 border-b border-line-strong bg-scr-chrome px-4 mono-12 font-normal text-ink-2">
@@ -103,7 +103,7 @@ export function CaseJournal({
                   Открыто
                 </th>
               )}
-              <th scope="col" className="sticky top-0 h-7 w-48 border-b border-line-strong bg-scr-chrome px-4 mono-12 font-normal text-ink-2 max-lg:w-32">
+              <th scope="col" className="sticky top-0 h-7 w-48 border-b border-line-strong bg-scr-chrome px-4 mono-12 font-normal text-ink-2 max-lg:hidden">
                 Состояние
               </th>
             </tr>
@@ -124,14 +124,18 @@ export function CaseJournal({
                   onDoubleClick={() => !locked && onOpen(c.id)}
                   className={cn("cursor-default outline-none focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-ink-1", sel ? "bg-scr-select" : "hover:bg-scr-raise")}
                 >
-                  <td className="h-14 border-b border-line px-4 align-middle mono-13 text-ink-2">{c.no}</td>
+                  <td className="h-14 border-b border-line px-4 align-middle mono-13 text-ink-2 max-lg:h-[72px]">{c.no}</td>
                   <td className="border-b border-line px-3 py-2 align-middle">
                     {locked ? (
                       <Redaction chars={c.title.length} className="mono-13 text-ink-3" />
                     ) : (
                       <>
-                        <p className="ui-15 text-ink-1">{typo(c.title)}</p>
+                        <p className="truncate ui-15 text-ink-1">{typo(c.title)}</p>
                         {c.note && <p className="truncate ui-13 text-ink-2">{typo(c.note)}</p>}
+                        {/* Узко: состояние строкой ниже, а не отдельным столбцом */}
+                        <p className={cn("ui-12 lg:hidden", c.state === "active" ? "text-ink-1" : "text-ink-3")}>
+                          {STATE_TEXT[c.state as Exclude<CaseJournalState, "locked">]}
+                        </p>
                       </>
                     )}
                   </td>
@@ -140,7 +144,7 @@ export function CaseJournal({
                   )}
                   <td
                     className={cn(
-                      "border-b border-line px-4 align-middle ui-13",
+                      "border-b border-line px-4 align-middle ui-13 max-lg:hidden",
                       c.state === "active" ? "text-ink-1" : c.state === "done" ? "text-ink-3" : "text-ink-2"
                     )}
                   >

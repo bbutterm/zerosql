@@ -290,7 +290,7 @@ export function ProtocolForm({
 
             {/* Финал: штамп «ПРИНЯТО», через 250 мс — круглая печать */}
             {solved && (
-              <div className="pointer-events-none absolute -top-8 right-0 max-lg:relative max-lg:top-auto max-lg:mt-6 max-lg:flex max-lg:justify-end max-lg:pr-10">
+              <div className="pointer-events-none absolute -top-8 -right-8 max-lg:relative max-lg:right-auto max-lg:top-auto max-lg:mt-6 max-lg:flex max-lg:justify-end max-lg:pr-10">
                 <Stamp
                   id={`accepted-${caseNo ?? docNumber ?? "case"}`}
                   rotate={-3}
@@ -307,7 +307,7 @@ export function ProtocolForm({
                   id={`seal-${caseNo ?? docNumber ?? "case"}`}
                   animate={fresh.final}
                   delay={stampDelay + 250}
-                  className="absolute -right-10 -bottom-16 max-lg:right-0 max-lg:-bottom-10 max-lg:size-24"
+                  className="absolute -right-4 -bottom-16 max-lg:right-0 max-lg:-bottom-10 max-lg:size-24"
                 />
               </div>
             )}
@@ -354,8 +354,8 @@ function batchLine(filled: number, need: number, remaining: number): string {
   if (filled === 0) return need >= remaining ? `Сверка пачкой: заполните все ${remaining}.` : `Сверка пачкой, от ${need} ${blanksWord(need)}.`;
   const head = `В пачке ${filled}\u00A0${blanksWord(filled)}.`;
   if (filled < need) return `${head} Нужно не меньше ${need}.`;
-  if (need >= remaining) return `${head} Засчитывается, только если верны все. Какие — не сообщается.`;
-  return `${head} Засчитывается от ${need}\u00A0верных. Какие — не сообщается.`;
+  if (need >= remaining) return `${head} Засчитывается, только если верны все.`;
+  return `${head} Засчитывается от ${need}\u00A0верных.`;
 }
 
 /* ---------- Пропуск в бланке ---------- */

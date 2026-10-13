@@ -23,6 +23,7 @@ import { HandbookPanel } from "@/components/case/handbook-panel";
 import { ProtocolForm } from "@/components/case/protocol-form";
 import { DialoguePlayer } from "@/components/story/dialogue-player";
 import { MessengerNote } from "@/components/kit/messenger";
+import { lowerFirst } from "@/components/kit/typo";
 import { CHARACTERS, EVIDENCE, HANDBOOK, HANDBOOK_NOTES, IDLE_LINES, OBJECTIVES, PROTOCOL, PROTOCOL_ANSWERS, SCENES } from "./mock";
 import { ANSWER_SQL, SAMPLE_SQL, TABLE_NOTES, UNLOCKED_TABLES, type LabWorld } from "./world";
 
@@ -299,7 +300,7 @@ export function DeskDemo({
           ? {
               number: current,
               text: currentObjective.text.replace(/`/g, ""),
-              note: currentObjective.feedback ? `Не засчитано: ${currentObjective.feedback.replace(/`/g, "")}` : undefined,
+              note: currentObjective.feedback ? `Не засчитано: ${lowerFirst(currentObjective.feedback.replace(/`/g, ""))}` : undefined,
             }
           : null
       }

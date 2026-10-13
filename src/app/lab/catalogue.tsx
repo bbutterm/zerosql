@@ -796,7 +796,7 @@ function KitSection() {
               <ScreenButton variant="primary" disabled>
                 Сверить
               </ScreenButton>
-              <ScreenButton variant="text">Вернуться к запросу</ScreenButton>
+              <ScreenButton variant="text">Стена</ScreenButton>
               <HintTooltip content="Засекречено">
                 <button type="button" className="mono-13">
                   <Redaction chars={14} />
@@ -825,7 +825,7 @@ function KitSection() {
                 sender="Соколова В. А."
                 time="02:47"
                 more={2}
-                text="Ноль, Рябов не сдавал карту. Я подняла журнал поста — там пусто с 23:40. Посмотри, кто ещё был у шлюза."
+                text="Ноль, Рябов не сдавал карту. Я подняла журнал поста — там пусто с 23:58. Посмотри, кто ещё был у шлюза."
                 onClose={() => {}}
                 onOpen={() => {}}
               />

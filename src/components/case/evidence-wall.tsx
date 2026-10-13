@@ -23,7 +23,7 @@ export interface EvidenceWallProps {
 
 /** Шкала внутри событий ночи, px на час; пустые часы до и после сжимаются в разрыв */
 const HOUR = 320;
-const GAP = 56;
+const GAP = 104;
 const TAPE = 48;
 const PAD = 48;
 const NO_TIME_GAP = 72;
@@ -351,7 +351,7 @@ const DOTTED = {
 } as const;
 
 function NightTape({ segments, left, top, width }: { segments: Segment[]; left: number; top: number; width: number }) {
-  const marks: Array<{ x: number; hour: boolean; label?: string }> = [];
+  const marks: Array<{ x: number; hour: boolean; label?: string; end?: boolean }> = [];
   for (const s of segments) {
     if (s.kind === "gap") {
       marks.push({ x: s.x, hour: true, label: hhmm(s.from) });
@@ -363,6 +363,9 @@ function NightTape({ segments, left, top, width }: { segments: Segment[]; left: 
       marks.push({ x, hour, label: hour ? hhmm(t) : undefined });
     }
   }
+  // Конец ленты подписан: «06:00»
+  const last = segments[segments.length - 1];
+  if (last) marks.push({ x: last.x + last.width, hour: true, label: hhmm(last.to), end: true });
   // Повторы на стыках отрезков убираются
   const seen = new Set<number>();
   const unique = marks.filter((m) => (seen.has(Math.round(m.x)) ? false : (seen.add(Math.round(m.x)), true)));
@@ -386,7 +389,8 @@ function NightTape({ segments, left, top, width }: { segments: Segment[]; left: 
           <span
             key={`l${m.x}`}
             className="absolute top-[20px] font-mono text-[12px] leading-[14px] text-print toner"
-            style={{ left: 24 + m.x + 4 }}
+            // Подпись справа от деления; у конца ленты — слева, чтобы не уйти за край бумаги
+            style={m.end ? { left: 24 + m.x - 4, transform: "translateX(-100%)" } : { left: 24 + m.x + 4 }}
           >
             {m.label}
           </span>
@@ -400,7 +404,7 @@ function NightTape({ segments, left, top, width }: { segments: Segment[]; left: 
             aria-hidden
             viewBox="0 0 12 24"
             className="absolute top-3 h-6 w-3 text-print-2"
-            style={{ left: 24 + s.x + s.width / 2 + 10 }}
+            style={{ left: 24 + s.x + s.width / 2 - 6 }}
           >
             <path d="M2 22 L6 2 M6 22 L10 2" stroke="currentColor" strokeWidth="1" fill="none" />
           </svg>

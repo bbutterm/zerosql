@@ -11,7 +11,11 @@ export function RichText({ text, codeClassName }: { text: string; codeClassName?
   const parts = text.split(/(`[^`]+`)/g);
   return parts.map((part, i) =>
     part.startsWith("`") && part.endsWith("`") && part.length > 2 ? (
-      <code key={i} className={cn("font-mono text-[0.93em] break-words", codeClassName)}>
+      // Короткий код не рвётся посередине («= NULL», «IS NULL»), длинный переносится как текст
+      <code
+        key={i}
+        className={cn("font-mono text-[0.93em]", part.length <= 26 ? "whitespace-nowrap" : "break-words", codeClassName)}
+      >
         {part.slice(1, -1)}
       </code>
     ) : (

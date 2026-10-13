@@ -127,7 +127,8 @@ export function SqlTerminal({
             onClick={run}
             disabled={inactive}
             aria-disabled={!canRun}
-            className="max-lg:min-w-28"
+            // Без квоты на мобильном кнопка всё равно справа
+            className={cn("max-lg:min-w-28", !budget && "max-lg:ml-auto")}
           >
             Выполнить
           </ScreenButton>

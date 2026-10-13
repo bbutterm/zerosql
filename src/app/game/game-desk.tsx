@@ -307,7 +307,8 @@ export function GameDesk({ journal = false }: { journal?: boolean }) {
   /* ----- Схема: открытые таблицы дела, новые — подсвечены ----- */
   const unlocked = mission?.unlockedTables ?? null;
   const previous = index > 0 ? (missions[index - 1].unlockedTables ?? []) : [];
-  const newTables = unlocked ? unlocked.filter((t) => !previous.includes(t)) : [];
+  // В первом деле подсвечивать нечего: всё открытое — открыто с начала
+  const newTables = unlocked && index > 0 ? unlocked.filter((t) => !previous.includes(t)) : [];
   const openSchema = unlocked ? schema.filter((t) => unlocked.includes(t.name)) : schema;
 
   /* ----- Сцены: ориентировка в начале дела, итог в конце ----- */

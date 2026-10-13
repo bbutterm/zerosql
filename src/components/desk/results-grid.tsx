@@ -376,16 +376,17 @@ function DataTable({
                   scope="col"
                   data-col={i}
                   className={cn(
-                    "sticky top-0 z-10 h-7 border-b border-line-strong bg-scr-chrome px-3 mono-12 font-normal whitespace-nowrap text-ink-2",
-                    // Разделитель между заголовками — как ручка изменения ширины в настоящих таблицах
-                    i < cols - 1 &&
-                      "after:pointer-events-none after:absolute after:top-[7px] after:right-0 after:h-3.5 after:w-px after:bg-line-strong",
+                    // w-px: столбец по ширине содержимого, как в настоящих таблицах данных; остаток — пустой столбец справа
+                    "sticky top-0 z-10 h-7 w-px border-b border-line-strong bg-scr-chrome px-3 mono-12 font-normal whitespace-nowrap text-ink-2",
+                    // Разделитель между заголовками — как ручка изменения ширины
+                    "after:pointer-events-none after:absolute after:top-[7px] after:right-0 after:h-3.5 after:w-px after:bg-line-strong",
                     numeric[i] ? "text-right" : "text-left"
                   )}
                 >
                   {col}
                 </th>
               ))}
+              <th aria-hidden className="sticky top-0 z-10 h-7 border-b border-line-strong bg-scr-chrome" />
             </tr>
           </thead>
           <tbody>
@@ -422,7 +423,7 @@ function DataTable({
                         onClick={(e) => onCellClick(e, r, c)}
                         title={full.length > 40 ? full : undefined}
                         className={cn(
-                          "h-6 border-b border-line px-3 align-middle whitespace-pre max-lg:h-[22px] max-lg:text-[12px] max-lg:leading-[22px]",
+                          "h-6 w-px border-b border-line px-3 align-middle whitespace-pre max-lg:h-[22px] max-lg:text-[12px] max-lg:leading-[22px]",
                           numeric[c] && !isNull ? "text-right" : "text-left",
                           selected && "outline outline-1 -outline-offset-1 outline-ink-2"
                         )}
@@ -431,6 +432,7 @@ function DataTable({
                       </td>
                     );
                   })}
+                  <td aria-hidden className="border-b border-line" />
                 </tr>
               );
             })}
@@ -484,7 +486,7 @@ function DataTable({
             )}
             {hiddenRight > 0 && (
               <button type="button" tabIndex={-1} onClick={scrollToNextHidden} className="text-ink-1 hover:underline underline-offset-[3px]">
-                ещё {countOf(hiddenRight, ["столбец", "столбца", "столбцов"])} справа&nbsp;→
+                {`ещё ${countOf(hiddenRight, ["столбец", "столбца", "столбцов"])} справа\u00A0→`}
               </button>
             )}
           </>
@@ -575,7 +577,7 @@ function RowSheet({
               }}
               className={cn(screenButtonClass("text", { touch: true }), "min-w-0 truncate")}
             >
-              вставить {shortLiteral} в&nbsp;запрос
+              {`вставить ${shortLiteral} в\u00A0запрос`}
             </button>
           )}
         </div>
@@ -712,8 +714,10 @@ function Annotated({
 function whereToLook(error: string): string | null {
   if (/no such column/i.test(error)) return "Имена столбцов есть в схеме слева. Клик по имени вставит его в запрос.";
   if (/no such table/i.test(error)) return "Открытые таблицы перечислены в схеме слева. Клик по имени вставит его в запрос.";
-  if (/ambiguous column/i.test(error)) return "Псевдоним таблицы пишется перед столбцом через точку: a.badge_id.";
-  return null;
+  if (/ambiguous column/i.test(error)) return "Псевдоним таблицы пишется перед столбцом через точку: «a.badge_id».";
+  if (/incomplete input|unrecognized token/i.test(error)) return "Запрос оборван: проверьте кавычки, скобки и точку с запятой.";
+  if (/syntax error/i.test(error)) return "Порядок частей запроса: SELECT, FROM, JOIN, WHERE, GROUP BY, ORDER BY, LIMIT.";
+  return "Справочник SQL — вкладка «Справка» справа.";
 }
 
 function ErrorOutput({
@@ -759,7 +763,10 @@ function ErrorOutput({
   }
 
   const wrong = help?.explanation.match(/«([\w.]+)»/)?.[1];
-  const suggestion = help?.suggestion?.replace(/^Возможно, вы имели в виду /, "Возможно, ");
+  // «Возможно, вы имели в виду FROM?» → «Возможно, «FROM»?»: имя набирается PT Mono и кликается
+  const suggestion = help?.suggestion
+    ?.replace(/^Возможно, вы имели в виду /, "Возможно, ")
+    .replace(/^(Возможно, )([A-Za-z_][\w.]*)(\?)$/, "$1«$2»$3");
   const isGuess = Boolean(suggestion?.startsWith("Возможно"));
   const token = errorToken(result);
   const line = sql && token ? findToken(sql, token)?.line : undefined;
