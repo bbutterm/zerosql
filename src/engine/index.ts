@@ -182,6 +182,36 @@ export type { PlayerQueryEntry, QueryLogMeta, QueryLogStatus } from "./query-log
 /** Игровые часы */
 export { advanceClock, formatClockRu, parseClock, toGameTime, compareClock } from "./clock";
 
+// --- World v2 ---
+/**
+ * Мир «Полыньи» (разд. 8 библии, TECH_SPEC разд. 3): детерминированная
+ * генерация из WORLD_SEED, байты для кеша, база дела с часами game_now(),
+ * TEMP VIEW горизонта и сюжетными патчами. Константы фактов — worldFacts.
+ */
+export { WORLD_SEED, WORLD_GENERATOR_VERSION, worldFacts } from "./world/facts";
+export {
+  generateWorld,
+  generateWorldInto,
+  exportWorld,
+  openCaseDatabase,
+  worldStats,
+  initWorld,
+  createWorldDatabase,
+} from "./world/generate";
+export type { OpenCaseOptions, PatchRequest, GenerateStats } from "./world/generate";
+export {
+  setGameClock,
+  getGameClock,
+  applyStoryPatch,
+  createHorizonViews,
+  dropHorizonView,
+  STORY_PATCHES,
+} from "./world/horizon";
+export type { StoryPatchParams, StoryPatchResult, StoryPatchDef } from "./world/horizon";
+export { WORLD_LATE_TABLES, WORLD_TABLES } from "./world/schema";
+export type { TableDef as WorldTableDef } from "./world/schema";
+// --- /World v2 ---
+
 // --- Facade functions ---
 
 /** Создаёт БД, накатывает schema + seed, возвращает всё что нужно стору */

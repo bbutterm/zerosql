@@ -20,7 +20,7 @@ import * as c11 from "./c11";
 import * as c12 from "./c12";
 import * as eggs from "./eggs";
 
-export type { PlantFn, LateFiller, LateFillers, PlantModule } from "./types";
+export type { PlantFn, LateFiller, LateFillerContext, LateFillers, PlantModule } from "./types";
 
 export const PLANT_REGISTRY: readonly PlantModule[] = [
   { key: "core", plant: core.plant },

@@ -14,7 +14,7 @@ import { fillOrdered, sampleTimes } from "../context";
 import type { Rng } from "../rng";
 import { DAY, HOUR, fmtDate, fmtTs, hourOfDay, isWeekend, parseTs } from "../rng";
 import { DISTRICTS, INCIDENT_KINDS, officeWeight } from "../catalog";
-import { INCIDENT, LOGIN, PERSON, STAFF } from "../facts";
+import { INCIDENT, LOGIN, PERSON, WORKSTATION } from "../facts";
 import { QUERY_LOG_FROM, QUERY_LOG_TARGET, QUERY_LOG_TO, IRINA_QUERY_COUNT } from "../plants/core";
 import { OFFLINE_WORKSTATIONS } from "./police";
 import { noiseState, type NoiseStaff } from "./state";
@@ -56,7 +56,8 @@ function actors(ctx: WorldContext, t: number): { list: Actor[]; weights: number[
     list.push(a);
     weights.push(w);
   };
-  push({ login: LOGIN.melnik, workstation: "WS-IT-01", kind: "melnik" }, day ? 17 : 2);
+  // Мельник — ~600 легальных UPDATE с WS-IT-01 (ложный след Д4)
+  push({ login: LOGIN.melnik, workstation: "WS-IT-01", kind: "melnik" }, day ? 42 : 4);
   push({ login: LOGIN.nina, workstation: "АРХ-01", kind: "nina" }, day ? 9 : 0.3);
   if (day) push({ login: LOGIN.lykov, workstation: "WS-IT-02", kind: "lykov" }, 3);
   for (const s of st.staff) {
@@ -154,7 +155,11 @@ export function generateAuditLog(ctx: WorldContext): void {
       const offline = actor.kind === "field" && r.chance(0.8);
       const at = offline ? Math.max(AUDIT_FROM, key - r.float(1, 36) * HOUR) : key;
       let workstation = actor.workstation;
-      if (actor.kind === "melnik") workstation = r.chance(0.86) ? "WS-IT-01" : hourOfDay(key) > 9 && hourOfDay(key) < 18 && r.chance(0.35) ? STAFF_WS07 : "WS-IT-03";
+      if (actor.kind === "melnik") {
+        // WS-07 в серверной — на территории Мельника: днём он иногда правит и оттуда (ложный след Д4)
+        const daytime = hourOfDay(key) > 9 && hourOfDay(key) < 18;
+        workstation = r.chance(0.86) ? "WS-IT-01" : daytime && r.chance(0.35) ? WORKSTATION.serverRoom : "WS-IT-03";
+      }
       const edit = legalEdit(r, actor, logins, caseIds);
       if (SENSITIVE_ROWS.has(`${edit.table_name}:${edit.row_id}`)) return null;
       return { id, ts: fmtTs(Math.floor(at / 1000) * 1000), login: actor.login, workstation, ...edit };
@@ -162,8 +167,6 @@ export function generateAuditLog(ctx: WorldContext): void {
   });
 }
 
-const STAFF_WS07 = "WS-07";
-void STAFF;
 
 // ==================================================================== query_log
 
@@ -214,8 +217,10 @@ export function generateQueryLog(ctx: WorldContext): void {
       const alive = users.filter((s) => s.hired <= key && (s.fired === null || s.fired > key));
       let login: string;
       let terminal: string;
+      // Каст в шуме — только в рабочие часы будней: ночи каста сажают дела (Д8)
+      const workHours = !isWeekend(key) && hourOfDay(key) >= 9 && hourOfDay(key) < 19;
       const cast = castUsers.filter((c) => c.from <= key && !(c.login === LOGIN.ratnikov && key > parseTs("2026-12-21 16:00:00")));
-      if (r.chance(0.12) && cast.length > 0) {
+      if (workHours && r.chance(0.12) && cast.length > 0) {
         const c = r.pick(cast);
         login = c.login;
         terminal = c.terminal;
@@ -231,5 +236,4 @@ export function generateQueryLog(ctx: WorldContext): void {
       };
     },
   });
-  void STAFF;
 }

@@ -696,6 +696,19 @@ function plantChronicle(ctx: WorldContext): void {
   }
   if (deletable.length !== 0) throw new WorldGenError(`core: ${deletable.length} запросов Ирины не удалены`);
 
+  // --- подделки призрака в statements (вставлены в сеансах 2 и 3; id — по моменту вставки)
+  const forgeries: [number, string, number, string, number, string, string][] = [
+    [5203, "2026-11-20 02:24:40", F.PERSON.kravets, "Кравец Н. Н.", F.DOC_REG.forgedA, "2015-02-21 11:20:00", "Видел Сазонова в аэропорту 21.02.2015, был с двумя чемоданами"],
+    [5204, "2026-11-20 02:26:10", F.PERSON.lapina, "Лапина Г. П.", F.DOC_REG.forgedA, "2015-02-21 12:05:00", "19.02 в 20:00 грузил чемоданы в машину у подъезда (Портовая, 3)"],
+    [5207, "2026-11-21 02:34:50", F.PERSON.pakhomova, "Пахомова З. П.", F.DOC_REG.forgedB, "2015-02-21 15:40:00", "Деньги выдала лично Сазонову, по его распоряжению"],
+  ];
+  for (const [id, insertedAt, person, text, doc, taken, body] of forgeries) {
+    ctx.insert("statements", {
+      id, case_id: F.CASE_SAZONOV, doc_reg_no: doc, person_id: person, person_text: text, taken_at: taken,
+      taken_by: RATNIKOV_2015, typed_by: NINA_SHORT, text: body, status: "принято",
+    }, { orderAt: ts(insertedAt) });
+  }
+
   // --- 21.12: агент синхронизации на WS-07 (сеанса в эту ночь нет)
   door(ctx, "2026-12-21 02:55:00", F.BADGE.lykov, "КПП-Б0", "вход");
   door(ctx, "2026-12-21 02:58:00", F.BADGE.lykov, "Серверная", "вход");

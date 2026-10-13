@@ -11,7 +11,7 @@
  *   2026 год — по времени, вокруг подделок призрака.
  */
 import type { Row, WorldContext } from "../context";
-import { WorldGenError, fillOrdered, fitSequence, planOrdered, sampleTimes } from "../context";
+import { WorldGenError, fillOrdered, fitSequence, flushByTime, planOrdered, sampleTimes } from "../context";
 import type { Rng } from "../rng";
 import { DAY, HOUR, fmtDate, fmtTs, hourOfDay, isWeekend, parseTs } from "../rng";
 import { loginFor } from "../pools";
@@ -94,7 +94,8 @@ export function generateStaff(ctx: WorldContext): void {
   }
   const used = new Set(ctx.planted("staff").map((p) => Number(p.row.person_id)));
   const pool = rng.shuffle(st.adults.filter((p) => !used.has(p.id)));
-  const officeWs = st.workstations.filter((w) => /^WS-(0[2-9]|1\d|2[0-3])$/.test(w));
+  // Станции каста (WS-01 Ратникова, WS-03 Ирины, WS-05 Даши, WS-07 в серверной) шуму не раздаются
+  const officeWs = st.workstations.filter((w) => /^WS-(0[2-9]|1\d|2[0-3])$/.test(w) && !["WS-03", "WS-05", "WS-07"].includes(w));
   const itWs = st.workstations.filter((w) => w.startsWith("WS-IT-"));
   const dutyWs = st.workstations.filter((w) => w.startsWith("ДЧ-"));
   const t0 = parseTs("1984-01-01");
@@ -150,7 +151,10 @@ export function staffTitle(s: NoiseStaff): string {
 
 // ==================================================================== logins
 
-const SERVICE_LOGINS = ["svc.backup", "svc.report", "svc.mirror", "svc.archive", "svc.monitor", "adm.it2", "adm.it3", "svc.print"];
+const SERVICE_LOGINS = [
+  "svc.backup", "svc.report", "svc.mirror", "svc.archive", "svc.monitor", "adm.it2", "adm.it3", "svc.print",
+  "svc.scan", "svc.mail", "svc.kusp", "svc.gibdd", "svc.import", "adm.duty", "svc.audit", "svc.video", "adm.it4", "svc.sync2",
+];
 
 export function generateLogins(ctx: WorldContext): void {
   const rng = ctx.rng("noise.logins");
@@ -174,7 +178,7 @@ export function generateLogins(ctx: WorldContext): void {
   }
   // Служебные учётки привязаны к сотрудникам ИТ (сироты — только test1 и zero)
   for (const name of SERVICE_LOGINS) {
-    if (rows.length >= target - ctx.plantedCount("logins")) break;
+    if (rows.length >= target) break;
     if (ctx.isReserved("login", name)) continue;
     ctx.reserve("login", name);
     const owner = rng.pick(ITs);
@@ -184,8 +188,7 @@ export function generateLogins(ctx: WorldContext): void {
       created_by: "k.melnik", enabled: 1, last_login_at: fmtTs(Math.floor((lastBefore - rng.float(0.1, 2) * DAY) / 1000) * 1000),
     });
   }
-  const room = target - ctx.plantedCount("logins");
-  for (const r of rows.slice(0, Math.max(0, room))) if (!ctx.isExcluded("logins", r)) ctx.write("logins", r);
+  for (const r of rows.slice(0, Math.max(0, target))) if (!ctx.isExcluded("logins", r)) ctx.write("logins", r);
 }
 
 // ==================================================================== incidents
@@ -568,14 +571,7 @@ export function generateEvidenceRegistry(ctx: WorldContext): void {
       })),
     };
   });
-  flushOrderedFree(ctx, "evidence_registry", noise, "pinned_at");
-}
-
-/** Свободный режим по времени: шум и плавающие посадки получают свободные id по порядку */
-function flushOrderedFree(ctx: WorldContext, table: string, noise: { key: number; row: Row }[], tsCol: string): void {
-  const floating = ctx.takeDeferred(table).map((p) => ({ key: p.key ?? parseTs(String(p.row[tsCol])), row: p.row, planted: true }));
-  const all = [...floating, ...noise.map((n) => ({ ...n, planted: false }))].sort((a, b) => a.key - b.key || (a.planted ? -1 : 1));
-  for (const r of all) ctx.write(table, { ...r.row, id: ctx.nextId(table) });
+  flushByTime(ctx, "evidence_registry", noise, "pinned_at");
 }
 
 // ==================================================================== attachments
@@ -621,7 +617,8 @@ export function generateMigrationJobs(ctx: WorldContext): void {
   fillOrdered(ctx, {
     table: "migration_jobs", idFrom: 1, idTo: 20, keyFrom: parseTs("2026-10-05 00:00:00"), keyTo: parseTs(CASE_START.c09) - DAY, rng,
     keyOf: (r) => parseTs(String(r.run_at)),
-    sampleKeys: (r, n, lo, hi) => sampleTimes(r, n, lo, hi, (t) => (hourOfDay(t) >= 1 && hourOfDay(t) < 4 ? 1 : 0.02)),
+    // Между якорями 10 (14.12) и 17 (11.01) шум не заходит за старт Д9: таблица без горизонта
+    sampleKeys: (r, n, lo, hi) => sampleTimes(r, n, lo, Math.min(hi, parseTs(CASE_START.c09) - DAY), (t) => (hourOfDay(t) >= 1 && hourOfDay(t) < 4 ? 1 : 0.02)),
     build: (key, id) => {
       const [action, target] = jobs[k++ % jobs.length];
       return { id, run_at: fmtTs(Math.floor(key / 60_000) * 60_000), action, target, responsible_login: "k.melnik", status: "выполнено" };

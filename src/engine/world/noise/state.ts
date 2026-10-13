@@ -88,6 +88,7 @@ export interface NoiseState {
   staff: NoiseStaff[];
   workstations: string[];
   vehicles: NoiseVehicle[];
+  cameras: { id: number; district: string; status: string }[];
   phoneOf: Map<number, string>;
   accountOf: Map<number, string>;
   companyAccounts: Map<number, string>;
@@ -111,6 +112,7 @@ export function noiseState(ctx: WorldContext): NoiseState {
       staff: [],
       workstations: [],
       vehicles: [],
+      cameras: [],
       phoneOf: new Map(),
       accountOf: new Map(),
       companyAccounts: new Map(),

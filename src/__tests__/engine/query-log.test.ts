@@ -18,7 +18,8 @@ import { PEOPLE_SQL } from "../helpers/case-fixture";
 
 let db: Database;
 const META: QueryLogMeta = { loggedAt: "2026-12-14 02:44", login: "a.novak", terminal: "АРХ-3" };
-const logRows = () => executeQuery(db, "SELECT * FROM query_log ORDER BY id");
+const logRows = () =>
+  executeQuery(db, "SELECT id, logged_at, login, terminal, query_text, rows_returned, status FROM query_log ORDER BY id");
 
 beforeEach(async () => {
   db = await createDatabase();
@@ -26,9 +27,9 @@ beforeEach(async () => {
 });
 
 describe("ensureQueryLog", () => {
-  it("создаёт таблицу с нужными столбцами", () => {
+  it("создаёт таблицу с нужными столбцами (разд. 8.2: v1 + ts_real, case_id, objective_id, run_id)", () => {
     ensureQueryLog(db);
-    expect(logRows().columns).toEqual([
+    expect(executeQuery(db, "SELECT * FROM query_log").columns).toEqual([
       "id",
       "logged_at",
       "login",
@@ -36,7 +37,25 @@ describe("ensureQueryLog", () => {
       "query_text",
       "rows_returned",
       "status",
+      "ts_real",
+      "case_id",
+      "objective_id",
+      "run_id",
     ]);
+  });
+
+  it("пишет дело, задачу и прохождение, если они переданы", () => {
+    logPlayerQuery(db, { ...META, sql: "SELECT 1", rowsReturned: 1, ok: true, caseId: "case-00-nulevoy-etazh", objectiveId: "p1", runId: "r1", tsReal: "2026-10-13T01:00:00Z" });
+    expect(executeQuery(db, "SELECT ts_real, case_id, objective_id, run_id FROM query_log").rows).toEqual([
+      ["2026-10-13T01:00:00Z", "case-00-nulevoy-etazh", "p1", "r1"],
+    ]);
+  });
+
+  it("пишет в main.query_log, даже если поверх висит TEMP VIEW горизонта", () => {
+    ensureQueryLog(db);
+    db.run("CREATE TEMP VIEW query_log AS SELECT * FROM main.query_log WHERE logged_at <= '2026-12-14 03:00'");
+    expect(logPlayerQuery(db, { ...META, sql: "SELECT 1", rowsReturned: 1, ok: true })).toBe(1);
+    expect(executeQuery(db, "SELECT COUNT(*) FROM query_log").rows[0][0]).toBe(1);
   });
 
   it("не трогает таблицу, которую уже заполнил генератор мира", () => {

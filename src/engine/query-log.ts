@@ -1,4 +1,4 @@
-import type { Database } from "sql.js";
+import type { Database, SqlValue } from "sql.js";
 import type { QueryResult } from "@/types/database";
 
 /**
@@ -25,15 +25,28 @@ export const QUERY_LOG_TABLE = "query_log";
 /** Предел длины query_text (в символах), чтобы журнал не раздувался */
 export const QUERY_TEXT_MAX = 2000;
 
-export const QUERY_LOG_SQL = `CREATE TABLE IF NOT EXISTS ${QUERY_LOG_TABLE} (
+/**
+ * Схема совпадает с world/schema.ts (разд. 8.2 библии): шесть столбцов
+ * v1 плюс ts_real (реальное время), case_id, objective_id (p1, o5_1…) и
+ * run_id (прохождение). Пишем всегда в main.query_log: в базе дела поверх
+ * таблицы висит TEMP VIEW горизонта с тем же именем.
+ */
+export const QUERY_LOG_SQL = `CREATE TABLE IF NOT EXISTS main.${QUERY_LOG_TABLE} (
   id INTEGER PRIMARY KEY,
   logged_at TEXT,
   login TEXT,
   terminal TEXT,
   query_text TEXT,
   rows_returned INTEGER,
-  status TEXT
+  status TEXT,
+  ts_real TEXT,
+  case_id TEXT,
+  objective_id TEXT,
+  run_id TEXT
 )`;
+
+/** Столбцы разд. 8.2 сверх v1 — пишутся, если они есть в таблице */
+const EXTENDED_COLUMNS = ["ts_real", "case_id", "objective_id", "run_id"] as const;
 
 export type QueryLogStatus = "ok" | "error" | "denied";
 
@@ -53,6 +66,26 @@ export interface PlayerQueryEntry extends QueryLogMeta {
   ok: boolean;
   /** Запрос заблокирован политикой доступа (закрытая таблица, только чтение) */
   denied?: boolean;
+  /** Реальное время запроса (ISO), для разбора прохождения */
+  tsReal?: string;
+  /** Дело, в котором выполнен запрос: 'case-05-nomer-3312' */
+  caseId?: string;
+  /** Задача, которую засчитал запрос: 'p1', 'o5_1' */
+  objectiveId?: string;
+  /** Прохождение (переигровка дела — новый run) */
+  runId?: string;
+}
+
+const extendedCache = new WeakMap<Database, boolean>();
+
+/** Есть ли в query_log столбцы разд. 8.2 (у старых баз — нет) */
+function hasExtendedColumns(db: Database): boolean {
+  const cached = extendedCache.get(db);
+  if (cached !== undefined) return cached;
+  const cols = new Set((db.exec(`PRAGMA main.table_info(${QUERY_LOG_TABLE})`)[0]?.values ?? []).map((r) => String(r[1])));
+  const has = EXTENDED_COLUMNS.every((c) => cols.has(c));
+  extendedCache.set(db, has);
+  return has;
 }
 
 /** Создаёт query_log, если генератор мира её не создал */
@@ -86,11 +119,15 @@ export function logPlayerQuery(db: Database, entry: PlayerQueryEntry): number | 
   const rows = status === "ok" && Number.isFinite(entry.rowsReturned) ? Math.max(0, Math.floor(entry.rowsReturned)) : 0;
 
   ensureQueryLog(db);
+  const extended = hasExtendedColumns(db);
+  const columns = ["logged_at", "login", "terminal", "query_text", "rows_returned", "status", ...(extended ? EXTENDED_COLUMNS : [])];
+  const values: SqlValue[] = [entry.loggedAt, entry.login, entry.terminal, text, rows, status];
+  if (extended) values.push(entry.tsReal ?? null, entry.caseId ?? null, entry.objectiveId ?? null, entry.runId ?? null);
   const stmt = db.prepare(
-    `INSERT INTO ${QUERY_LOG_TABLE} (logged_at, login, terminal, query_text, rows_returned, status) VALUES (?, ?, ?, ?, ?, ?)`
+    `INSERT INTO main.${QUERY_LOG_TABLE} (${columns.join(", ")}) VALUES (${columns.map(() => "?").join(", ")})`
   );
   try {
-    stmt.run([entry.loggedAt, entry.login, entry.terminal, text, rows, status]);
+    stmt.run(values);
   } finally {
     stmt.free();
   }

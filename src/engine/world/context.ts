@@ -178,6 +178,11 @@ export class WorldContext {
     return rows;
   }
 
+  /** Таблицы, где остались не записанные плавающие посадки (ошибка: шум их не забрал) */
+  pendingDeferred(): string[] {
+    return [...this.deferredRows.entries()].filter(([, rows]) => rows.length > 0).map(([t]) => t);
+  }
+
   deferredCount(table: string): number {
     return this.deferredRows.get(table)?.length ?? 0;
   }
@@ -394,7 +399,7 @@ export function fillOrdered(ctx: WorldContext, spec: FillOrderedSpec): number {
     }
     const keys = n > 0 ? spec.sampleKeys(rng, n, seg.keyLo, seg.keyHi) : [];
     const items: { key: number; planted?: Row }[] = [
-      ...keys.map((key) => ({ key })),
+      ...keys.map((key): { key: number; planted?: Row } => ({ key })),
       ...mine.map((m) => ({ key: m.key, planted: m.row })),
     ].sort((a, b) => a.key - b.key || (a.planted ? -1 : 1));
     for (let i = 0; i < items.length; i++) {
@@ -428,14 +433,15 @@ export function fillOrdered(ctx: WorldContext, spec: FillOrderedSpec): number {
 }
 
 /**
- * Свободный режим: строки шума и плавающие посадки сортируются по ключу и
- * получают свободные id по возрастанию (явные id посадок обходятся).
+ * Свободный режим: строки шума и плавающие посадки сортируются по ключу
+ * (обычно по времени) и получают свободные id по возрастанию; явные id
+ * посадок обходятся. Так id «живых» таблиц растут вместе со временем.
  */
-export function flushFree(ctx: WorldContext, table: string, noise: readonly { row: Row; key: number }[], keyOf: (row: Row) => number): void {
-  const floating = ctx.takeDeferred(table).map((p) => ({ row: p.row, key: p.key ?? keyOf(p.row) }));
-  const all = [...floating.map((f) => ({ ...f, planted: true })), ...noise.map((r) => ({ ...r, planted: false }))];
+export function flushByTime(ctx: WorldContext, table: string, noise: readonly { key: number; row: Row }[], tsCol: string): void {
+  const floating = ctx.takeDeferred(table).map((p) => ({ key: p.key ?? Date.parse(`${String(p.row[tsCol]).replace(" ", "T")}Z`), row: p.row, planted: true }));
+  const all = [...floating, ...noise.map((n) => ({ ...n, planted: false }))];
   all.sort((a, b) => a.key - b.key || (a.planted === b.planted ? 0 : a.planted ? -1 : 1));
-  for (const item of all) ctx.write(table, { ...item.row, id: ctx.nextId(table) });
+  for (const r of all) ctx.write(table, { ...r.row, id: ctx.nextId(table) });
 }
 
 /**
