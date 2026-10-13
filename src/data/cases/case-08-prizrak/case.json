@@ -391,6 +391,14 @@
           {
             "type": "compound",
             "rules": [
+              { "type": "column_values", "columns": ["terminal"], "values": ["CRON-01"], "mode": "equal" },
+              { "type": "contains_substring", "column": "logged_at", "substring": "03:12:00" }
+            ],
+            "successMessage": "CRON-01, ровно в 03:12:00."
+          },
+          {
+            "type": "compound",
+            "rules": [
               { "type": "row_count", "expected": 9, "comparison": "eq" },
               { "type": "column_values", "values": ["i.valts"], "mode": "equal" }
             ],

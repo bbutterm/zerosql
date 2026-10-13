@@ -298,7 +298,9 @@ describe("хроника вмешательств (М5, М6, М14, М15)", () =>
   it("М15: две чашки чабреца Лыкова за 15 минут до каждого сеанса; вход на КПП-Б0 за 12 минут", () => {
     expect(rows(world, "SELECT ts FROM purchases WHERE payer_person_id = 4210 AND item = 'чай с чабрецом' AND qty = 2 ORDER BY ts").map((r) => r[0]))
       .toEqual(F.GHOST_SESSIONS.map((s) => s.tea));
-    expect(one(world, "SELECT COUNT(*) FROM purchases WHERE item = 'чай с чабрецом' AND qty >= 2")).toBe(7);
+    // «две чашки» — только посадки: 7 сеансов Лыкова + 11 пятниц Ирины 04.09–13.11 (разд. 8.4, посадка c08)
+    expect(one(world, "SELECT COUNT(*) FROM purchases WHERE item = 'чай с чабрецом' AND qty >= 2")).toBe(18);
+    expect(one(world, "SELECT COUNT(*) FROM purchases WHERE item = 'чай с чабрецом' AND qty >= 2 AND payer_person_id NOT IN (4210, 4127)")).toBe(0);
     const ins = rows(world, "SELECT ts FROM door_access WHERE badge_id = 'B-4210' AND door = 'КПП-Б0' AND direction = 'вход' AND time(ts) < '05:00:00' ORDER BY ts").map((r) => r[0]);
     for (const s of F.GHOST_SESSIONS) expect(ins).toContain(s.lykovIn);
     expect(one(world, "SELECT COUNT(*) FROM door_access WHERE badge_id = 'B-4210' AND ts > '2026-12-22 02:08:00'")).toBe(0);

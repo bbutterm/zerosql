@@ -106,7 +106,7 @@ function doneBefore(o: CaseObjective): Set<string> {
 function passes(id: string, sql: string, on: Database = db): boolean {
   const o = objective(id);
   const result = run(sql, on);
-  expect(result.error, `${id}: ${result.error}\n${sql}`).toBeUndefined();
+  expect(result.error, `${id}: ${result.error}\n${sql}`).toBeNull();
   const progress = checkCaseProgress(c08, result, on, doneBefore(o), { flags: CODA });
   return progress.completed.some((c) => c.objectiveId === id);
 }
@@ -207,7 +207,7 @@ describe("эталоны", () => {
       const t0 = performance.now();
       const result = run(o.solution);
       const ms = performance.now() - t0;
-      expect(result.error, `${o.id}: ${result.error}`).toBeUndefined();
+      expect(result.error, `${o.id}: ${result.error}`).toBeNull();
       expect(ms, o.id).toBeLessThan(1000);
       expect(result.rowCount, o.id).toBeLessThanOrEqual(5000);
       const progress = checkCaseProgress(c08, result, db, done, { flags: CODA });
@@ -228,7 +228,7 @@ describe("эталоны", () => {
   it("эталоны проходят table guard с таблицами дела и не берут понятий из будущих дел", () => {
     for (const o of c08.objectives) {
       const r = executeSQL(db, o.solution, c08.tables);
-      expect(r.error, o.id).toBeUndefined();
+      expect(r.error, o.id).toBeNull();
       expect(FUTURE.exec(o.solution)?.[0], o.id).toBeUndefined();
     }
   });
@@ -354,9 +354,9 @@ const CASES: Record<string, { ok: string[]; wrong: string[] }> = {
        JOIN v ON v.direction = 'вход' AND s.t0 BETWEEN v.t_in AND COALESCE(v.t_out, datetime(v.t_in, '+12 hours'))
        JOIN staff st ON st.badge_id = v.badge_id
        GROUP BY st.full_name HAVING COUNT(DISTINCT s.t0) >= 6`,
-      // без PARTITION BY: соседом стал чужой пропуск
+      // LAG вместо LEAD: граница — предыдущий проход, интервал пуст
       `${STARTS},
-       v AS (SELECT badge_id, direction, ts AS t_in, LEAD(ts) OVER (ORDER BY ts) AS t_out
+       v AS (SELECT badge_id, direction, ts AS t_in, LAG(ts) OVER (PARTITION BY badge_id ORDER BY ts) AS t_out
              FROM door_access WHERE door = 'КПП-Б0')
        SELECT st.full_name, COUNT(DISTINCT s.t0) FROM starts s
        JOIN v ON v.direction = 'вход' AND s.t0 BETWEEN v.t_in AND COALESCE(v.t_out, datetime(v.t_in, '+12 hours'))
@@ -528,8 +528,13 @@ describe("посаженные факты Д8", () => {
       AND time(ts) BETWEEN '03:00:00' AND '05:00:00' ORDER BY ts`).map((r) => String(r[0]));
     expect(ratnikovOut.map((t) => t.slice(0, 10))).toEqual(["2026-11-19", "2026-11-20", "2026-11-21", "2026-11-27", "2026-12-03", "2026-12-09"]);
     for (const t of ratnikovOut) expect(t.slice(11) >= "03:30:00" && t.slice(11) <= "04:00:00", t).toBe(true);
-    // 22.12 Ратников в больнице: после 21.12 16:00 проходов нет
-    expect(rowsOf(`SELECT COUNT(*) FROM door_access WHERE badge_id = 'B-1104' AND ts > '2026-12-21 16:00:00'`)).toEqual([[0]]);
+    // 22.12 Ратников в больнице: после 21.12 16:00 — только выход с бригадой СМП
+    expect(rowsOf(`SELECT ts, door, direction, note FROM door_access WHERE badge_id = 'B-1104' AND ts > '2026-12-21 16:00:00'`))
+      .toEqual([["2026-12-21 16:31:12", "КПП-Б0", "выход", "СМП"]]);
+    // поэтому открытый интервал «до часов игры» не даёт ему седьмой сеанс
+    expect(rowsOf(`${STARTS}, ${V}
+      SELECT v.badge_id FROM starts s JOIN v ON v.direction = 'вход' AND s.t0 BETWEEN v.t_in AND IFNULL(v.t_out, game_now())
+      GROUP BY v.badge_id HAVING COUNT(DISTINCT s.t0) = 7`)).toEqual([["B-4210"]]);
 
     const melnik = rowsOf(`SELECT ts, direction FROM door_access WHERE badge_id = 'B-1412' AND door = 'КПП-Б0'
       AND time(ts) BETWEEN '00:30:00' AND '04:00:00' ORDER BY ts`);
