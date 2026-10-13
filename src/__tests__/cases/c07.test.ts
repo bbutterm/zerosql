@@ -69,7 +69,7 @@ function passes(id: string, sql: string, base: Database = db): boolean {
   const target = objective(id);
   const before = new Set(mainObjectives(CASE).filter((o) => o.order < target.order).map((o) => o.id));
   const result = run(sql, base);
-  expect(result.error, `${id}: ${sql}\n${result.error}`).toBeUndefined();
+  expect(result.error, `${id}: ${sql}\n${result.error}`).toBeNull();
   return checkCaseProgress(CASE, result, base, before).completed.some((c) => c.objectiveId === id);
 }
 
@@ -124,7 +124,7 @@ describe("контент дела", () => {
   it("часы: старт 21.12 16:00, потолок 23:30 — раньше выхода B-9000 в 23:41", () => {
     expect(CASE.date).toBe("2026-12-21 16:00");
     expect(CASE.clock?.cap).toBe("2026-12-21 23:30");
-    expect(CASE.clock?.cap ?? "" < C07.playerExit).toBe(true);
+    expect((CASE.clock?.cap ?? "") < C07.playerExit).toBe(true);
   });
 });
 
@@ -216,10 +216,10 @@ const WRONG: Record<string, string[]> = {
     // ловушка реального мира: NOT IN по employment с NULL у подрядчиков → 0 строк
     `WITH flats AS (SELECT owner_person_id FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31')
      SELECT owner_person_id FROM flats WHERE owner_person_id NOT IN (SELECT person_id FROM employment WHERE company_id = 18)`,
-    // «проверь, что значит поле»: по тексту должности Петров выпадает
+    // «проверь, что значит поле»: медсанчасть с договором на стройку посчитана как стройка — Петров выпадает
     `WITH flats AS (SELECT owner_person_id FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31')
      SELECT owner_person_id FROM flats f WHERE NOT EXISTS (SELECT 1 FROM employment e WHERE e.person_id = f.owner_person_id
-       AND (e.company_id = 18 OR e.position LIKE '%Глубина-Стро%'))`,
+       AND e.company_id IN (18, 90))`,
     // условие на правую таблицу в WHERE: LEFT JOIN превращается во «внутренний»
     `WITH flats AS (SELECT owner_person_id FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31')
      SELECT f.owner_person_id FROM flats f LEFT JOIN employment e ON e.person_id = f.owner_person_id WHERE e.company_id <> 18`,
@@ -286,7 +286,7 @@ describe("эталоны задач", () => {
       const t0 = performance.now();
       const result = run(o.solution);
       const ms = performance.now() - t0;
-      expect(result.error, `${o.id}: ${result.error}`).toBeUndefined();
+      expect(result.error, `${o.id}: ${result.error}`).toBeNull();
       expect(ms, o.id).toBeLessThan(1000);
       const progress = checkCaseProgress(CASE, result, db, completed);
       expect(progress.completed.map((c) => c.objectiveId), `${o.id}: ${progress.activeFeedback}`).toContain(o.id);
@@ -309,7 +309,7 @@ describe("эталоны задач", () => {
       expect(result.errorKind, o.id).toBeUndefined();
     }
     for (const closed of ["door_access", "bank_statements", "cron_jobs", "purchases"]) {
-      expect(executeSQL(db, `SELECT * FROM ${closed} LIMIT 1`, CASE.tables).error, closed).toBeDefined();
+      expect(executeSQL(db, `SELECT * FROM ${closed} LIMIT 1`, CASE.tables).error, closed).not.toBeNull();
     }
   });
 
@@ -355,7 +355,7 @@ describe("эталоны задач", () => {
     for (const e of handbookByCase.c07) {
       for (const sql of e.example.split(/\n\n/)) {
         const result = run(sql);
-        expect(result.error, `${e.id}: ${result.error}`).toBeUndefined();
+        expect(result.error, `${e.id}: ${result.error}`).toBeNull();
         expect(result.rowCount, e.id).toBeGreaterThan(0);
       }
     }
@@ -505,8 +505,8 @@ describe("посаженные факты Д7", () => {
     expect(outsiders.map((r) => r[0])).toEqual([1104, 1530, 1602, 1777]);
     expect(one("SELECT COUNT(*) FROM employment WHERE company_id = 18 AND person_id IS NULL")).toBe(4);
     expect(one(`SELECT COUNT(*) FROM properties WHERE ${WINDOW} AND owner_person_id NOT IN (SELECT person_id FROM employment WHERE company_id = 18)`)).toBe(0);
-    // Петров — в медсанчасти (отдельное юрлицо), и в должности упомянута стройка
-    expect(rows("SELECT company_id, position FROM employment WHERE person_id = 1777 ORDER BY from_date")[0]).toEqual([90, "врач здравпункта стройплощадки «Глубина-Строя»"]);
+    // Петров — в медсанчасти (отдельное юрлицо, строка core), к «Глубина-Строю» отношения не имел
+    expect(rows("SELECT company_id, position FROM employment WHERE person_id = 1777")).toEqual([[90, "врач-терапевт"]]);
     expect(one("SELECT COUNT(*) FROM employment WHERE person_id IN (1104, 1602, 1530, 1777) AND company_id = 18")).toBe(0);
   });
 

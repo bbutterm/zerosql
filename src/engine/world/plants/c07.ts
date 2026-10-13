@@ -118,9 +118,15 @@ export function plant(ctx: WorldContext): void {
  * занятым. ctx.nextId здесь не годится — он резервирует id, и insert
  * посчитал бы его чужим.
  */
+const idCursor = new WeakMap<WorldContext, Map<string, number>>();
+
+/** Наименьший свободный id: курсор по таблице, чтобы не сканировать с единицы на каждой вставке */
 function freeId(ctx: WorldContext, table: string): number {
-  let id = 1;
+  let cursors = idCursor.get(ctx);
+  if (!cursors) idCursor.set(ctx, (cursors = new Map()));
+  let id = cursors.get(table) ?? 1;
   while (ctx.isIdUsed(table, id)) id++;
+  cursors.set(table, id);
   return id;
 }
 
@@ -155,11 +161,14 @@ function makePeople(ctx: WorldContext, rng: Rng): { builders: Planted[]; resettl
       const hi = parseTs(birthTo);
       const birth = fmtDate(Math.floor(rng.float(lo, hi) / DAY) * DAY);
       const id = freeId(ctx, "persons");
-      ctx.insert("persons", {
+      const row = {
         id, last_name: last, first_name: first, patronymic: middle, birth_date: birth, sex,
         father_id: null, mother_id: null, prev_last_name: null, special_marks: null, death_date: null,
         created_at: fmtTs(personCreatedAt(id)),
-      });
+      };
+      // Случайные ФИО — как у шума: чужие исключения (резервы фамилий других посадок) соблюдаются
+      if (ctx.isExcluded("persons", row)) continue;
+      ctx.insert("persons", row);
       return { id, last, first, middle, sex, short, birth };
     }
     throw new WorldGenError("c07: не удалось подобрать уникальное ФИО");
@@ -236,9 +245,7 @@ function plantEmployment(ctx: WorldContext, rng: Rng, builders: readonly Planted
     job(b.id, GS, rng.pick(GS_POSITIONS), from, to);
   });
 
-  // Петров — врач медсанчасти: отдельное юрлицо с договором на стройку (ложный след 7.2)
-  job(F.PERSON.petrov, F.COMPANY.medsanchast, "врач здравпункта стройплощадки «Глубина-Строя»", "2013-05-06", "2017-06-30");
-  job(F.PERSON.petrov, F.COMPANY.medsanchast, "заведующий амбулаторией", "2017-07-03", null);
+  // Петров (ложный след 7.2) — «врач-терапевт» АНО «Медсанчасть Створ» (90): строку сажает core (F.CAST_EMPLOYMENT)
 
   // Внешние подрядчики «Глубина-Строя»: person_id нет — NOT IN по employment даёт ноль строк
   const contractors: [string, string | null][] = [

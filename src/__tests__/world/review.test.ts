@@ -28,8 +28,9 @@ async function worldWithContext(seed: string, extraPlant?: (ctx: WorldContext) =
   db.run(WORLD_SCHEMA_SQL);
   db.run("BEGIN");
   ctx.phase = "plants";
-  for (const m of PLANT_REGISTRY) m.plant(ctx);
+  // Исключения теста — до посадок: случайные ФИО посадок (строители и переселенцы c07) их тоже соблюдают
   extraPlant?.(ctx);
+  for (const m of PLANT_REGISTRY) m.plant(ctx);
   ctx.phase = "noise";
   generateNoise(ctx);
   ctx.dispose();
