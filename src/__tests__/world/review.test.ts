@@ -102,7 +102,7 @@ beforeAll(async () => {
 
 describe("ревью: ложные улики шума", () => {
   it("гости КПП-1 приходят к сотрудникам в штате: не к погибшей, не к Ратникову в кардиологии, не к Даше до перевода", () => {
-    const notes = rows(db, "SELECT note FROM door_access WHERE badge_id LIKE 'G-%' AND direction = 'вход'").map((r) => String(r[0]));
+    const notes = rows(db, "SELECT note FROM door_access WHERE badge_id LIKE 'G-%' AND badge_id <> 'G-0412' AND direction = 'вход'").map((r) => String(r[0]));
     expect(notes.length).toBeGreaterThan(100);
     for (const n of notes) expect(n).toMatch(/^гость: .+ \(к .+\)$/);
     const cast = ["Вальц И. П.", "Ратников Л. Б.", "Ким Д. С.", "Лыков А. С.", "Шустова Н. Ф.", "Мельник К. И."];

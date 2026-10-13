@@ -175,7 +175,7 @@ describe("поздние таблицы и сюжетные патчи", () => {
     applyStoryPatch(db, "c09.watcher");
     expect(one(db, "SELECT COUNT(*) FROM main.transactions WHERE amount = 300000")).toBe(0);
     expect(one(db, "SELECT logged_at FROM main.query_log WHERE query_text LIKE '%Не надо.%'")).toBe("2026-12-28 12:01:00");
-    expect(rows(db, "SELECT camera_id FROM main.plate_reads WHERE plate = 'О114РБ'")).toEqual([[31]]);
+    expect(rows(db, "SELECT camera_id FROM main.plate_reads WHERE plate = 'О114РБ' AND read_at < '2027-01-01'")).toEqual([[31]]);
     db.close();
   });
 

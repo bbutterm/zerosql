@@ -134,7 +134,9 @@ describe("резервы посадок: шум их не повторяет", (
     // К372ОК сажает c01: одна строка реестра, проезды — только посаженные (тест дела c01)
     expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE plate = 'К372ОК'")).toBe(1);
     expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate IN ('К404ТО')")).toBe(5);
-    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate IN ('О114РБ', 'Т117АУ')")).toBe(0);
+    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate IN ('О114РБ', 'Т117АУ') AND read_at < '2027-01-01'")).toBe(0);
+    // c12: «Бастион» у ГУ в ночь на 10.01.2027 (камера 2, 01:58 и 02:31)
+    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate = 'О114РБ' AND read_at >= '2027-01-01'")).toBe(2);
   });
 
   it("телефоны каста: по одной строке; «id-номера» каста шуму не выданы", () => {
@@ -180,7 +182,9 @@ describe("резервы посадок: шум их не повторяет", (
     expect(one(db, "SELECT COUNT(*) FROM audit_log WHERE login = 'i.valts'")).toBe(231 + 20);
     expect(one(db, "SELECT COUNT(*) FROM audit_log WHERE login IN ('nol', 'zero', 'p.gromov', 'test1')")).toBe(0);
     expect(one(db, "SELECT COUNT(*) FROM query_log WHERE login IN ('zero', 'i.valts')")).toBe(0);
-    expect(one(db, "SELECT COUNT(*) FROM audit_log WHERE login = 'a.lykov' AND workstation = 'WS-07'")).toBe(1);
+    expect(one(db, "SELECT COUNT(*) FROM audit_log WHERE login = 'a.lykov' AND workstation = 'WS-07' AND action <> 'SESSION'")).toBe(1);
+    // c12: 10.01.2027 02:12 — вход по админ-токену Лыкова, сеанс переключён на nol
+    expect(one(db, "SELECT COUNT(*) FROM audit_log WHERE login = 'a.lykov' AND workstation = 'WS-07' AND action = 'SESSION'")).toBe(1);
   });
 
   it("сироты в logins — только test1 и zero (c04); без карточки — только опечатки c04; в ЗАГС — Вальц и Громов", () => {
