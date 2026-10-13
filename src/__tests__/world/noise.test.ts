@@ -180,10 +180,11 @@ describe("резервы посадок: шум их не повторяет", (
     expect(one(db, "SELECT COUNT(*) FROM audit_log WHERE login = 'a.lykov' AND workstation = 'WS-07'")).toBe(1);
   });
 
-  it("сироты в logins — только zero (test1 сажает c04); у всех сотрудников есть карточка", () => {
-    expect(rows(db, "SELECT login FROM logins WHERE staff_id IS NULL OR staff_id NOT IN (SELECT id FROM staff)")).toEqual([["zero"]]);
-    expect(one(db, "SELECT COUNT(*) FROM staff s LEFT JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL")).toBe(0);
-    expect(rows(db, "SELECT s.login FROM staff s JOIN zags_deaths d ON d.person_id = s.person_id")).toEqual([["i.valts"]]);
+  it("сироты в logins — только test1 и zero (c04); без карточки — только опечатки c04; в ЗАГС — Вальц и Громов", () => {
+    expect(rows(db, "SELECT login FROM logins WHERE staff_id IS NULL OR staff_id NOT IN (SELECT id FROM staff) ORDER BY login")).toEqual([["test1"], ["zero"]]);
+    expect(rows(db, "SELECT s.id FROM staff s LEFT JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL ORDER BY s.id"))
+      .toEqual(F.STAFF_TYPOS.map((t) => [t.staffId]));
+    expect(rows(db, "SELECT s.login FROM staff s JOIN zags_deaths d ON d.person_id = s.person_id ORDER BY s.login")).toEqual([["i.valts"], ["p.gromov"]]);
   });
 
   it("деньги группы и фонда — только посадки", () => {

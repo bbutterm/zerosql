@@ -258,7 +258,8 @@ describe("ревью: пересев фона (NG+) не ломает посаж
   it("исключения посадок действуют на дубли карточек, адреса и сотрудников шума", () => {
     expect(one(alt.db, "SELECT COUNT(*) FROM persons WHERE last_name IN ('Яковлев', 'Яковлева')")).toBe(0);
     expect(one(alt.db, "SELECT COUNT(*) FROM addresses WHERE trim(street) = 'Маячная'")).toBe(0);
-    const cast = Object.values(F.STAFF);
+    // каст и опечатки импорта c04 — посадки, не шум
+    const cast = [...Object.values(F.STAFF), ...F.STAFF_TYPOS.map((t) => t.staffId)];
     const evenNoise = rows(alt.db, `SELECT id FROM staff WHERE person_id % 2 = 0 AND id NOT IN (${cast.join(",")})`);
     expect(evenNoise).toEqual([]);
   });
