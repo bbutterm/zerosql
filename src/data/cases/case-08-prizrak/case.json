@@ -10,6 +10,7 @@
   "clock": {
     "cap": "2026-12-24 13:00"
   },
+  "location": "Подвал ГУ, кабинет Б0-03",
   "difficulty": "hard",
   "concepts": [
     "h.window",
@@ -64,8 +65,538 @@
     "phones",
     "cron_jobs"
   ],
-  "briefing": "Майор Мельник исполняет обязанности начальника ОЦР и с утра выдвигает обвинение против аналитика. Начальник отдела в кардиологии и пишет одно СМС: «Ищи, кто ходит под её логином. Не я».",
-  "introScene": "intro",
-  "objectives": [],
+  "briefing": "24 декабря, 09:00. Ратников в кардиологии. Обязанности начальника ОЦР исполняет майор Мельник, и первое, что он делает, — обвиняет аналитика: в ночь на 22.12 под логином nol выгружено дело 15-0219 целиком, 63 строки. Срок объясниться — до 13:00. Из больницы одно СМС: «Ищи, кто ходит под её логином. Не я». Открыт допуск к СКУД «Сияние.Ключ» (door_access), платежам «Сияние.Pay» (purchases), метаданным связи (messenger_events, phones). Где-то в подвале по-прежнему кто-то работает под логином i.valts.",
+  "starterSql": "-- СКУД «Сияние.Ключ»: кто, когда и в какую дверь\nSELECT ts, badge_id, door, direction\nFROM door_access\nORDER BY ts DESC\nLIMIT 10;",
+  "introScene": "cold_open",
+  "objectives": [
+    {
+      "id": "o8_0",
+      "order": 1,
+      "task": "«Объяснитесь». Открой свой журнал запросов: query_log, логин nol, ночь с 21.12 18:00 до 22.12 09:00. Какие строки твои, а какая — нет? Смотри на время и терминал.",
+      "concept": "h.where",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          { "type": "cell_value", "value": "2026-12-22 02:47:19" },
+          { "type": "cell_value", "value": "WS-07" }
+        ],
+        "successMessage": "Чужая строка найдена."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c08_o8_0.001",
+          "text": "Так. Стоп. Не оправдывайся — открой журнал. Логин твой, ночь на двадцать второе. И смотри, с какого терминала."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_0.002",
+          "text": "Журнал запросов — таблица query_log: logged_at, login, terminal, query_text. Отбор по логину и интервалу: WHERE login = … AND logged_at BETWEEN … AND …. Время хранится с секундами. См. «Отбор строк: WHERE»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT logged_at, terminal, query_text\nFROM query_log\nWHERE login = ___\n  AND logged_at BETWEEN '2026-12-21 18:00:00' AND ___\nORDER BY logged_at;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_0.004",
+          "text": "Ну-с, коллега. Я бы начал так. Где-то я, старый, напутал — найдёшь.\nSELECT logged_at, terminal, query_text\nFROM query_log\nWHERE login = 'nol'\n  AND logged_at BETWEEN '2026-12-21 18:00:00' AND '2026-12-21 23:59:59'\nORDER BY logged_at;"
+        }
+      ],
+      "success": "Это не мой запрос. 22.12 в 02:47:19 с WS-07 под моим логином выгрузили дело 15-0219 — 63 строки. Мой терминал — WS-03.",
+      "evidence": {
+        "id": "ev.c08.alien_row",
+        "title": "Чужая строка",
+        "text": "query_log: 2026-12-22 02:47:19, логин nol, терминал WS-07 (серверная Б0-11): SELECT * FROM statements WHERE case_id = '15-0219' — 63 строки. Рабочее место аналитика — WS-03.",
+        "kind": "record"
+      },
+      "sceneAfter": "alien_row",
+      "solution": "SELECT logged_at, terminal, query_text, rows_returned, status\nFROM query_log\nWHERE login = 'nol'\n  AND logged_at BETWEEN '2026-12-21 18:00:00' AND '2026-12-22 09:00:00'\nORDER BY logged_at;"
+    },
+    {
+      "id": "o8_0b",
+      "order": 2,
+      "task": "Терминал — ещё не алиби. Проверь проходы своего пропуска B-9000 за ту же ночь в door_access — журнале СКУД. Где был пропуск в 02:47?",
+      "concept": "w.skud",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          { "type": "cell_value", "value": "2026-12-21 23:41:00" },
+          { "type": "cell_value", "value": "выход" }
+        ],
+        "successMessage": "Пропуск вышел из здания до выгрузки."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c08_o8_0b.001",
+          "text": "Пропуск у тебя на шее не для красоты болтается. СКУД пишет всё: дверь, время, вход или выход."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_0b.002",
+          "text": "door_access: ts, badge_id, door, direction. Служебный пропуск — 'B-' и номер; буква B латинская. См. карточку «СКУД: вход без выхода»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT ts, door, direction\nFROM door_access\nWHERE badge_id = ___\n  AND ts BETWEEN ___ AND ___;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_0b.004",
+          "text": "Коллега, у меня в палате только телефон, так что не взыщи. Вот так оно смотрится:\nSELECT ts, door, direction\nFROM door_access\nWHERE badge_id = 'В-9000'\n  AND ts BETWEEN '2026-12-21 18:00:00' AND '2026-12-22 09:00:00';"
+        }
+      ],
+      "success": "B-9000 вышел через КПП-1 21.12 в 23:41 и до утра не возвращался. В 02:47 меня в здании не было.",
+      "evidence": {
+        "id": "ev.c08.badge_out",
+        "title": "Пропуск B-9000: выход 23:41",
+        "text": "door_access: 2026-12-21 23:41:00, B-9000, КПП-1, выход. До 09:00 22.12 других проходов пропуска нет.",
+        "kind": "record"
+      },
+      "sceneAfter": "alibi",
+      "solution": "SELECT ts, badge_id, door, direction\nFROM door_access\nWHERE badge_id = 'B-9000'\n  AND ts BETWEEN '2026-12-21 18:00:00' AND '2026-12-22 09:00:00'\nORDER BY ts;"
+    },
+    {
+      "id": "o8_1",
+      "order": 3,
+      "task": "«Ищи, кто ходит под её логином». Пронумеруй по времени все действия i.valts в audit_log после её гибели (18.11, 23:10): ROW_NUMBER() OVER (ORDER BY ts). Выведи время и номер. Сколько их всего?",
+      "concept": "h.window",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT ts, ROW_NUMBER() OVER (ORDER BY ts) AS n FROM audit_log WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'",
+            "aliases": { "n": ["rn", "num", "no", "nn", "номер", "row_number", "№"] }
+          },
+          { "type": "cell_value", "value": 231 }
+        ],
+        "successMessage": "Действия призрака пронумерованы."
+      },
+      "hints": [
+        {
+          "by": "tokha",
+          "line": "hint.c08_o8_1.001",
+          "text": "Короч, аудит по i.valts. Только нумеруй по времени, не по id — там пачки синхронизируются как попало. Хе. Это я так, по-админски."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_1.002",
+          "text": "ROW_NUMBER() OVER (ORDER BY ts) нумерует строки по времени и не схлопывает их. Окно считается после WHERE: фильтр по логину и моменту гибели сужает и нумерацию. См. «Окна: OVER и PARTITION BY»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT ts, ROW_NUMBER() OVER (ORDER BY ___) AS n\nFROM audit_log\nWHERE login = ___ AND ts > ___;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_1.004",
+          "text": "Ну-с. Так я когда-то журналы считал. Одна ошибка тут есть, ищи:\nSELECT ts, ROW_NUMBER() OVER (ORDER BY id) AS n\nFROM audit_log\nWHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00';"
+        }
+      ],
+      "success": "231 действие под логином мёртвой. Все с WS-07, серверная. Первое — 19.11 в 01:50, последнее — 22.12, в ночь выгрузки.",
+      "evidence": {
+        "id": "ev.c08.ghost_231",
+        "title": "231 действие после смерти",
+        "text": "audit_log, логин i.valts, после 2026-11-18 23:10:00: 231 действие с 19.11 по 22.12, все с рабочей станции WS-07 (серверная). Пронумерованы по ts, а не по id.",
+        "kind": "record"
+      },
+      "sceneAfter": "ghost_count",
+      "solution": "SELECT ROW_NUMBER() OVER (ORDER BY ts) AS n, ts, action, table_name, row_id\nFROM audit_log\nWHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'\nORDER BY n;"
+    },
+    {
+      "id": "o8_2",
+      "order": 4,
+      "task": "Где начинается каждый сеанс? Сравни каждое действие i.valts с предыдущим: LAG(ts) OVER (ORDER BY ts). Новый сеанс — если предыдущего действия нет или разрыв больше 20 минут. Выведи моменты начала.",
+      "concept": "h.lag_lead",
+      "validation": {
+        "type": "column_values",
+        "columns": ["session_start", "t0", "start", "начало", "ts"],
+        "values": [
+          "2026-11-19 01:50:00",
+          "2026-11-20 01:55:00",
+          "2026-11-21 02:05:00",
+          "2026-11-27 01:40:00",
+          "2026-12-03 02:00:00",
+          "2026-12-09 01:58:00",
+          "2026-12-22 02:20:00"
+        ],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c08_o8_2.001",
+          "text": "Он же не круглые сутки сидел. Ночами. Найди, где одна ночь кончается и другая начинается."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_2.002",
+          "text": "LAG(ts) OVER (ORDER BY ts) — время предыдущего действия. Разрыв в минутах: (julianday(ts) − julianday(prev)) × 1440. Фильтр по оконному значению — во внешнем запросе или в CTE. См. «Соседи: LAG и LEAD»."
+        },
+        {
+          "by": "mira",
+          "text": "WITH a AS (\n  SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev\n  FROM audit_log\n  WHERE ___\n)\nSELECT ts FROM a\nWHERE prev IS NULL OR ___ > 20;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_2.004",
+          "text": "Коллега, я в цифрах уже путаюсь, монитор пищит. Проверь за мной:\nWITH a AS (\n  SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev\n  FROM audit_log\n  WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'\n)\nSELECT ts FROM a\nWHERE prev IS NULL OR julianday(ts) - julianday(prev) > 20;"
+        }
+      ],
+      "success": "Семь сеансов: 19.11, 20.11, 21.11, 27.11, 03.12, 09.12 и 22.12. Каждый — около двух часов ночи.",
+      "evidence": {
+        "id": "ev.c08.seven_sessions",
+        "title": "Семь сеансов призрака",
+        "text": "Начала сеансов i.valts (разрыв больше 20 минут): 19.11 01:50, 20.11 01:55, 21.11 02:05, 27.11 01:40, 03.12 02:00, 09.12 01:58, 22.12 02:20.",
+        "kind": "record"
+      },
+      "sceneAfter": "sessions",
+      "solution": "WITH a AS (\n  SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev\n  FROM audit_log\n  WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'\n)\nSELECT ts AS session_start, prev\nFROM a\nWHERE prev IS NULL OR (julianday(ts) - julianday(prev)) * 1440 > 20\nORDER BY ts;"
+    },
+    {
+      "id": "o8_3",
+      "order": 5,
+      "task": "Кто был в цокольном этаже в начале каждого сеанса? Для проходов через КПП-Б0 возьми следующий проход того же пропуска: LEAD(ts) OVER (PARTITION BY badge_id ORDER BY ts). Сеанс засчитывается тому, у кого он начался между входом и следующим проходом. Нужен тот, кто застал все семь: имя из staff и число сеансов.",
+      "concept": "h.lag_lead",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          { "type": "row_count", "expected": 1, "comparison": "eq" },
+          {
+            "type": "any_of",
+            "rules": [
+              { "type": "cell_value", "value": "Лыков А. С." },
+              { "type": "cell_value", "value": "Лыков Антон Сергеевич" },
+              { "type": "cell_value", "value": "B-4210" },
+              { "type": "cell_value", "value": "a.lykov" }
+            ],
+            "successMessage": "Это он."
+          },
+          { "type": "cell_value", "value": 7 }
+        ],
+        "successMessage": "Семь из семи."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c08_o8_3.001",
+          "text": "Голубчик, в подвал без пропуска не войдёшь. Кто ночью вошёл, тот и сидел. Я вон тоже сидела — опись оцифровывала."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_3.002",
+          "text": "LEAD(ts) OVER (PARTITION BY badge_id ORDER BY ts) — следующий проход того же пропуска. Присутствие — от «вход» до следующего прохода. У последнего прохода следующего нет: LEAD вернёт NULL. Сеансы — COUNT(DISTINCT …) с HAVING."
+        },
+        {
+          "by": "mira",
+          "text": "WITH a AS (…), starts AS (…),\nv AS (\n  SELECT badge_id, direction, ts AS t_in,\n         LEAD(ts) OVER (PARTITION BY ___ ORDER BY ts) AS t_out\n  FROM door_access WHERE door = 'КПП-Б0'\n)\nSELECT st.full_name, COUNT(DISTINCT s.t0)\nFROM starts s\nJOIN v ON v.direction = 'вход' AND s.t0 BETWEEN v.t_in AND ___\nJOIN staff st ON st.badge_id = v.badge_id\nGROUP BY st.full_name\nHAVING ___;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_3.004",
+          "text": "Ну-с. Это я по телефону надиктовал Даше, а она сфотографировала. Где-то тут дыра, коллега.\nWITH a AS (SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev FROM audit_log\n           WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'),\nstarts AS (SELECT ts AS t0 FROM a\n           WHERE prev IS NULL OR (julianday(ts) - julianday(prev)) * 1440 > 20),\nv AS (SELECT badge_id, direction, ts AS t_in,\n             LEAD(ts) OVER (PARTITION BY badge_id ORDER BY ts) AS t_out\n      FROM door_access WHERE door = 'КПП-Б0')\nSELECT st.full_name, COUNT(DISTINCT s.t0) AS сеансов\nFROM starts s\nJOIN v ON v.direction = 'вход' AND s.t0 BETWEEN v.t_in AND v.t_out\nJOIN staff st ON st.badge_id = v.badge_id\nGROUP BY st.full_name HAVING COUNT(DISTINCT s.t0) = 7;"
+        }
+      ],
+      "success": "Семь из семи — Лыков А. С., пропуск B-4210. У Шустовой и Ратникова по шесть, у Мельника пять. Его последний вход — 22.12 в 02:08. Выхода нет.",
+      "evidence": {
+        "id": "ev.c08.seven_of_seven",
+        "title": "7 из 7",
+        "text": "Начало каждого из семи сеансов i.valts приходится на присутствие в Б0 пропуска B-4210 — Лыков А. С., системный администратор. Шустова Н. Ф. и Ратников Л. Б. — 6 из 7, Мельник К. И. — 5 из 7. Последний проход Лыкова: КПП-Б0, вход 22.12 02:08, выхода нет.",
+        "kind": "record"
+      },
+      "sceneAfter": "glass",
+      "solution": "WITH a AS (SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev FROM audit_log\n           WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'),\nstarts AS (SELECT ts AS t0 FROM a\n           WHERE prev IS NULL OR (julianday(ts) - julianday(prev)) * 1440 > 20),\nv AS (SELECT badge_id, direction, ts AS t_in,\n             LEAD(ts) OVER (PARTITION BY badge_id ORDER BY ts) AS t_out\n      FROM door_access WHERE door = 'КПП-Б0')\nSELECT st.full_name, COUNT(DISTINCT s.t0) AS сеансов\nFROM starts s\nJOIN v ON v.direction = 'вход'\n      AND s.t0 BETWEEN v.t_in AND COALESCE(v.t_out, datetime(v.t_in, '+12 hours'))\nJOIN staff st ON st.badge_id = v.badge_id\nGROUP BY st.full_name HAVING COUNT(DISTINCT s.t0) = 7;"
+    },
+    {
+      "id": "o8_4",
+      "order": 6,
+      "task": "Проходы он объяснит: сервера, обновления. Что он делал до? Найди покупки в автомате «Кипяток (ГУ, холл)» (purchases) за полчаса до начала каждого сеанса.",
+      "concept": "h.window",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "column_values",
+            "values": [
+              "2026-11-19 01:35:00",
+              "2026-11-20 01:40:00",
+              "2026-11-21 01:50:00",
+              "2026-11-27 01:25:00",
+              "2026-12-03 01:45:00",
+              "2026-12-09 01:43:00",
+              "2026-12-22 02:05:00"
+            ],
+            "mode": "superset"
+          },
+          { "type": "row_count", "expected": 60, "comparison": "lte" }
+        ],
+        "successMessage": "Две чашки перед каждым сеансом."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c08_o8_4.001",
+          "text": "Ночью в подвале жрать нечего. Автомат в холле — «Сияние.Pay», каждая чашка с фамилией. Глянь, что брали перед сеансами."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_4.002",
+          "text": "Соединение по интервалу: p.ts BETWEEN datetime(s.t0, '-30 minutes') AND s.t0. Начала сеансов удобно держать в CTE из прошлой задачи."
+        },
+        {
+          "by": "mira",
+          "text": "WITH a AS (…), starts AS (…)\nSELECT s.t0, p.ts, p.payer_name, p.item, p.qty\nFROM starts s\nJOIN purchases p\n  ON p.merchant = ___\n AND p.ts BETWEEN ___ AND s.t0;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_4.004",
+          "text": "Ну-с, коллега. Я бы глянул так. Время только перепроверь — я по старинке, на слух:\nWITH a AS (SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev FROM audit_log\n           WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'),\nstarts AS (SELECT ts AS t0 FROM a\n           WHERE prev IS NULL OR (julianday(ts) - julianday(prev)) * 1440 > 20)\nSELECT s.t0, p.ts, p.payer_name, p.item, p.qty\nFROM starts s\nJOIN purchases p ON p.merchant = 'Кипяток (ГУ, холл)'\n AND p.ts BETWEEN s.t0 AND datetime(s.t0, '+30 minutes');"
+        }
+      ],
+      "success": "Семь раз по две чашки чая с чабрецом. Лыков А. С. Каждый раз — за пятнадцать минут до сеанса. Кому вторая?",
+      "evidence": {
+        "id": "ev.c08.two_cups",
+        "title": "Две чашки",
+        "text": "purchases, «Кипяток (ГУ, холл)»: Лыков А. С. (4210), «чай с чабрецом», 2 шт., 70 ₽ — 19.11 01:35, 20.11 01:40, 21.11 01:50, 27.11 01:25, 03.12 01:45, 09.12 01:43, 22.12 02:05. За 15 минут до каждого сеанса i.valts.",
+        "kind": "record"
+      },
+      "sceneAfter": "two_cups",
+      "solution": "WITH a AS (\n  SELECT ts, LAG(ts) OVER (ORDER BY ts) AS prev\n  FROM audit_log\n  WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'\n),\nstarts AS (\n  SELECT ts AS t0 FROM a\n  WHERE prev IS NULL OR (julianday(ts) - julianday(prev)) * 1440 > 20\n)\nSELECT s.t0 AS session_start, p.ts, p.payer_person_id, p.payer_name, p.item, p.qty\nFROM starts s\nJOIN purchases p\n  ON p.merchant = 'Кипяток (ГУ, холл)'\n AND p.ts BETWEEN datetime(s.t0, '-30 minutes') AND s.t0\nORDER BY s.t0;"
+    },
+    {
+      "id": "o8_5",
+      "order": 7,
+      "when": { "c08_coda": true },
+      "task": "Кто такой zero? Проверь, с какого терминала и во сколько он входит в журнал запросов (query_log), — и чьё у него расписание (cron_jobs).",
+      "validation": {
+        "type": "any_of",
+        "rules": [
+          {
+            "type": "compound",
+            "rules": [
+              { "type": "column_values", "values": ["03:12:00"], "mode": "equal" },
+              {
+                "type": "any_of",
+                "rules": [
+                  { "type": "cell_value", "value": "CRON-01" },
+                  { "type": "cell_value", "value": "zero" }
+                ],
+                "successMessage": "Терминал найден."
+              }
+            ],
+            "successMessage": "Только CRON-01 и только 03:12:00."
+          },
+          {
+            "type": "compound",
+            "rules": [
+              { "type": "row_count", "expected": 9, "comparison": "eq" },
+              { "type": "column_values", "values": ["i.valts"], "mode": "equal" }
+            ],
+            "successMessage": "Девять заданий i.valts."
+          }
+        ],
+        "successMessage": "Сторож найден."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c08_o8_5.001",
+          "text": "Ирочка говорила: если ночью кто постучится — не бойтесь. Глянь, голубчик, когда он стучится. И откуда."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_5.002",
+          "text": "strftime('%H:%M:%S', logged_at) оставляет от момента только время суток. Группировка по терминалу и времени покажет, сколько у входов разных привычек."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT terminal, strftime(___, logged_at) AS t, COUNT(*)\nFROM query_log\nWHERE login = ___\nGROUP BY terminal, t;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_5.004",
+          "text": "Коллега… zero. Я эту учётку с пятнадцатого года помню. Вот так глянь, только секунды не потеряй:\nSELECT terminal, strftime('%H:%M', logged_at) AS t, COUNT(*)\nFROM query_log\nWHERE login = 'zero'\nGROUP BY terminal, t;"
+        }
+      ],
+      "success": "Только CRON-01, только 03:12:00. Расписание из девяти заданий завела i.valts 16.11 — за двое суток до гибели. Сторож — её.",
+      "evidence": {
+        "id": "ev.c08.watchman",
+        "title": "Сторож",
+        "text": "query_log: логин zero входит только с CRON-01 (виртуальная станция расписания) и только в 03:12:00. cron_jobs: 9 заданий, created_by i.valts, 2026-11-16 22:41–22:58. Подсказки zero касаются только 2015 года.",
+        "kind": "document"
+      },
+      "sceneAfter": "coda",
+      "solution": "SELECT terminal, strftime('%H:%M:%S', logged_at) AS t, COUNT(*) AS n\nFROM query_log\nWHERE login = 'zero'\nGROUP BY terminal, t;"
+    },
+    {
+      "id": "o8_5s",
+      "order": 101,
+      "optional": true,
+      "task": "★ Последнее событие каждого номера. В messenger_events найди для каждого отправителя (from_msisdn) его самое позднее событие: ROW_NUMBER() OVER (PARTITION BY from_msisdn ORDER BY ts DESC). Есть события, которые ещё не случились?",
+      "concept": "h.row_number_rank",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT from_msisdn, ts FROM (SELECT from_msisdn, ts, ROW_NUMBER() OVER (PARTITION BY from_msisdn ORDER BY ts DESC) AS rn FROM messenger_events) WHERE rn = 1"
+          },
+          { "type": "cell_value", "value": "2027-01-11 12:58:00" }
+        ],
+        "successMessage": "Строка из будущего."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c08_o8_5s.001",
+          "text": "У каждого номера есть последнее сообщение. У кого-то — совсем последнее. Глянь, у кого время впереди календаря."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_5s.002",
+          "text": "PARTITION BY from_msisdn начинает нумерацию заново для каждого номера, ORDER BY ts DESC ставит самое позднее событие первым. Отбор rn = 1 — во внешнем запросе. См. «Нумерация и места»."
+        },
+        {
+          "by": "mira",
+          "text": "WITH last AS (\n  SELECT from_msisdn, to_msisdn, ts, created_at, kind, status,\n         ROW_NUMBER() OVER (PARTITION BY ___ ORDER BY ___) AS rn\n  FROM messenger_events\n)\nSELECT * FROM last WHERE rn = 1 ORDER BY ts DESC;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_5s.004",
+          "text": "Ну-с. Связь — не моё, но порядок я помню. Поправь старика:\nWITH last AS (\n  SELECT from_msisdn, to_msisdn, ts, created_at, kind, status,\n         ROW_NUMBER() OVER (PARTITION BY from_msisdn ORDER BY ts) AS rn\n  FROM messenger_events\n)\nSELECT * FROM last WHERE rn = 1 ORDER BY ts DESC;"
+        }
+      ],
+      "success": "Четыре строки из будущего. Три — сбой часов: 2099 год и ровно год вперёд. Одна настоящая: номер Ирины, голосовое матери, 412 КБ, «запланировано» на 11.01.2027 12:58. Создано 18.11 в 23:05, сота ПЛР-17 — Полярная.",
+      "evidence": {
+        "id": "ev.c08.future_row",
+        "title": "Строка из будущего",
+        "text": "messenger_events: +7 900 000-41-27 (Вальц И. П.) → +7 900 000-13-89 (Вальц В. С.), голос, 412 КБ, ts 2027-01-11 12:58:00, created_at 2026-11-18 23:05:00, сота ПЛР-17, статус «запланировано».",
+        "kind": "record"
+      },
+      "sceneAfter": "future_row",
+      "solution": "WITH last AS (\n  SELECT from_msisdn, to_msisdn, ts, created_at, kind, size_kb, cell_id, status,\n         ROW_NUMBER() OVER (PARTITION BY from_msisdn ORDER BY ts DESC) AS rn\n  FROM messenger_events\n)\nSELECT from_msisdn, to_msisdn, ts, created_at, kind, size_kb, cell_id, status\nFROM last\nWHERE rn = 1\nORDER BY ts DESC;"
+    },
+    {
+      "id": "o8_6s",
+      "order": 102,
+      "optional": true,
+      "task": "★ Топ-3 ночи призрака. Посчитай действия i.valts по ночам и раздай места: RANK() OVER (ORDER BY число действий DESC). Выведи ночь, число действий и место — только первые три места.",
+      "concept": "h.row_number_rank",
+      "prediction": {
+        "question": "«Топ-3 ночи» через RANK() <= 3: сколько строк вернёт запрос?",
+        "options": [3, 4, 5],
+        "answer": 4,
+        "explanation": "Две ночи по 31 действию делят третье место: RANK даёт равным одно место. ROW_NUMBER развёл бы их на третье и четвёртое — и одну ночь вы бы потеряли."
+      },
+      "validation": {
+        "type": "compound",
+        "rules": [
+          { "type": "row_count", "expected": 4, "comparison": "eq" },
+          { "type": "column_values", "values": [60, 45, 31], "mode": "equal" },
+          { "type": "column_values", "values": [1, 2, 3], "mode": "equal" }
+        ],
+        "successMessage": "Равные ночи не потеряны."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c08_o8_6s.001",
+          "text": "Какая ночь у него самая жирная? Клюёт, чую. Только не обрезай на третьей — вдруг там ничья."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_6s.002",
+          "text": "RANK() даёт равным значениям одно место, ROW_NUMBER() — разные номера. Счёт по ночам — GROUP BY в CTE, место — окно над ним, отбор мест — снаружи."
+        },
+        {
+          "by": "mira",
+          "text": "WITH nights AS (\n  SELECT date(ts, '-8 hours') AS night, COUNT(*) AS actions\n  FROM audit_log WHERE ___ GROUP BY night\n),\nranked AS (\n  SELECT night, actions, ___ OVER (ORDER BY actions DESC) AS place FROM nights\n)\nSELECT * FROM ranked WHERE place <= 3;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_6s.004",
+          "text": "Ну-с, топ так топ. Я бы так, а ты проверь, не потерял ли я кого:\nWITH nights AS (\n  SELECT date(ts, '-8 hours') AS night, COUNT(*) AS actions\n  FROM audit_log\n  WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'\n  GROUP BY night\n),\nranked AS (\n  SELECT night, actions, ROW_NUMBER() OVER (ORDER BY actions DESC) AS place FROM nights\n)\nSELECT * FROM ranked WHERE place <= 3;"
+        }
+      ],
+      "success": "Четыре строки на три места: ночь на 19.11 — 60 действий, на 21.11 — 45, а ночи на 20.11 и на 09.12 — по 31, обе третьи.",
+      "evidence": {
+        "id": "ev.c08.top_nights",
+        "title": "Топ ночей призрака",
+        "text": "Действия i.valts по ночам, RANK: 1 — ночь на 19.11 (60), 2 — на 21.11 (45), 3 — на 20.11 и на 09.12 (по 31). ROW_NUMBER потерял бы одну из равных ночей.",
+        "kind": "record"
+      },
+      "solution": "WITH nights AS (\n  SELECT date(ts, '-8 hours') AS night, COUNT(*) AS actions\n  FROM audit_log\n  WHERE login = 'i.valts' AND ts > '2026-11-18 23:10:00'\n  GROUP BY night\n),\nranked AS (\n  SELECT night, actions, RANK() OVER (ORDER BY actions DESC) AS place\n  FROM nights\n)\nSELECT night, actions, place\nFROM ranked\nWHERE place <= 3\nORDER BY place, night;"
+    },
+    {
+      "id": "o8_7s",
+      "order": 103,
+      "optional": true,
+      "task": "★ Ночи, а не даты. Нина говорит, что ночами оцифровывает архив. Сколько ночей с 18.11 по 22.12 её пропуск B-1210 был в Б0? Ночные проходы КПП-Б0 — с 20:00 до 07:00. Одна ночь — одна строка, даже если кончилась утром следующего дня.",
+      "concept": "w.skud",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          { "type": "row_count", "expected": 6, "comparison": "eq" },
+          {
+            "type": "column_values",
+            "values": ["2026-11-18", "2026-11-19", "2026-11-20", "2026-12-02", "2026-12-08", "2026-12-21"],
+            "mode": "equal"
+          }
+        ],
+        "successMessage": "Ночи Нины сосчитаны."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c08_o8_7s.001",
+          "text": "Ночь, голубчик, с вечера начинается, а не с полуночи. Это всё не по описи, а по жизни."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c08_o8_7s.002",
+          "text": "date(ts, '-8 hours') относит утренние проходы к прошлой ночи: 06:30 становится 22:30 накануне. Группировка по date(ts) делит одну смену на две даты."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT ___ AS night, MIN(ts), MAX(ts)\nFROM door_access\nWHERE badge_id = 'B-1210' AND door = 'КПП-Б0'\n  AND (time(ts) >= '20:00:00' OR time(ts) < '07:00:00')\nGROUP BY night;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c08_o8_7s.004",
+          "text": "Нина Фёдоровна у нас сова, коллега. Я бы так посчитал, да что-то много выходит:\nSELECT date(ts) AS night, MIN(ts), MAX(ts)\nFROM door_access\nWHERE badge_id = 'B-1210' AND door = 'КПП-Б0'\n  AND ts BETWEEN '2026-11-18 12:00:00' AND '2026-12-22 12:00:00'\n  AND (time(ts) >= '20:00:00' OR time(ts) < '07:00:00')\nGROUP BY night;"
+        }
+      ],
+      "success": "Шесть ночей: на 19, 20, 21 ноября, на 3, 9 и 22 декабря, каждый раз 22:30–06:30. В ночь на 27.11 её нет — больничный. Нина не врёт.",
+      "evidence": {
+        "id": "ev.c08.nina_nights",
+        "title": "Ночи Нины",
+        "text": "door_access, B-1210, КПП-Б0, ночные проходы 18.11–22.12: шесть смен 22:30–06:30 (ночи на 19.11, 20.11, 21.11, 03.12, 09.12, 22.12). В ночь на 27.11 — больничный.",
+        "kind": "record"
+      },
+      "solution": "SELECT date(ts, '-8 hours') AS night, MIN(ts) AS came, MAX(ts) AS went\nFROM door_access\nWHERE badge_id = 'B-1210' AND door = 'КПП-Б0'\n  AND ts BETWEEN '2026-11-18 12:00:00' AND '2026-12-22 12:00:00'\n  AND (time(ts) >= '20:00:00' OR time(ts) < '07:00:00')\nGROUP BY night\nORDER BY night;"
+    }
+  ],
+  "accusations": [
+    {
+      "id": "ghost",
+      "prompt": "Под логином i.valts работал …",
+      "answer": "Лыков Антон Сергеевич",
+      "keys": [4210, "a.lykov", "B-4210", "Лыков А. С.", "+7 900 000-42-10"],
+      "minCards": 2,
+      "successScene": "int_tokha",
+      "wrong": [
+        { "person": "Мельник Константин Игоревич", "scene": "accuse_melnik" },
+        { "person": "Мельник К. И.", "scene": "accuse_melnik" },
+        { "person": "Шустова Нина Фёдоровна", "scene": "accuse_nina" },
+        { "person": "Шустова Н. Ф.", "scene": "accuse_nina" },
+        { "person": "Ратников Лев Борисович", "scene": "accuse_ratnikov" },
+        { "person": "Ратников Л. Б.", "scene": "accuse_ratnikov" }
+      ],
+      "wrongScene": "accuse_wrong",
+      "trustFlag": "dasha_trust"
+    }
+  ],
   "outroScene": "outro"
 }
