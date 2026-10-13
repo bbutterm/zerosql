@@ -122,31 +122,39 @@ function EvidenceItem({ card, compact }: { card: EvidenceCardData; compact: bool
 
 function Printout({ card, compact }: { card: EvidenceCardData; compact: boolean }) {
   const ex = card.excerpt;
-  const widths = ex
-    ? ex.columns.map((c, i) => Math.max(c.length, ...ex.rows.map((r) => String(r[i] ?? "NULL").length)))
-    : [];
+  const cell = (v: string | number | null) => (v === null ? "NULL" : String(v));
+  const widths = ex ? ex.columns.map((c, i) => Math.max(c.length, ...ex.rows.map((r) => cell(r[i]).length))) : [];
   const pad = (s: string, w: number) => s + " ".repeat(Math.max(0, w - s.length));
-  const head = card.queryNo !== undefined ? `> запрос № ${card.queryNo}` : "> запрос";
+  const head = card.queryNo !== undefined ? `> запрос № ${card.queryNo}` : "> запрос";
+  // Линейка ровно во всю ширину таблицы; если лента уже — обрезается краем бумаги
+  const rule = "—".repeat(Math.max(1, widths.reduce((a, b) => a + b + 2, -2)));
   return (
     <div className="w-[280px] paper-2 pt-2.5 pb-4 font-mono toner">
-      <p className="px-3 text-[9px] leading-3 text-print-2">
+      <p className="px-3 text-[11px] leading-4 whitespace-pre text-print-2">
         {head}
         {card.foundAt ? `  ${card.foundAt}` : ""}
       </p>
       {ex ? (
         <div className="mt-1.5 overflow-hidden px-3 text-[11px] leading-4 whitespace-pre text-print">
           <div>{ex.columns.map((c, i) => pad(c, widths[i])).join("  ")}</div>
-          <div aria-hidden>{"—".repeat(Math.min(34, widths.reduce((a, b) => a + b + 2, -2)))}</div>
+          <div aria-hidden>{rule}</div>
           {ex.rows.map((row, r) => (
             <div key={r}>
               {row.map((v, c) => {
-                const text = pad(v === null ? "NULL" : String(v), widths[c]);
+                const text = pad(cell(v), widths[c]);
                 const marked = ex.mark && ex.mark[0] === r && ex.mark[1] === c;
+                const trimmed = text.trimEnd();
                 return (
                   <span key={c}>
                     {c > 0 && "  "}
-                    {marked ? <mark className="bg-sticky text-print mix-blend-multiply">{text.trimEnd()}</mark> : text.trimEnd()}
-                    {marked ? " ".repeat(text.length - text.trimEnd().length) : ""}
+                    {marked ? (
+                      <>
+                        <mark className="zs-mark">{trimmed}</mark>
+                        {text.slice(trimmed.length)}
+                      </>
+                    ) : (
+                      text
+                    )}
                   </span>
                 );
               })}
@@ -178,20 +186,13 @@ function Halftone({ className, image, color = false }: { className?: string; ima
       <img src={image} alt="" className={cn("block object-cover", !color && "grayscale", className)} draggable={false} />
     );
   }
-  // Изображения нет: ночной кадр, напечатанный тонером, — тёмное поле, светлее к земле.
-  // Зерно даёт фактура бумаги под ним (multiply), а не шум кодом
+  // Изображения нет: ночной кадр, напечатанный на лазерном принтере, — серое поле растровых
+  // точек с полосами тонера (готовый файл, а не шум кодом). Сюжет кадра не имитируется
   return (
     <span
       aria-hidden
-      className={cn("block", className)}
-      style={{
-        backgroundColor: color ? "#3f4747" : "#57544e",
-        backgroundImage: color
-          ? "linear-gradient(180deg, #2c3335 0%, #3f4747 58%, #6a6d68 100%), url(/textures/paper-office.webp)"
-          : "linear-gradient(180deg, #46433e 0%, #57544e 60%, #7d7970 100%), url(/textures/paper-office.webp)",
-        backgroundSize: "100% 100%, 512px",
-        backgroundBlendMode: "multiply",
-      }}
+      className={cn("block halftone-night", className)}
+      style={color ? { backgroundColor: "var(--paper-photo)", opacity: 0.86 } : undefined}
     />
   );
 }
@@ -229,30 +230,34 @@ function PhotoPrint({ card, compact }: { card: EvidenceCardData; compact: boolea
 
 function waveOf(card: EvidenceCardData): number[] {
   if (card.waveform?.length) return card.waveform;
-  // Детерминированная огибающая по id, если данных нет
+  // Детерминированная огибающая по id, если данных нет: речь — пачки с паузами
   let h = hashId(card.id);
   return Array.from({ length: 72 }, (_, i) => {
     h = (h * 1103515245 + 12345) >>> 0;
-    const env = Math.sin((i / 71) * Math.PI) * 0.7 + 0.3;
-    return ((h % 1000) / 1000) * env;
+    const word = Math.sin(i * 0.55) * 0.5 + 0.5;
+    const pause = i % 23 > 18 ? 0.08 : 1;
+    return Math.max(0.06, ((h % 1000) / 1000) * 0.45 + word * 0.45) * pause;
   });
 }
 
 function Transcript({ card }: { card: EvidenceCardData }) {
   const wave = waveOf(card);
-  const step = 216 / Math.max(1, wave.length - 1);
-  const top = wave.map((v, i) => `${(i * step).toFixed(1)},${(12 - v * 11).toFixed(1)}`).join(" ");
-  const bottom = [...wave]
-    .reverse()
-    .map((v, i) => `${((wave.length - 1 - i) * step).toFixed(1)},${(12 + v * 11).toFixed(1)}`)
-    .join(" ");
+  const step = 216 / wave.length;
+  // Огибающая RMS вертикальными штрихами 1 px — как распечатка из аудиоредактора
+  const bars = wave
+    .map((v, i) => {
+      const x = (i * step + step / 2).toFixed(1);
+      const a = Math.max(0.5, v * 11);
+      return `M${x} ${(12 - a).toFixed(1)}V${(12 + a).toFixed(1)}`;
+    })
+    .join("");
   return (
     <div className="min-h-[160px] w-[240px] paper-thin p-3 font-serif toner">
       <p className="text-[12px] leading-4 font-bold">
         Расшифровка аудиозаписи{card.duration ? ` ${card.duration}` : ""}
       </p>
       <svg viewBox="0 0 216 24" className="mt-2 h-6 w-[216px] text-print-2" aria-hidden>
-        <polygon points={`${top} ${bottom}`} fill="none" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        <path d={bars} fill="none" stroke="currentColor" strokeWidth="1" shapeRendering="crispEdges" />
       </svg>
       <p className="mt-2 line-clamp-4 text-[13px] leading-[19px]">{typo(card.text)}</p>
     </div>

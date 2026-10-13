@@ -113,7 +113,6 @@ export function TabBar<T extends string>({
   size = "md",
   className,
   idPrefix,
-  superscript = false,
 }: {
   items: TabItem<T>[];
   value: T;
@@ -122,7 +121,7 @@ export function TabBar<T extends string>({
   size?: "md" | "sm";
   className?: string;
   idPrefix?: string;
-  /** Число верхним индексом: «Все⁷» в реестре */
+  /** Устарело: счётчик всегда на базовой линии через пробел — «Все 7» */
   superscript?: boolean;
 }) {
   return (
@@ -150,18 +149,14 @@ export function TabBar<T extends string>({
               el?.focus();
             }}
             className={cn(
-              "relative -mb-px flex shrink-0 items-center gap-1.5 border-b-2 whitespace-nowrap transition-colors duration-[80ms] ease-linear",
-              size === "md" ? "h-8 ui-13 font-medium" : "h-8 ui-12 font-medium",
+              "relative -mb-px flex shrink-0 items-center gap-[0.3em] border-b-2 whitespace-nowrap transition-colors duration-[80ms] ease-linear",
+              size === "md" ? "h-8 ui-13 font-medium" : "h-8 ui-12 font-medium max-lg:h-10",
               selected ? "border-ink-1 text-ink-1" : "border-transparent text-ink-3 hover:text-ink-2"
             )}
           >
             {item.label}
             {item.count !== undefined && item.count !== "" && (
-              <Counter
-                value={item.count}
-                alert={item.alert}
-                className={cn(superscript && "-translate-y-1 text-[11px] leading-none")}
-              />
+              <Counter value={item.count} alert={item.alert} />
             )}
           </button>
         );
@@ -184,26 +179,29 @@ export function Counter({
 }
 
 /**
- * Плашка-редактура: закрытое показывается вымаранным, а не замком.
- * Ширина — длина скрытого текста в ch текущего шрифта.
+ * Редактура: закрытое замаскировано так, как маскирует поля ведомственная программа, —
+ * набранными звёздочками, а не серыми плашками (плашки читаются как скелетон загрузки).
+ * Длина — длина скрытого текста; words — длины слов, тогда группы через пробел.
  */
 export function Redaction({
   chars,
-  height = 10,
+  words,
   className,
   style,
 }: {
   chars: number;
+  /** Длины скрытых слов: «******* ** ********» */
+  words?: number[];
+  /** Устарело: высота плашки. Звёздочки набираются шрифтом строки */
   height?: number;
   className?: string;
   style?: CSSProperties;
 }) {
+  const text = words?.length ? words.map((n) => "*".repeat(Math.max(1, n))).join(" ") : "*".repeat(Math.max(1, chars));
   return (
-    <span
-      aria-hidden
-      className={cn("inline-block shrink-0 bg-ink-4 align-middle", className)}
-      style={{ width: `${chars}ch`, height, ...style }}
-    />
+    <span aria-hidden className={cn("font-mono text-ink-3 select-none", className)} style={style}>
+      {text}
+    </span>
   );
 }
 
@@ -213,7 +211,7 @@ export function ScreenField({ className, ...rest }: InputHTMLAttributes<HTMLInpu
     <input
       className={cn(
         "h-7 w-full min-w-0 rounded-[2px] border border-line-strong bg-room px-2 mono-14 text-ink-1 outline-none",
-        "placeholder:text-ink-4 focus:border-ink-2 focus-visible:outline-none read-only:cursor-default",
+        "placeholder:text-ink-3 focus:border-ink-2 focus-visible:outline-none read-only:cursor-default",
         className
       )}
       {...rest}

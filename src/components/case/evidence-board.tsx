@@ -37,6 +37,14 @@ export function nightMinutes(at?: string): number | null {
   return (Number(m[1]) * 60 + Number(m[2]) - 18 * 60 + 1440) % 1440;
 }
 
+/** Порядок реестра: по времени ночи, без времени — в конце, при равенстве — как пришли */
+export function sortByNight<T extends { at?: string }>(cards: T[]): T[] {
+  return cards
+    .map((c, i) => ({ c, i, t: nightMinutes(c.at) }))
+    .sort((a, b) => (a.t ?? 9999) - (b.t ?? 9999) || a.i - b.i)
+    .map((x) => x.c);
+}
+
 /**
  * Материалы (раздел 7.11): реестр улик — экранная таблица, строка 44 px в две линии.
  * Сортировка по времени ночи. Новая запись подсвечена натрием и гаснет.
@@ -54,14 +62,7 @@ export function EvidenceBoard({
 }: EvidenceBoardProps) {
   const [filter, setFilter] = useState<Filter>("all");
 
-  const sorted = useMemo(
-    () =>
-      cards
-        .map((c, i) => ({ c, i, t: nightMinutes(c.at) }))
-        .sort((a, b) => (a.t ?? 9999) - (b.t ?? 9999) || a.i - b.i)
-        .map((x) => x.c),
-    [cards]
-  );
+  const sorted = useMemo(() => sortByNight(cards), [cards]);
   const counts = useMemo(() => {
     const m: Record<Filter, number> = { all: cards.length, data: 0, people: 0, docs: 0 };
     for (const c of cards) m[EVIDENCE_KIND_META[c.kind].group] += 1;
@@ -79,8 +80,7 @@ export function EvidenceBoard({
           onChange={setFilter}
           label="Вид материалов"
           size="sm"
-          superscript
-          className="h-8 shrink-0 border-b border-line px-3"
+          className="h-8 shrink-0 border-b border-line px-3 max-lg:h-10 max-lg:px-4"
         />
       )}
 
@@ -100,7 +100,7 @@ export function EvidenceBoard({
                   onClick={() => onCardClick?.(card.id)}
                   aria-current={selected || undefined}
                   className={cn(
-                    "grid h-11 w-full grid-cols-[40px_48px_minmax(0,1fr)] grid-rows-[20px_16px] content-center items-baseline border-b border-line px-3 text-left",
+                    "grid h-11 w-full grid-cols-[40px_48px_minmax(0,1fr)] grid-rows-[20px_16px] content-center items-baseline border-b border-line px-3 text-left max-lg:h-14 max-lg:px-4",
                     selected ? "bg-scr-select" : "hover:bg-scr-raise",
                     card.isNew && !selected && "anim-wash"
                   )}

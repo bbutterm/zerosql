@@ -7,6 +7,7 @@ import type { QueryBudget } from "@/types/ui";
 import { cn } from "@/lib/utils";
 import { ScreenButton } from "@/components/kit/screen";
 import type { SqlEditorHandle } from "./sql-codemirror";
+import { useDeskCenterTabs } from "./center-tabs";
 
 export type { SqlEditorHandle } from "./sql-codemirror";
 
@@ -51,8 +52,10 @@ export interface SqlTerminalProps {
   source?: string;
   /** Дополнительные текстовые кнопки в шапке (история, очистка, …) */
   toolbar?: ReactNode;
-  /** Императивный доступ: вставка текста из схемы, фокус */
+  /** Императивный доступ: вставка текста из схемы, фокус, отметка ошибки */
   handleRef?: Ref<SqlEditorHandle>;
+  /** Ключевые слова в автодополнении: только пройденное к этому делу */
+  keywords?: readonly string[];
   className?: string;
 }
 
@@ -85,9 +88,11 @@ export function SqlTerminal({
   source,
   toolbar,
   handleRef,
+  keywords,
   className,
 }: SqlTerminalProps) {
   const keys = useRunKeys();
+  const centerTabs = useDeskCenterTabs();
   const outOfBudget = budget !== undefined && budget.left <= 0;
   const inactive = disabled || outOfBudget;
   const canRun = !inactive && !running && value.trim().length > 0;
@@ -98,6 +103,7 @@ export function SqlTerminal({
   return (
     <section
       aria-label="Запрос"
+      data-desk-region="query"
       className={cn("flex min-h-0 min-w-0 flex-col bg-scr-base", className)}
     >
       <header
@@ -106,7 +112,11 @@ export function SqlTerminal({
           "max-lg:order-last max-lg:h-11 max-lg:border-t max-lg:border-b-0 max-lg:bg-scr-chrome"
         )}
       >
-        <h2 className="ui-13 font-medium text-ink-2 max-lg:hidden">{title}</h2>
+        {centerTabs ? (
+          <div className="flex h-full min-w-0 shrink-0 items-stretch max-lg:hidden">{centerTabs}</div>
+        ) : (
+          <h2 className="ui-13 font-medium text-ink-2 max-lg:hidden">{title}</h2>
+        )}
         {source && <span className="truncate ui-12 text-ink-3 max-lg:hidden">{source}</span>}
         <div className="flex min-w-0 flex-1 items-center justify-end gap-4 max-lg:justify-between">
           {toolbar}
@@ -134,6 +144,7 @@ export function SqlTerminal({
             readOnly={disabled}
             placeholder={placeholder}
             handleRef={handleRef}
+            keywords={keywords}
           />
         </div>
       </div>

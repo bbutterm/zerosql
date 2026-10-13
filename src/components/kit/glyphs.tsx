@@ -22,7 +22,7 @@ export type GlyphName =
   | "pause"
   | "zero-mark";
 
-type Shape = { d: string; fill?: boolean };
+type Shape = { d: string; fill?: boolean; width?: number; cap?: "square" | "butt" | "round" };
 
 const SHAPES: Record<GlyphName, Shape[]> = {
   disclosure: [{ d: "M4.5 2.75 L8.25 6 L4.5 9.25 Z" }],
@@ -35,8 +35,9 @@ const SHAPES: Record<GlyphName, Shape[]> = {
   "speaker-off": [{ d: "M1.75 4.5 H3.75 L6.75 2 V10 L3.75 7.5 H1.75 Z" }, { d: "M8.5 4.5 L11 7.5 M11 4.5 L8.5 7.5" }],
   play: [{ d: "M3.5 2.5 L9.5 6 L3.5 9.5 Z", fill: true }],
   pause: [{ d: "M4 2.5 V9.5 M8 2.5 V9.5" }],
-  // Ноль-полынья: эллипс с разрывом справа сверху — вода, которая не замерзает
-  "zero-mark": [{ d: "M8.81 3.5 A3.25 5 0 1 1 7.53 1.59" }],
+  // Ноль-полынья: эллипс с разрывом справа сверху — вода, которая не замерзает.
+  // Обводка 1,75 px с ровными концами и разрывом ~3 px при 16 px: не читается как «()»
+  "zero-mark": [{ d: "M8.88 3.35 A3.4 5 0 1 1 7.27 1.37", width: 1.75, cap: "butt" }],
 };
 
 export interface GlyphProps extends Omit<SVGProps<SVGSVGElement>, "name"> {
@@ -71,6 +72,8 @@ export function Glyph({ name, size = 12, label, className, ...rest }: GlyphProps
           d={s.d}
           fill={s.fill ? "currentColor" : "none"}
           stroke={s.fill ? "none" : "currentColor"}
+          strokeWidth={s.width}
+          strokeLinecap={s.cap}
           vectorEffect="non-scaling-stroke"
         />
       ))}

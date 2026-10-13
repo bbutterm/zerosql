@@ -2,19 +2,39 @@
 
 import { useEffect, useImperativeHandle, useMemo, useRef, type Ref } from "react";
 import CodeMirror from "@uiw/react-codemirror";
-import { sql, SQLite } from "@codemirror/lang-sql";
+import { keywordCompletionSource, schemaCompletionSource, SQLDialect, SQLite } from "@codemirror/lang-sql";
 import { drawSelection, EditorView, keymap } from "@codemirror/view";
 import { EditorState, Prec } from "@codemirror/state";
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { HighlightStyle, LanguageSupport, syntaxHighlighting } from "@codemirror/language";
 import { autocompletion, type Completion, type CompletionContext } from "@codemirror/autocomplete";
+import { diagnosticCount, setDiagnostics, setDiagnosticsEffect } from "@codemirror/lint";
 import { tags as t } from "@lezer/highlight";
 import type { TableInfo } from "@/types/database";
+import { findToken } from "./sql-error-token";
 
 export interface SqlEditorHandle {
   /** Вставить текст в позицию курсора (с пробелом-разделителем при необходимости) */
   insert: (text: string) => void;
   focus: () => void;
+  /**
+   * Подчеркнуть ошибку в запросе (пунктир --alarm) с подсказкой при наведении.
+   * Возвращает номер строки или null, если слова в запросе нет. Правка текста снимает отметку
+   */
+  markError?: (token: string, message: string) => number | null;
+  /** Снять отметку ошибки */
+  clearError?: () => void;
 }
+
+/**
+ * Ключевые слова и функции, которым учит игра. Автодополнение предлагает только их:
+ * SQLite-диалектный шум (SETS, SEARCH, SESSION_USER…) в «Зеркале» не нужен.
+ */
+export const TEACHING_KEYWORDS = [
+  "select", "from", "where", "join", "left", "on", "and", "or", "not", "is", "null", "like", "in",
+  "between", "group", "by", "having", "order", "asc", "desc", "limit", "as", "distinct",
+  "case", "when", "then", "else", "end",
+] as const;
+export const TEACHING_FUNCTIONS = ["count", "sum", "avg", "min", "max", "strftime"] as const;
 
 export interface SqlCodeMirrorProps {
   value: string;
@@ -25,6 +45,10 @@ export interface SqlCodeMirrorProps {
   placeholder?: string;
   handleRef?: Ref<SqlEditorHandle>;
   ariaLabel?: string;
+  /** Ключевые слова в автодополнении (по умолчанию — всё, чему учит игра) */
+  keywords?: readonly string[];
+  /** Функции в автодополнении */
+  functions?: readonly string[];
 }
 
 /*
@@ -78,7 +102,7 @@ const mirrorTheme = EditorView.theme(
       textDecoration: "underline dashed var(--alarm) 1px",
       textUnderlineOffset: "3px",
     },
-    ".cm-placeholder": { color: "var(--ink-4)", fontStyle: "normal" },
+    ".cm-placeholder": { color: "var(--ink-3)", fontStyle: "normal" },
 
     /* Автодополнение: окно «Зеркала», без иконок типов */
     ".cm-tooltip": {
@@ -118,6 +142,7 @@ const mirrorTheme = EditorView.theme(
       color: "var(--ink-3)",
     },
     ".cm-completionIcon": { display: "none" },
+    ".cm-diagnostic, .cm-diagnostic-error": { borderLeft: "none", padding: "0", color: "var(--ink-1)" },
     ".cm-tooltip-hover, .cm-tooltip-lint": {
       fontFamily: "var(--font-sans)",
       fontSize: "12px",
@@ -171,7 +196,8 @@ function columnCompletion(schema: TableInfo[]) {
     label: name,
     type: "property",
     detail: info.tables.length === 1 ? `${info.tables[0]}, ${info.type || "столбец"}` : info.tables.join(", "),
-    boost: -1,
+    // Имена игрока важнее ключевых слов: столбец выше SELECT
+    boost: 1,
   }));
   return (ctx: CompletionContext) => {
     const word = ctx.matchBefore(/[\wЀ-ӿ]+/);
@@ -181,11 +207,14 @@ function columnCompletion(schema: TableInfo[]) {
   };
 }
 
-/** Ctrl/⌘+Enter → всплывающее DOM-событие; компонент слушает его на обёртке */
+/**
+ * Ctrl/⌘+Enter → всплывающее DOM-событие; компонент слушает его на обёртке.
+ * Shift+Enter — обычный перенос строки: им переносят, и случайный запуск тратил бы квоту.
+ */
 const RUN_EVENT = "zerosql:run";
 const runKeymap = Prec.highest(
   keymap.of(
-    ["Mod-Enter", "Shift-Enter"].map((key) => ({
+    ["Mod-Enter"].map((key) => ({
       key,
       run: (view: EditorView) => {
         view.dom.dispatchEvent(new CustomEvent(RUN_EVENT, { bubbles: true }));
@@ -237,6 +266,8 @@ export default function SqlCodeMirror({
   placeholder,
   handleRef,
   ariaLabel = "SQL-запрос",
+  keywords = TEACHING_KEYWORDS,
+  functions = TEACHING_FUNCTIONS,
 }: SqlCodeMirrorProps) {
   const viewRef = useRef<EditorView | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -269,32 +300,56 @@ export default function SqlCodeMirror({
       focus() {
         viewRef.current?.focus();
       },
+      markError(token: string, message: string) {
+        const view = viewRef.current;
+        if (!view) return null;
+        const hit = findToken(view.state.doc.toString(), token);
+        if (!hit) return null;
+        view.dispatch(setDiagnostics(view.state, [{ from: hit.from, to: hit.to, severity: "error", message }]));
+        return hit.line;
+      },
+      clearError() {
+        const view = viewRef.current;
+        if (view) view.dispatch(setDiagnostics(view.state, []));
+      },
     }),
     []
   );
 
   const schemaKey = (schema ?? []).map((tb) => `${tb.name}:${tb.columns.map((c) => c.name).join(",")}`).join("|");
 
+  const wordsKey = `${keywords.join(" ")}|${functions.join(" ")}`;
+
   const extensions = useMemo(() => {
     const schemaObj: Record<string, string[]> = {};
     for (const table of schema ?? []) schemaObj[table.name] = table.columns.map((c) => c.name);
+    // Подсветка — полный SQLite (чужое слово не должно выглядеть именем), дополнение — только учебное
+    const teaching = SQLDialect.define({ keywords: keywords.join(" "), builtin: functions.join(" "), types: "" });
+    const data = SQLite.language.data;
     return [
       mirrorTheme,
       syntaxHighlighting(mirrorHighlight),
       // Каретка: 2 px натрия, мигание 530 мс включена / 530 мс выключена
       drawSelection({ cursorBlinkRate: 1060 }),
       autocompletion({ icons: false }),
-      sql({ dialect: SQLite, schema: schemaObj, upperCaseKeywords: true }),
-      SQLite.language.data.of({ autocomplete: columnCompletion(schema ?? []) }),
+      new LanguageSupport(SQLite.language, [
+        data.of({ autocomplete: schemaCompletionSource({ dialect: SQLite, schema: schemaObj }) }),
+        data.of({ autocomplete: keywordCompletionSource(teaching, true) }),
+        data.of({ autocomplete: columnCompletion(schema ?? []) }),
+      ]),
       runKeymap,
       EditorView.lineWrapping,
+      // Правка текста снимает отметку ошибки: игрок её исправляет
+      EditorState.transactionExtender.of((tr) =>
+        tr.docChanged && diagnosticCount(tr.startState) > 0 ? { effects: setDiagnosticsEffect.of([]) } : null
+      ),
       EditorView.contentAttributes.of({ "aria-label": ariaLabel }),
       EditorState.readOnly.of(readOnly),
       EditorView.editable.of(!readOnly),
     ];
-    // schemaKey стабилизирует пересоздание при той же схеме
+    // schemaKey и wordsKey стабилизируют пересоздание при тех же данных
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schemaKey, readOnly, ariaLabel]);
+  }, [schemaKey, wordsKey, readOnly, ariaLabel]);
 
   return (
     <div ref={wrapRef} className="zs-editor h-full">

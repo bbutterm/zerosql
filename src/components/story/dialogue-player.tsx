@@ -18,6 +18,7 @@ import { Glyph } from "@/components/kit/glyphs";
 import { ScreenButton } from "@/components/kit/screen";
 import { typo } from "@/components/kit/typo";
 import { EVIDENCE_ITEM_WIDTH, EVIDENCE_KIND_META, EvidenceCard } from "@/components/case/evidence-card";
+import { sortByNight } from "@/components/case/evidence-board";
 import { PortraitFrame } from "./portrait";
 import { isMediaMissing, markMediaMissing, voiceUrl } from "./media-cache";
 
@@ -36,7 +37,7 @@ export interface DialoguePlayerProps {
   locationLabel?: string;
   /** Имя игрока в логе */
   playerName?: string;
-  /** Подпись у варианта без улики, по умолчанию «[нужна улика]» */
+  /** Почему вариант недоступен, по умолчанию «нужна улика» — дописывается к строке курсивом через тире */
   lockedChoiceHint?: (choice: DialogueChoice, missing: string[]) => string;
   defaultMuted?: boolean;
   defaultAutoAdvance?: boolean;
@@ -181,6 +182,9 @@ export function DialoguePlayer({
   const voiceState: VoiceState = item?.lineId && voice.lineId === item.lineId ? voice.state : "idle";
 
   const owned = new Set(evidence.map((e) => e.id));
+  // Предъявление — в порядке реестра «Материалы»: по времени ночи
+  const registry = sortByNight(evidence);
+  const [advanced, setAdvanced] = useState(startAt !== 0);
   const choices = scene.choices ?? [];
   const present = scene.present;
   const endMode: "present" | "choices" | "next" = present ? "present" : choices.length ? "choices" : "next";
@@ -220,6 +224,7 @@ export function DialoguePlayer({
   };
 
   const advance = () => {
+    if (!advanced) setAdvanced(true);
     if (atEnd) {
       if (endMode === "next" && !resolved) {
         setResolved(true);
@@ -254,8 +259,11 @@ export function DialoguePlayer({
   const pickChoice = (choice: DialogueChoice) => {
     if (resolved || choiceMissing(choice).length > 0) return;
     setResolved(true);
-    // Выбранный вариант уходит в лог репликой Ноль
-    setTrailing((t) => [...t, { key: `${scene.id}:choice:${choice.id}`, kind: "line", speaker: PLAYER, text: typo(choice.text) }]);
+    // Выбранный вариант уходит в лог репликой Ноль — её словами, а не строкой меню
+    setTrailing((t) => [
+      ...t,
+      { key: `${scene.id}:choice:${choice.id}`, kind: "line", speaker: PLAYER, text: typo(choice.say ?? choice.text) },
+    ]);
     onChoice?.(choice);
   };
 
@@ -382,9 +390,9 @@ export function DialoguePlayer({
       if (endMode === "choices" && choices[n]) {
         e.preventDefault();
         pickChoice(choices[n]);
-      } else if (endMode === "present" && evidence[n]) {
+      } else if (endMode === "present" && registry[n]) {
         e.preventDefault();
-        selectEvidence(evidence[n].id);
+        selectEvidence(registry[n].id);
       }
       return;
     }
@@ -442,6 +450,11 @@ export function DialoguePlayer({
             {/* eslint-disable-next-line @next/next/no-img-element -- картина локации из public/ */}
             <img src={background} alt="" className="absolute inset-0 size-full object-cover" draggable={false} />
             <div aria-hidden className="absolute inset-0 bg-room/55" />
+            {/* За колонкой лога — сплошная комната 0.85: текст читается поверх любой картины */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-[42%] bottom-0 bg-room/85 @3xl:top-0 @3xl:left-[calc(var(--zone)_+_32px)]"
+            />
           </>
         )}
 
@@ -449,8 +462,8 @@ export function DialoguePlayer({
           {/* Портрет: широко — слева на всю высоту; узко — сверху 42 % */}
           <div
             className={cn(
-              "absolute inset-x-0 top-0 h-[42%] [--dossier-bottom:16px] [--portrait-pos:50%_22%]",
-              "@3xl:inset-y-0 @3xl:right-auto @3xl:h-auto @3xl:w-(--zone) @3xl:[--dossier-bottom:96px] @3xl:[--portrait-pos:50%_18%]"
+              "absolute inset-x-0 top-0 h-[42%] overflow-hidden [--dossier-bottom:16px] [--portrait-pos:50%_22%]",
+              "@3xl:inset-y-0 @3xl:right-auto @3xl:h-auto @3xl:w-(--zone) @3xl:overflow-visible @3xl:[--dossier-bottom:40px] @3xl:[--portrait-pos:50%_18%]"
             )}
           >
             {stageCharacter && (
@@ -511,6 +524,7 @@ export function DialoguePlayer({
                     characters={characters}
                     playerName={playerName}
                     next={partial !== undefined && showNext}
+                    floor={background ? "ink-2" : "ink-3"}
                   />
                 ))}
 
@@ -519,6 +533,7 @@ export function DialoguePlayer({
                     {choices.map((choice, i) => {
                       const missing = choiceMissing(choice);
                       const locked = missing.length > 0;
+                      const reason = (lockedChoiceHint?.(choice, missing) ?? "нужна улика").replace(/^\[|\]$/g, "");
                       return (
                         <li key={choice.id}>
                           <button
@@ -542,19 +557,9 @@ export function DialoguePlayer({
                                 />
                               )}
                             </span>
-                            <span
-                              className={cn(
-                                locked
-                                  ? "text-ink-3"
-                                  : "text-ink-2 transition-colors duration-[80ms] ease-linear group-hover/choice:text-ink-1 group-focus-visible/choice:text-ink-1"
-                              )}
-                            >
+                            <span className={locked ? "text-ink-3" : "text-ink-1"}>
                               {typo(choice.text)}
-                              {locked && (
-                                <span className="ml-2 ui-13 text-ink-3">
-                                  {lockedChoiceHint?.(choice, missing) ?? "[нужна улика]"}
-                                </span>
-                              )}
+                              {locked && <span className="italic">{`\u00A0— ${reason}`}</span>}
                             </span>
                           </button>
                         </li>
@@ -572,25 +577,33 @@ export function DialoguePlayer({
                       <p className="ui-13 text-ink-3">Материалов нет.</p>
                     ) : (
                       <ol aria-label="Материалы" className="border-t border-line">
-                        {evidence.map((card) => {
+                        {registry.map((card) => {
                           const sel = picked === card.id;
                           return (
                             <li key={card.id}>
+                              {/* Наведение только проясняет текст; выбор — фон, маркер и ink-1 */}
                               <button
                                 type="button"
                                 aria-pressed={sel}
                                 onClick={() => selectEvidence(card.id)}
                                 className={cn(
-                                  "grid h-10 w-full grid-cols-[16px_40px_48px_minmax(0,1fr)] items-baseline border-b border-line pt-2.5 text-left",
-                                  sel ? "bg-scr-select" : "hover:bg-scr-raise"
+                                  "group/ev grid h-10 w-full grid-cols-[16px_40px_48px_minmax(0,1fr)] items-baseline border-b border-line pt-2.5 text-left @max-3xl:h-11",
+                                  sel && "bg-scr-select"
                                 )}
                               >
                                 <span className="self-center pl-1 text-sodium">
                                   {sel && <Glyph name="marker" size={10} />}
                                 </span>
-                                <span className="mono-12 text-ink-2">{card.at ?? "—"}</span>
-                                <span className="mono-11 text-ink-3">{EVIDENCE_KIND_META[card.kind].code}</span>
-                                <span className="truncate pr-3 ui-14 text-ink-1">{card.title}</span>
+                                <span className={cn("mono-12", sel ? "text-ink-1" : "text-ink-3 group-hover/ev:text-ink-2")}>{card.at ?? "—"}</span>
+                                <span className={cn("mono-11", sel ? "text-ink-2" : "text-ink-3")}>{EVIDENCE_KIND_META[card.kind].code}</span>
+                                <span
+                                  className={cn(
+                                    "truncate pr-3 ui-14",
+                                    sel ? "text-ink-1" : "text-ink-2 group-hover/ev:text-ink-1"
+                                  )}
+                                >
+                                  {card.title}
+                                </span>
                               </button>
                             </li>
                           );
@@ -616,6 +629,7 @@ export function DialoguePlayer({
 
         {/* Управление: текстом, справа сверху */}
         <div className="absolute top-3 right-4 flex items-center gap-5 @3xl:top-6 @3xl:right-6">
+          {!advanced && !atEnd && <span className="ui-12 text-ink-3 @max-3xl:hidden">Дальше — Пробел</span>}
           <button
             type="button"
             onClick={() => setAuto((a) => !a)}
@@ -662,6 +676,7 @@ function LogLine({
   characters,
   playerName,
   next,
+  floor = "ink-3",
 }: {
   entry: Entry;
   /** Сколько знаков напечатано (у текущей записи) */
@@ -671,8 +686,11 @@ function LogLine({
   characters: Record<string, CharacterDef>;
   playerName: string;
   next: boolean;
+  /** Нижняя ступень затухания: ink-3 на комнате, ink-2 поверх картины локации */
+  floor?: "ink-2" | "ink-3";
 }) {
-  const tone = age === 0 ? "text-ink-1" : age <= 5 ? "text-ink-2" : "text-ink-3";
+  const old = floor === "ink-2" ? "text-ink-2" : "text-ink-3";
+  const tone = age === 0 ? "text-ink-1" : age <= 5 ? "text-ink-2" : old;
   const text = entry.text;
   const n = partial ?? text.length;
   const body = (
@@ -693,22 +711,24 @@ function LogLine({
   );
 
   if (entry.kind === "title") {
-    return <p className={cn("mono-13", age === 0 ? "text-ink-2" : "text-ink-3")}>{body}</p>;
+    return <p className={cn("mono-13", age === 0 ? "text-ink-2" : old)}>{body}</p>;
   }
 
   const big = "font-serif text-[18px] leading-7 @max-3xl:text-[17px] @max-3xl:leading-[26px]";
 
   if (entry.speaker === NARRATOR) {
-    return <p className={cn(big, "italic", age === 0 ? "text-ink-2" : age <= 5 ? "text-ink-3" : "text-ink-3/80")}>{body}</p>;
+    // Рассказчик на ступень тише реплик, но не ниже нижней ступени
+    return <p className={cn(big, "italic", age === 0 ? "text-ink-2" : old)}>{body}</p>;
   }
 
   const isPlayer = entry.speaker === PLAYER;
   const name = isPlayer ? playerName : (characters[entry.speaker ?? ""]?.shortName ?? entry.speaker);
-  const nameTone = isPlayer ? (age === 0 ? "text-sodium" : age <= 5 ? "text-sodium/75" : "text-sodium/55") : "";
+  // Имя Ноль гаснет до sodium/75 (5,3:1) и не ниже
+  const nameTone = isPlayer ? (age === 0 ? "text-sodium" : "text-sodium/75") : "";
   return (
     <p className={cn(big, tone)}>
       <span className={cn("doc-name @max-3xl:text-[16px]", nameTone)}>{name}</span>
-      {" — "}
+      {" — "}
       {body}
     </p>
   );

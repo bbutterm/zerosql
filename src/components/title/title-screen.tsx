@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Select } from "@base-ui/react/select";
 import { cn } from "@/lib/utils";
-import { SteamCanvas } from "@/components/kit/atmosphere";
 import { Glyph } from "@/components/kit/glyphs";
 import { StickyNote } from "@/components/kit/paper";
-import { ScreenButton, ScreenField, screenButtonClass } from "@/components/kit/screen";
+import { MENU_ITEM, MENU_POPUP, ScreenButton, ScreenField, screenButtonClass } from "@/components/kit/screen";
 
 export interface TitleMenuAction {
   /** Ссылка (next/link) или колбэк */
@@ -20,17 +20,17 @@ export interface TitleMenuAction {
 export interface TitleScreenProps {
   /** Строка под окном входа */
   subtitle?: ReactNode;
-  /** «Начать смену» (нет сохранения) или «Новый сеанс» (есть) */
+  /** Режим «Новый сеанс» */
   newGame?: TitleMenuAction;
-  /** «Войти» — продолжить сохранённый сеанс */
+  /** Режим «Продолжить сеанс» (выбран по умолчанию, если есть); meta — строка под полями */
   continueGame?: TitleMenuAction;
-  /** «Журнал дел» */
+  /** Режим «Журнал дел» */
   archive?: TitleMenuAction;
-  /** «Параметры» */
+  /** Кнопка «Параметры…» */
   settings?: TitleMenuAction;
-  /** Подпись сборки внизу экрана */
+  /** Версия в подвале окна */
   version?: string;
-  /** Подвал справа внизу */
+  /** Подвал экрана справа внизу (вне окна) */
   footer?: ReactNode;
   /** Логин в поле «Пользователь» */
   login?: string;
@@ -43,42 +43,12 @@ export interface TitleScreenProps {
 
 const enabled = (a?: TitleMenuAction) => Boolean(a && !a.disabled && (a.href || a.onClick));
 
-function ActionButton({
-  action,
-  variant,
-  children,
-  className,
-}: {
-  action?: TitleMenuAction;
-  variant: "primary" | "text";
-  children: ReactNode;
-  className?: string;
-}) {
-  const on = enabled(action);
-  const cls = cn(
-    variant === "primary"
-      ? cn("w-full", screenButtonClass("primary", { disabled: !on }))
-      : cn("h-8 justify-start", screenButtonClass("text"), "max-lg:h-11"),
-    className
-  );
-  if (on && action?.href) {
-    return (
-      <Link href={action.href} onClick={action.onClick} className={cls}>
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <button type="button" onClick={action?.onClick} disabled={!on} className={cls}>
-      {children}
-    </button>
-  );
-}
+type Mode = "continue" | "new" | "archive";
 
 /**
- * Экран входа = главное меню (раздел 7.2): окно «Зеркала» 400 px на фоне комнаты.
- * Поля с логином и паролем, главная кнопка во всю ширину, текстовые пункты столбиком.
- * Единственный предмет поверх экрана вне диалога — стикер предшественницы.
+ * Экран входа = главное меню (раздел 7.2). Это диалог ведомственной программы, а не карточка
+ * SaaS: строка окна, шапка организации, поля с подписями слева, «Режим», кнопки внизу справа,
+ * версия в подвале окна. Единственный предмет поверх экрана вне диалога — стикер предшественницы.
  */
 export function TitleScreen({
   subtitle,
@@ -93,63 +63,108 @@ export function TitleScreen({
   stickyNote = "пароль — как всегда",
   className,
 }: TitleScreenProps) {
-  const hasSave = enabled(continueGame);
+  const router = useRouter();
+  const modes = (
+    [
+      { id: "continue", label: "Продолжить сеанс", action: continueGame },
+      { id: "new", label: "Новый сеанс", action: newGame },
+      { id: "archive", label: "Журнал дел", action: archive },
+    ] as Array<{ id: Mode; label: string; action?: TitleMenuAction }>
+  ).filter((m) => enabled(m.action));
+  const [mode, setMode] = useState<Mode | null>(null);
+  const current = modes.find((m) => m.id === mode) ?? modes[0];
+  const submitRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => submitRef.current?.focus({ preventScroll: true }), []);
+
+  const run = (action?: TitleMenuAction) => {
+    if (!action || !enabled(action)) return;
+    action.onClick?.();
+    if (action.href) router.push(action.href);
+  };
+
   return (
     <div className={cn("relative flex h-dvh min-h-[560px] w-full flex-col bg-room", className)}>
       <div className="flex flex-1 items-center justify-center px-4 py-16">
-        <div className="relative w-full max-w-[400px]">
-          <section aria-label="Вход в систему" className="border border-line-strong bg-scr-base">
-            <header className="flex h-7 items-center justify-between border-b border-line bg-scr-chrome px-3">
-              <span className="ui-13 font-medium text-ink-1">Зеркало 4.2</span>
-              {/* Стикер заходит на окно на 24 px — подпись отодвинута из-под него */}
-              <span className={cn("ui-13 text-ink-3", stickyNote && "lg:mr-6")}>Вход в систему</span>
+        <div className="relative w-full max-w-[420px]">
+          <form
+            aria-label="Вход в систему"
+            className="border border-line-strong bg-scr-base"
+            onSubmit={(e) => {
+              e.preventDefault();
+              run(current?.action);
+            }}
+          >
+            <header className="flex h-7 items-center border-b border-line bg-scr-chrome px-3">
+              <h1 className="truncate ui-13 font-medium text-ink-1">Зеркало 4.2 — Вход в систему</h1>
             </header>
-            <div className="flex flex-col p-6">
-              <label className="flex flex-col gap-1">
-                <span className="ui-12 text-ink-3">Пользователь</span>
-                <ScreenField readOnly value={login} aria-readonly />
-              </label>
-              <label className="mt-3 flex flex-col gap-1">
-                <span className="ui-12 text-ink-3">Пароль</span>
-                <ScreenField readOnly value="●●●●●●●●" aria-readonly className="text-ink-2" />
-              </label>
-              {lastLogin && <p className="mt-3 ui-12 text-ink-3">Последний вход: {lastLogin}</p>}
 
-              <div className="mt-6">
-                {hasSave ? (
-                  <ActionButton action={continueGame} variant="primary">
-                    Войти
-                  </ActionButton>
-                ) : (
-                  <ActionButton action={newGame} variant="primary">
-                    Начать смену
-                  </ActionButton>
+            <div className="px-5 pt-4 pb-5">
+              <p className="mono-12 text-ink-3">
+                УМВД России по&nbsp;г.&nbsp;Полярный
+                <br />
+                АИС «Зеркало». Подсистема аналитики
+              </p>
+              <div className="mt-4 h-px bg-line" />
+
+              <div className="mt-4 grid grid-cols-[104px_minmax(0,1fr)] items-center gap-x-3 gap-y-2 max-lg:grid-cols-[88px_minmax(0,1fr)]">
+                <label htmlFor="login-user" className="text-right ui-13 text-ink-2">
+                  Пользователь:
+                </label>
+                <ScreenField id="login-user" readOnly value={login} aria-readonly className="max-lg:h-11" />
+                <label htmlFor="login-pass" className="text-right ui-13 text-ink-2">
+                  Пароль:
+                </label>
+                <ScreenField id="login-pass" readOnly value="●●●●●●●●" aria-readonly className="text-ink-2 max-lg:h-11" />
+                {modes.length > 0 && (
+                  <>
+                    <span id="login-mode-label" className="text-right ui-13 text-ink-2">
+                      Режим:
+                    </span>
+                    <ModeSelect
+                      modes={modes}
+                      value={current?.id ?? null}
+                      onChange={setMode}
+                      labelledBy="login-mode-label"
+                    />
+                  </>
                 )}
-                {hasSave && continueGame?.meta && <p className="mt-2 ui-12 text-ink-3">{continueGame.meta}</p>}
+                {(lastLogin || (current?.id === "continue" && current.action?.meta)) && (
+                  <p className="col-start-2 ui-12 text-ink-3">
+                    {current?.id === "continue" && current.action?.meta ? current.action.meta : null}
+                    {current?.id === "continue" && current.action?.meta && lastLogin ? <br /> : null}
+                    {lastLogin && <>Последний вход: {lastLogin}</>}
+                  </p>
+                )}
               </div>
-
-              <nav aria-label="Меню" className="mt-4 flex flex-col">
-                {hasSave && (
-                  <ActionButton action={newGame} variant="text">
-                    Новый сеанс
-                  </ActionButton>
-                )}
-                <ActionButton action={archive} variant="text">
-                  Журнал дел
-                </ActionButton>
-                <ActionButton action={settings} variant="text">
-                  Параметры
-                </ActionButton>
-              </nav>
             </div>
-          </section>
+
+            <footer className="flex items-center gap-2 border-t border-line px-3 py-2.5 max-lg:flex-wrap">
+              <span className="mr-auto truncate mono-12 text-ink-3">{version}</span>
+              <button
+                ref={submitRef}
+                type="submit"
+                disabled={!current}
+                className={cn(screenButtonClass("primary", { disabled: !current }), "min-w-20")}
+              >
+                Войти
+              </button>
+              <button
+                type="button"
+                onClick={() => run(settings)}
+                disabled={!enabled(settings)}
+                className={screenButtonClass("secondary", { disabled: !enabled(settings) })}
+              >
+                Параметры…
+              </button>
+            </footer>
+          </form>
 
           {stickyNote && (
             <StickyNote
               id="login-sticky"
               rotate={2.5}
               size={120}
-              className="absolute -top-6 -right-24 max-lg:hidden"
+              className="absolute -top-8 -right-24 max-lg:hidden"
             >
               {stickyNote}
             </StickyNote>
@@ -159,7 +174,7 @@ export function TitleScreen({
               id="login-sticky"
               rotate={2.5}
               size={96}
-              className="absolute -top-[90px] right-3 lg:hidden"
+              className="absolute -top-[92px] right-3 lg:hidden"
             >
               {stickyNote}
             </StickyNote>
@@ -167,11 +182,50 @@ export function TitleScreen({
           {subtitle && <div className="mt-4 ui-12 text-ink-3">{subtitle}</div>}
         </div>
       </div>
-      <footer className="flex items-center justify-between gap-4 px-4 pb-4 mono-12 text-ink-3">
-        <span>{version}</span>
-        {footer}
-      </footer>
+      {footer && <footer className="flex items-center justify-end gap-4 px-4 pb-4 mono-12 text-ink-3">{footer}</footer>}
     </div>
+  );
+}
+
+/** «Режим:» — выпадающий список окна входа, как в ведомственном диалоге */
+function ModeSelect({
+  modes,
+  value,
+  onChange,
+  labelledBy,
+}: {
+  modes: Array<{ id: Mode; label: string }>;
+  value: Mode | null;
+  onChange: (m: Mode) => void;
+  labelledBy: string;
+}) {
+  return (
+    <Select.Root
+      items={modes.map((m) => ({ value: m.id, label: m.label }))}
+      value={value}
+      onValueChange={(v) => v && onChange(v as Mode)}
+    >
+      <Select.Trigger
+        aria-labelledby={labelledBy}
+        className="flex h-7 w-full min-w-0 items-center justify-between gap-2 rounded-[2px] border border-line-strong bg-room pr-2 pl-2 text-left ui-13 text-ink-1 outline-none focus-visible:border-ink-2 data-popup-open:border-ink-2 max-lg:h-11"
+      >
+        <Select.Value />
+        <Glyph name="disclosure-open" size={10} className="text-ink-3" />
+      </Select.Trigger>
+      <Select.Portal>
+        <Select.Positioner className="z-[70] outline-none" side="bottom" align="start" sideOffset={2} alignItemWithTrigger={false}>
+          <Select.Popup className={cn(MENU_POPUP, "min-w-[var(--anchor-width)]")}>
+            <Select.List>
+              {modes.map((m) => (
+                <Select.Item key={m.id} value={m.id} className={cn(MENU_ITEM, "max-lg:h-11")}>
+                  <Select.ItemText>{m.label}</Select.ItemText>
+                </Select.Item>
+              ))}
+            </Select.List>
+          </Select.Popup>
+        </Select.Positioner>
+      </Select.Portal>
+    </Select.Root>
   );
 }
 
@@ -197,22 +251,8 @@ export function AgeWarning({ onAccept, className }: { onAccept?: () => void; cla
 
 /* ---------- Холодное открытие ---------- */
 
-// Нитка натриевых огней ЦОДа на горизонте: неравный шаг 6–40 px, яркость 0.5–1, без свечения
-const LIGHTS = (() => {
-  let s = 1401;
-  const r = () => {
-    s = (s * 1103515245 + 12345) >>> 0;
-    return s / 4294967296;
-  };
-  let x = 0;
-  return Array.from({ length: 24 }, () => {
-    x += 6 + Math.round(r() * 34);
-    return { x, o: Math.round((0.5 + r() * 0.5) * 100) / 100, dy: r() < 0.3 ? -4 - Math.round(r() * 6) : 0 };
-  });
-})();
-
 export interface ColdOpenProps {
-  /** Ключевая картина; без неё — запасной кадр кодом */
+  /** Ключевая картина; без неё — титр на чистой комнате */
   image?: string;
   /** Первая строка (печатается): «Полярная ночь. 14 декабря 2026 года, 01:40.» */
   stamp?: string;
@@ -224,8 +264,9 @@ export interface ColdOpenProps {
 }
 
 /**
- * Холодное открытие (раздел 7.1). Единственное место в игре, где написано название продукта.
- * Без картины: комната, горизонт на 62 %, нитка огней справа, пар над левой третью воды.
+ * Холодное открытие (раздел 7.1). С картиной — кадр на весь экран, текст слева снизу,
+ * знак и название продукта слева сверху. Без картины — киношный титр: чистая комната,
+ * по центру колонка 640 px, время PT Mono над фразой PT Serif. Пейзажа кодом нет.
  */
 export function ColdOpen({
   image,
@@ -264,6 +305,26 @@ export function ColdOpen({
     };
   }, [stamp]);
 
+  const text = (
+    <>
+      <p className="mono-13 text-ink-2" aria-label={stamp}>
+        <span aria-hidden>{stamp.slice(0, typed)}</span>
+        <span aria-hidden className="invisible">
+          {stamp.slice(typed)}
+        </span>
+      </p>
+      <p
+        className="mt-4 doc-22 text-ink-1 [text-wrap:pretty] max-lg:text-[19px] max-lg:leading-7"
+        style={{ opacity: phase >= 1 ? 1 : 0, transition: "opacity 400ms linear" }}
+      >
+        {line}
+      </p>
+      <p className="mt-8 ui-13 text-ink-3" style={{ visibility: phase >= 2 ? "visible" : "hidden" }}>
+        Нажмите любую клавишу
+      </p>
+    </>
+  );
+
   return (
     <div
       ref={rootRef}
@@ -273,46 +334,22 @@ export function ColdOpen({
       className={cn("relative h-dvh min-h-[480px] w-full overflow-hidden bg-room outline-none", className)}
     >
       {image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- ключевая картина из public/
-        <img src={image} alt="" className="absolute inset-0 size-full object-cover object-[30%_70%]" draggable={false} />
-      ) : (
-        <div aria-hidden className="absolute inset-0">
-          <div className="absolute inset-x-0 top-[62%] h-px bg-[#2a3134]" />
-          <div className="absolute top-[62%] right-[9%] h-0" style={{ width: LIGHTS[LIGHTS.length - 1].x }}>
-            {LIGHTS.map((l, i) => (
-              <span
-                key={i}
-                className="absolute size-[2px] bg-sodium"
-                style={{ left: l.x, top: -3 + l.dy, opacity: l.o }}
-              />
-            ))}
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- ключевая картина из public/ */}
+          <img src={image} alt="" className="absolute inset-0 size-full object-cover object-[30%_70%]" draggable={false} />
+          <div className="absolute top-12 left-12 flex items-center gap-2 max-lg:top-6 max-lg:left-4">
+            <Glyph name="zero-mark" size={16} className="text-cold" />
+            <span className="mono-13 text-ink-2">ZeroSQL</span>
           </div>
-          <SteamCanvas className="absolute top-[44%] left-0 h-[56%] w-[40%]" />
+          <div className="absolute right-16 bottom-16 left-16 max-w-[640px] max-lg:right-4 max-lg:bottom-10 max-lg:left-4">
+            {text}
+          </div>
+        </>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center px-6">
+          <div className="w-full max-w-[640px] -translate-y-[4%]">{text}</div>
         </div>
       )}
-
-      <div className="absolute top-12 left-12 flex items-center gap-2 max-lg:top-6 max-lg:left-4">
-        <Glyph name="zero-mark" size={16} className="text-cold" />
-        <span className="mono-13 text-ink-2">ZeroSQL</span>
-      </div>
-
-      <div className="absolute right-16 bottom-16 left-16 max-w-[640px] max-lg:right-4 max-lg:bottom-10 max-lg:left-4">
-        <p className="mono-13 text-ink-1" aria-label={stamp}>
-          <span aria-hidden>{stamp.slice(0, typed)}</span>
-          <span aria-hidden className="invisible">
-            {stamp.slice(typed)}
-          </span>
-        </p>
-        <p
-          className="mt-4 doc-22 text-ink-1 [text-wrap:pretty] max-lg:text-[19px] max-lg:leading-7"
-          style={{ opacity: phase >= 1 ? 1 : 0, transition: "opacity 400ms linear" }}
-        >
-          {line}
-        </p>
-        <p className="mt-6 ui-13 text-ink-3" style={{ visibility: phase >= 2 ? "visible" : "hidden" }}>
-          Нажмите любую клавишу
-        </p>
-      </div>
     </div>
   );
 }

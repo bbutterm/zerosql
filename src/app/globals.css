@@ -111,7 +111,7 @@
   --line-strong: #343b3f;
   --ink-1: #e6e4de;
   --ink-2: #a7acab;
-  --ink-3: #80878a;
+  --ink-3: #90979a;
   --ink-4: #4e5558;
   --sodium: #e3a13f;
   --sodium-hover: #ecb057;
@@ -215,10 +215,27 @@
   ::-webkit-scrollbar-thumb {
     background: var(--line-strong);
   }
+  /* Результат запроса: полоса 10 px, ползунок ink-3 (≥ 3:1, WCAG 1.4.11) — широкий
+     результат обязан показывать, что справа есть ещё столбцы */
+  .zs-scroll-strong::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .zs-scroll-strong::-webkit-scrollbar-thumb {
+    background: var(--ink-3);
+    border: 2px solid var(--scr-base);
+  }
+  .zs-scroll-strong::-webkit-scrollbar-track {
+    background: var(--scr-base);
+  }
   @supports not selector(::-webkit-scrollbar) {
     * {
       scrollbar-width: thin;
       scrollbar-color: var(--line-strong) transparent;
+    }
+    .zs-scroll-strong {
+      scrollbar-width: auto;
+      scrollbar-color: var(--ink-3) var(--scr-base);
     }
   }
 }
@@ -370,6 +387,28 @@
   background-blend-mode: multiply;
   color: var(--print);
 }
+/* Штемпельная краска: резина по бумаге. Пятна и пустоты — маска из файла, позиция по id */
+@utility ink-stamp {
+  -webkit-mask-image: url("/textures/stamp-mask.webp");
+  mask-image: url("/textures/stamp-mask.webp");
+  -webkit-mask-size: 512px;
+  mask-size: 512px;
+  mix-blend-mode: multiply;
+}
+/* Графит: штрих карандаша с просветами бумажного зуба */
+@utility pencil-grain {
+  -webkit-mask-image: url("/textures/pencil-grain.png");
+  mask-image: url("/textures/pencil-grain.png");
+  -webkit-mask-size: 128px;
+  mask-size: 128px;
+}
+/* Ночной кадр, напечатанный на лазерном принтере: растр, пока нет ассета */
+@utility halftone-night {
+  background-color: var(--paper);
+  background-image: url("/textures/halftone-night.webp");
+  background-size: 100% 100%;
+  background-blend-mode: multiply;
+}
 /* Тонер: мягкость печати видна только при увеличении. Это растекание, а не свечение */
 @utility toner {
   text-shadow: 0 0 0.35px rgb(31 30 27 / 0.55);
@@ -407,6 +446,21 @@
     --editor-size: 16px;
     --editor-leading: 24px;
   }
+  /* Перенос строки на мобильном — с висячим отступом: продолжение не похоже на новую строку */
+  .zs-editor .cm-line {
+    padding-left: 2ch !important;
+    text-indent: -2ch;
+  }
+}
+
+/* Маркер-выделитель на распечатке: не сдвигает моноширинную сетку */
+.zs-mark {
+  padding: 0;
+  background: var(--sticky);
+  color: var(--print);
+  mix-blend-mode: multiply;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* ---------- Движение (раздел 8.2) ---------- */

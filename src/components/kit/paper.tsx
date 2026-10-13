@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useId, type CSSProperties, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { fromId, hashId } from "./typo";
 
@@ -6,25 +6,37 @@ import { fromId, hashId } from "./typo";
  * Бумажные предметы (раздел 5): штамп и датер, круглая печать, галочка красным карандашом,
  * росчерк ручкой, стикер, малярный скотч. На бумаге значков нет — только рука и печать.
  * filter и mix-blend-mode разрешены только у штампа, печати, скотча и маркера.
+ * Маски краски и графита — растровые файлы из public/textures (scripts/textures.mjs).
  */
 
 /* ---------- Штемпельная краска: маска неравномерного оттиска ---------- */
 
 function inkMask(id: string): CSSProperties {
   const h = hashId(id);
-  return {
-    WebkitMaskImage: "url(/textures/stamp-mask.png)",
-    maskImage: "url(/textures/stamp-mask.png)",
-    WebkitMaskSize: "512px",
-    maskSize: "512px",
-    WebkitMaskPosition: `${-(h % 380)}px ${-((h >>> 9) % 380)}px`,
-    maskPosition: `${-(h % 380)}px ${-((h >>> 9) % 380)}px`,
-    mixBlendMode: "multiply",
-  };
+  const pos = `${-(h % 380)}px ${-((h >>> 9) % 380)}px`;
+  return { WebkitMaskPosition: pos, maskPosition: pos };
+}
+
+/**
+ * Рамка штампа: четыре резиновые кромки разной толщины (1,6–2,7 px), каждая с лёгким клином.
+ * Ровная 2-пиксельная рамка читается как SVG, а не как оттиск.
+ */
+function StampFrame({ id }: { id: string }) {
+  const t = (salt: number) => fromId(id, 1.6, 2.7, salt);
+  const [a, b, c, d, e, f, g, h] = [1, 2, 3, 4, 5, 6, 7, 8].map(t);
+  const bar = "pointer-events-none absolute bg-current";
+  return (
+    <>
+      <span aria-hidden className={cn(bar, "inset-x-0 top-0 h-[3px]")} style={{ clipPath: `polygon(0 0, 100% 0, 100% ${b}px, 0 ${a}px)` }} />
+      <span aria-hidden className={cn(bar, "inset-y-0 right-0 w-[3px]")} style={{ clipPath: `polygon(${3 - c}px 0, 100% 0, 100% 100%, ${3 - d}px 100%)` }} />
+      <span aria-hidden className={cn(bar, "inset-x-0 bottom-0 h-[3px]")} style={{ clipPath: `polygon(0 ${3 - e}px, 100% ${3 - f}px, 100% 100%, 0 100%)` }} />
+      <span aria-hidden className={cn(bar, "inset-y-0 left-0 w-[3px]")} style={{ clipPath: `polygon(0 0, ${g}px 0, ${h}px 100%, 0 100%)` }} />
+    </>
+  );
 }
 
 export interface StampProps {
-  /** Детерминированные поворот (−4…+3°) и пятна краски */
+  /** Детерминированные поворот (−4…+3°), кромки рамки и пятна краски */
   id: string;
   children: ReactNode;
   /** Явный поворот, градусы */
@@ -37,13 +49,16 @@ export interface StampProps {
   style?: CSSProperties;
 }
 
-/** Прямоугольный штамп: рамка 2 px и текст PT Serif 700 капсом, +0.06em, цвет --seal */
+/**
+ * Прямоугольный штамп: резиновая рамка и текст гротеском Golos 600 капсом, +0.04em, цвет --seal.
+ * Так режут настоящие ведомственные штампы; антиква на штампе читалась бы как набор в Word.
+ */
 export function Stamp({ id, children, rotate, animate = false, delay = 0, className, style }: StampProps) {
   const rot = rotate ?? fromId(id, -4, 3);
   return (
     <span
       className={cn(
-        "inline-flex flex-col items-center justify-center border-2 border-seal px-3 py-1 text-center font-serif font-bold uppercase tracking-[0.06em] text-seal",
+        "relative inline-flex flex-col items-center justify-center px-3.5 py-1.5 text-center font-sans font-semibold uppercase tracking-[0.04em] text-seal ink-stamp",
         className
       )}
       style={
@@ -57,12 +72,13 @@ export function Stamp({ id, children, rotate, animate = false, delay = 0, classN
         } as CSSProperties
       }
     >
+      <StampFrame id={id} />
       {children}
     </span>
   );
 }
 
-/** Оттиск датера в «Отметках о сверке»: 220×40, одна строка */
+/** Оттиск датера в «Отметках о сверке»: 220×40. Лента с датой сидит на полпикселя ниже надписи */
 export function DaterStamp({
   id,
   attempt,
@@ -82,6 +98,7 @@ export function DaterStamp({
   animate?: boolean;
   className?: string;
 }) {
+  const band = [date, time].filter(Boolean).join(" ");
   return (
     <Stamp
       id={id}
@@ -90,7 +107,11 @@ export function DaterStamp({
     >
       <span>
         {`Сверка ${attempt}`}
-        {(date || time) && `   ${[date, time].filter(Boolean).join(" ")}`}
+        {band && (
+          <span className="relative" style={{ top: `${fromId(id, 0.5, 1, 3)}px` }}>
+            {`   ${band}`}
+          </span>
+        )}
       </span>
       <span>{`Совпало ${matched} из ${total}`}</span>
     </Stamp>
@@ -121,9 +142,12 @@ export function RoundSeal({
     const a = -Math.PI / 2 + (i * Math.PI) / 5;
     return `${(56 + r * Math.cos(a)).toFixed(2)},${(50 + r * Math.sin(a)).toFixed(2)}`;
   }).join(" ");
+  // Кольца чуть неровные: резина печати давит сильнее с одного края
+  const w1 = fromId(id, 1.9, 2.6, 1);
+  const w2 = fromId(id, 0.8, 1.2, 2);
   return (
     <span
-      className={cn("inline-block size-28 text-seal", className)}
+      className={cn("inline-block size-28 text-seal ink-stamp", className)}
       style={
         {
           ...inkMask(`${id}-seal`),
@@ -138,11 +162,11 @@ export function RoundSeal({
         <defs>
           <path id={pathId} d="M56 56 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0" />
         </defs>
-        <circle cx="56" cy="56" r="53" fill="none" stroke="currentColor" strokeWidth="2.2" />
-        <circle cx="56" cy="56" r="36" fill="none" stroke="currentColor" strokeWidth="1" />
+        <circle cx="56" cy="56" r="53" fill="none" stroke="currentColor" strokeWidth={w1} />
+        <circle cx="56.3" cy="55.8" r="36" fill="none" stroke="currentColor" strokeWidth={w2} />
         <text
           fill="currentColor"
-          style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: 9.6, letterSpacing: "0.06em" }}
+          style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 9.2, letterSpacing: "0.04em" }}
         >
           <textPath href={`#${pathId}`} startOffset="0" textLength="272" lengthAdjust="spacingAndGlyphs">
             {text.toUpperCase()}
@@ -154,7 +178,7 @@ export function RoundSeal({
           y="74"
           textAnchor="middle"
           fill="currentColor"
-          style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: 7.5, letterSpacing: "0.06em" }}
+          style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: 7.2, letterSpacing: "0.04em" }}
         >
           {center.toUpperCase()}
         </text>
@@ -163,13 +187,164 @@ export function RoundSeal({
   );
 }
 
-/* ---------- Красный карандаш и шариковая ручка ---------- */
+/* ---------- Рука: штрих переменной толщины ----------
+ * Карандаш и ручка рисуются не обводкой, а залитым контуром вокруг осевой линии:
+ * тонкий вход, тяжёлое «брюхо», сброшенный хвост. Появление — маской по осевой
+ * (stroke-dashoffset), поэтому штрих «пишется», а не проявляется. */
 
-// Три нарисованных от руки варианта галочки: неровный путь, а не фильтр
-const CHECKS = [
-  "M3.2 11.6 C4.6 12.4 6.1 14.2 7.4 16.3 C7.8 16.9 8.3 16.8 8.6 16.1 C10.9 10.8 14.6 6.2 20.6 2.4",
-  "M2.6 10.4 C4.4 11.2 5.8 13.1 7.1 15.6 C7.5 16.4 8.1 16.2 8.4 15.5 C10.2 11.4 13.9 6.4 21.1 3.1",
-  "M3.6 12.2 C5 12.6 6.3 14.1 7.6 16.6 C8 17.2 8.6 17 8.9 16.2 C11.6 10.1 15.2 5.9 20.2 2.9",
+type Pt = [x: number, y: number, w: number];
+
+/** Катмулл — Ром через точки с толщиной; на выходе — частые точки осевой */
+function spline(points: Pt[], steps = 10): Pt[] {
+  const out: Pt[] = [];
+  const at = (i: number) => points[Math.max(0, Math.min(points.length - 1, i))];
+  for (let i = 0; i < points.length - 1; i++) {
+    const [p0, p1, p2, p3] = [at(i - 1), at(i), at(i + 1), at(i + 2)];
+    for (let s = 0; s < steps; s++) {
+      const t = s / steps;
+      const t2 = t * t;
+      const t3 = t2 * t;
+      const c = (k: 0 | 1) =>
+        0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3);
+      out.push([c(0), c(1), p1[2] + (p2[2] - p1[2]) * t]);
+    }
+  }
+  out.push(points[points.length - 1]);
+  return out;
+}
+
+const f1 = (n: number) => n.toFixed(2);
+
+/** Залитый контур вокруг осевой: смещение по нормали на половину толщины */
+function outlineOf(pts: Pt[]): string {
+  const left: string[] = [];
+  const right: string[] = [];
+  pts.forEach((p, i) => {
+    const a = pts[Math.max(0, i - 1)];
+    const b = pts[Math.min(pts.length - 1, i + 1)];
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const h = p[2] / 2;
+    left.push(`${f1(p[0] + nx * h)} ${f1(p[1] + ny * h)}`);
+    right.push(`${f1(p[0] - nx * h)} ${f1(p[1] - ny * h)}`);
+  });
+  return `M${left.join(" L")} L${right.reverse().join(" L")} Z`;
+}
+
+const centerOf = (pts: Pt[]) => `M${pts.map((p) => `${f1(p[0])} ${f1(p[1])}`).join(" L")}`;
+
+interface InkStroke {
+  shape: string;
+  center: string;
+  /** Доля общего времени росчерка: [начало, длительность] */
+  span: [number, number];
+}
+
+function strokes(list: Array<{ pts: Pt[]; span: [number, number] }>): InkStroke[] {
+  return list.map(({ pts, span }) => {
+    const line = spline(pts);
+    return { shape: outlineOf(line), center: centerOf(line), span };
+  });
+}
+
+/** Штрихи рисуются по очереди: маска по осевой каждого штриха */
+function InkStrokes({
+  list,
+  duration,
+  delay,
+  animate,
+  easing,
+}: {
+  list: InkStroke[];
+  duration: number;
+  delay: number;
+  animate: boolean;
+  easing: string;
+}) {
+  const uid = useId().replace(/:/g, "");
+  return (
+    <>
+      {list.map((s, i) => (
+        <g key={i}>
+          {animate && (
+            <mask id={`${uid}-${i}`} maskUnits="userSpaceOnUse">
+              <path
+                d={s.center}
+                pathLength={1}
+                fill="none"
+                stroke="#fff"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={
+                  {
+                    strokeDasharray: 1,
+                    strokeDashoffset: 0,
+                    "--len": 1,
+                    animation: `zs-draw ${Math.round(duration * s.span[1])}ms ${easing} ${Math.round(delay + duration * s.span[0])}ms both`,
+                  } as CSSProperties
+                }
+              />
+            </mask>
+          )}
+          <path d={s.shape} fill="currentColor" mask={animate ? `url(#${uid}-${i})` : undefined} />
+        </g>
+      ))}
+    </>
+  );
+}
+
+/* ---------- Галочка красным карандашом: три разные руки ---------- */
+
+const CHECKS: InkStroke[][] = [
+  // Классическая: короткий нажим вниз, длинный уход вверх с броском
+  strokes([
+    {
+      pts: [
+        [3, 10.6, 0.5],
+        [5.2, 12.6, 1.5],
+        [7.4, 16.2, 2.6],
+        [9.6, 12.8, 2.1],
+        [14.6, 7, 1.5],
+        [20.8, 2.2, 0.35],
+      ],
+      span: [0, 1],
+    },
+  ]),
+  // Пологая, с крючком на входе и прямым хвостом
+  strokes([
+    {
+      pts: [
+        [2.2, 8.4, 0.4],
+        [3.4, 9.2, 1.1],
+        [5.6, 12.4, 1.9],
+        [8, 15.8, 2.3],
+        [10.4, 12.4, 1.8],
+        [16, 7.8, 1.1],
+        [22, 4.6, 0.3],
+      ],
+      span: [0, 1],
+    },
+  ]),
+  // Крутая и короткая слева, хвост выгнут дугой и отброшен вправо
+  strokes([
+    {
+      pts: [
+        [4.6, 12.8, 0.6],
+        [6.2, 15.4, 2.2],
+        [7.2, 17.6, 2.8],
+        [9, 13.8, 2.2],
+        [12.4, 8.4, 1.6],
+        [16.6, 4.2, 1],
+        [20.2, 2.2, 0.55],
+        [22.4, 2.6, 0.25],
+      ],
+      span: [0, 1],
+    },
+  ]),
 ];
 
 export function PencilCheck({
@@ -183,29 +358,78 @@ export function PencilCheck({
   delay?: number;
   className?: string;
 }) {
-  const d = CHECKS[hashId(id) % CHECKS.length];
+  const list = CHECKS[hashId(id) % CHECKS.length];
   return (
-    <svg viewBox="0 0 24 20" className={cn("h-5 w-6 text-red-pencil", className)} aria-hidden>
-      <path
-        d={d}
-        pathLength={1}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={
-          {
-            strokeDasharray: 1,
-            strokeDashoffset: 0,
-            "--len": 1,
-            animation: animate ? `zs-draw 180ms var(--ease-out) ${delay}ms both` : undefined,
-          } as CSSProperties
-        }
-      />
+    <svg
+      viewBox="0 0 24 20"
+      className={cn("h-5 w-6 text-red-pencil pencil-grain", className)}
+      style={{ WebkitMaskPosition: `${-(hashId(id) % 100)}px 0`, maskPosition: `${-(hashId(id) % 100)}px 0` }}
+      aria-hidden
+    >
+      <InkStrokes list={list} duration={180} delay={delay} animate={animate} easing="var(--ease-out)" />
     </svg>
   );
 }
+
+/* ---------- Подпись синей ручкой: «Н» и росчерк «оль», подчёркивание ---------- */
+
+const SIGNATURE = strokes([
+  // Левая ножка «Н»: нажим вниз
+  {
+    pts: [
+      [14, 6.5, 0.5],
+      [13, 13, 1.5],
+      [11.6, 22, 2.1],
+      [10.4, 30.5, 0.7],
+    ],
+    span: [0, 0.16],
+  },
+  // Перекладина, правая ножка, связка и «оль» одним движением
+  {
+    pts: [
+      [9.4, 21.4, 0.4],
+      [15.4, 19.6, 0.8],
+      [21.4, 17.8, 0.7],
+      [24.6, 8.6, 0.55],
+      [25.4, 6, 0.45],
+      [24.4, 14, 1.7],
+      [22.8, 24, 2.2],
+      [21.8, 30, 1.3],
+      [25.6, 26.4, 0.6],
+      [30, 21.4, 0.7],
+      [33.8, 19.6, 1.2],
+      [36.4, 22.6, 1.6],
+      [34.6, 26.6, 1.3],
+      [30.8, 26, 0.8],
+      [31.4, 22, 0.6],
+      [35.6, 21.4, 0.6],
+      [38.6, 27, 1],
+      [41.6, 20.8, 0.8],
+      [44.6, 19.4, 0.8],
+      [45.6, 24.6, 1.7],
+      [46.6, 29.6, 1.3],
+      [49.6, 22.4, 0.6],
+      [50.4, 27.6, 1.5],
+      [49.2, 30.2, 1],
+      [53.4, 28.6, 0.9],
+      [55.4, 25.8, 0.7],
+      [52.8, 24.6, 0.5],
+    ],
+    span: [0.14, 0.62],
+  },
+  // Подчёркивание-росчерк: из-под первой буквы далеко вправо, с подъёмом и сбросом
+  {
+    pts: [
+      [5, 35.4, 0.35],
+      [22, 34.6, 1.3],
+      [48, 33.2, 1.8],
+      [80, 31, 1.4],
+      [104, 28.2, 0.8],
+      [121, 24.6, 0.3],
+    ],
+    span: [0.74, 0.26],
+  },
+]);
 
 /** Росчерк подписи синей ручкой; рисуется за 400 мс */
 export function Signature({
@@ -219,23 +443,7 @@ export function Signature({
 }) {
   return (
     <svg viewBox="0 0 128 40" className={cn("h-10 w-32 text-pen", className)} aria-hidden>
-      <path
-        d="M6 27 C10 15 15 9 18 11 C21 13 15 29 17 30 C20 31 24 14 28 15 C31 16 27 28 31 28 C35 28 38 18 42 19 C45 20 42 27 46 27 C52 27 56 12 62 13 C66 14 60 30 66 29 C74 28 80 17 90 19 C97 20 92 27 99 26 C107 25 114 20 122 18"
-        pathLength={1}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={
-          {
-            strokeDasharray: 1,
-            strokeDashoffset: 0,
-            "--len": 1,
-            animation: animate ? `zs-draw 400ms var(--ease-in-out) ${delay}ms both` : undefined,
-          } as CSSProperties
-        }
-      />
+      <InkStrokes list={SIGNATURE} duration={400} delay={delay} animate={animate} easing="var(--ease-in-out)" />
     </svg>
   );
 }

@@ -98,36 +98,36 @@ function report(file) {
   console.log(`${file.replace(root + "/", "")}: ${(statSync(file).size / 1024).toFixed(1)} КБ`);
 }
 
-/* ---------- Офисная бумага 80 г/м²: средняя яркость ~97 %, уровни 92–100 % ---------- */
+/* ---------- Офисная бумага 80 г/м²: ровная серо-тёплая, фактура видна только при 200 % ----------
+ * Крупных «облаков» нет (они читаются как пергамент): только зуб бумаги и редкие короткие волокна. */
 {
   const r = rng(80);
   const px = compose(
     [
-      [valueNoise(r, 128), 0.016],
-      [valueNoise(r, 32), 0.012],
-      [valueNoise(r, 8), 0.01],
-      [valueNoise(r, 2), 0.012],
-      [whiteNoise(r), 0.008],
-      [fibers(r, 1400, { minLen: 6, maxLen: 26, amp: 0.05 }), 1],
+      [valueNoise(r, 64), 0.003],
+      [valueNoise(r, 4), 0.006],
+      [valueNoise(r, 2), 0.008],
+      [whiteNoise(r), 0.012],
+      [fibers(r, 500, { minLen: 4, maxLen: 12, amp: 0.018 }), 1],
     ],
-    0.966
+    0.968
   );
-  report(await writeWebp("paper-office.webp", toGray8(px, 0.92, 1), 80));
+  report(await writeWebp("paper-office.webp", toGray8(px, 0.93, 1), 80));
 }
 
-/* ---------- Тонкая бумага (лента принтера, протокол опроса): глаже, длинные волокна ---------- */
+/* ---------- Тонкая бумага (лента принтера, протокол опроса): ещё глаже, без пятен ---------- */
 {
   const r = rng(45);
   const px = compose(
     [
-      [valueNoise(r, 128), 0.01],
-      [valueNoise(r, 16), 0.006],
+      [valueNoise(r, 64), 0.002],
       [valueNoise(r, 2), 0.006],
-      [fibers(r, 420, { minLen: 20, maxLen: 60, amp: 0.03, angleSpread: 0.6 }), 1],
+      [whiteNoise(r), 0.009],
+      [fibers(r, 260, { minLen: 6, maxLen: 14, amp: 0.012, angleSpread: 0.6 }), 1],
     ],
     0.974
   );
-  report(await writeWebp("paper-thin.webp", toGray8(px, 0.93, 1), 80));
+  report(await writeWebp("paper-thin.webp", toGray8(px, 0.94, 1), 80));
 }
 
 /* ---------- Стена: валик по масляной краске, контраст ≤ 5 % (кладётся multiply на --wall) ---------- */
@@ -145,30 +145,104 @@ function report(file) {
   report(await writeWebp("wall-paint.webp", toGray8(px, 0.95, 1), 80));
 }
 
-/* ---------- Маска штампа: пятнистая заливка 70–100 %, белый цвет + альфа ---------- */
+/* ---------- Маска штампа: резина по бумаге, а не полупрозрачный SVG ----------
+ * Альфа 0.25–1: плотная краска с мягкой неравномерностью, мелкая крапина (ячейка 2–4 px),
+ * рваные пустоты там, где резина не коснулась бумаги, у кромки пустот краска гуще.
+ * WebP с альфой: шум хорошо жмётся, контурных ступенек палитры нет. */
 {
   const r = rng(707);
-  const blot = compose(
-    [
-      [valueNoise(r, 64), 0.09],
-      [valueNoise(r, 16), 0.07],
-      [valueNoise(r, 4), 0.05],
-    ],
-    0.86
-  );
+  const body = compose([[valueNoise(r, 64), 0.6], [valueNoise(r, 16), 0.4]], 0);
+  const holes = compose([[valueNoise(r, 32), 0.7], [valueNoise(r, 8), 0.3]], 0);
+  const speckA = valueNoise(r, 4);
+  const speckB = valueNoise(r, 2);
+  const grain = whiteNoise(r);
   const rgba = Buffer.alloc(N * N * 4);
   for (let i = 0; i < N * N; i++) {
-    // 16 уровней: пятна краски, а не плавный градиент; так и PNG легче
-    const a = Math.min(1, Math.max(0.7, blot[i]));
-    const q = Math.round(a * 15) / 15;
+    let a = 0.9 + body[i] * 0.22;
+    // Пустоты: порог по шуму даёт рваный край; на самой кромке — ободок гуще
+    const h = holes[i];
+    if (h > 0.38) a -= Math.min(0.75, (h - 0.38) * 4.2);
+    else if (h > 0.3) a += (h - 0.3) * 1.2;
+    // Крапина: светлые точки, где бумажный зуб пробивает краску
+    const sp = speckA[i] * 0.45 + speckB[i] * 0.35 + grain[i] * 0.4;
+    if (sp > 0.38) a -= Math.min(0.6, (sp - 0.38) * 2.4);
+    const v = Math.min(1, Math.max(0.25, a));
     rgba[i * 4] = 255;
     rgba[i * 4 + 1] = 255;
     rgba[i * 4 + 2] = 255;
-    rgba[i * 4 + 3] = Math.round(q * 255);
+    rgba[i * 4 + 3] = Math.round(v * 255);
   }
-  const file = join(out, "stamp-mask.png");
+  const file = join(out, "stamp-mask.webp");
   await sharp(rgba, { raw: { width: N, height: N, channels: 4 } })
-    .png({ compressionLevel: 9, palette: true, colors: 16 })
+    .webp({ quality: 50, alphaQuality: 50, effort: 6 })
+    .toFile(file);
+  report(file);
+}
+
+/* ---------- Зерно графита: маска для красного карандаша (галочки), 128 px ----------
+ * Карандаш оставляет штрих с просветами бумажного зуба, вытянутыми вдоль движения. */
+{
+  const M = 128;
+  const r = rng(2026);
+  const rgba = Buffer.alloc(M * M * 4);
+  // Вытянутое зерно: шум 1×3 px, повёрнутый на ~35°
+  const cells = Float32Array.from({ length: M * M }, () => r());
+  const at = (x, y) => cells[(((y % M) + M) % M) * M + (((x % M) + M) % M)];
+  for (let y = 0; y < M; y++) {
+    for (let x = 0; x < M; x++) {
+      let v = 0;
+      for (let k = -2; k <= 2; k++) v += at(x + Math.round(k * 0.8), y - Math.round(k * 0.57));
+      v /= 5;
+      const tooth = at(x * 3, y * 5) * 0.5 + v * 0.5;
+      const a = tooth > 0.6 ? 0.45 + (1 - tooth) * 0.6 : 0.88 + r() * 0.12;
+      const i = (y * M + x) * 4;
+      rgba[i] = 255;
+      rgba[i + 1] = 255;
+      rgba[i + 2] = 255;
+      rgba[i + 3] = Math.round(Math.min(1, a) * 255);
+    }
+  }
+  const file = join(out, "pencil-grain.png");
+  await sharp(rgba, { raw: { width: M, height: M, channels: 4 } })
+    .png({ compressionLevel: 9, palette: true, colors: 12 })
+    .toFile(file);
+  report(file);
+}
+
+/* ---------- Ночной кадр на лазерном принтере: растр 40–60 % с полосами, 240×180 ----------
+ * Заглушка кадра камеры и личного фото, пока ассета нет. Сюжет изображения не имитируется:
+ * только серое поле растровых точек, как напечатанная тёмная картинка. */
+{
+  const W = 240;
+  const H = 180;
+  const r = rng(1210);
+  const low = (() => {
+    const f = valueNoise(r, 128);
+    return (x, y) => f[(y % N) * N + (x % N)];
+  })();
+  const gray = Buffer.alloc(W * H);
+  const pitch = 3.2;
+  const ang = Math.PI / 4;
+  for (let y = 0; y < H; y++) {
+    // Полосы лазерного принтера: едва заметная периодическая неравномерность тонера
+    const band = Math.sin((y / H) * Math.PI * 7.3) * 0.035 + (y % 23 < 2 ? 0.03 : 0);
+    for (let x = 0; x < W; x++) {
+      const cover = 0.56 + low(x * 2, y * 2) * 0.2 + band - (y / H) * 0.08;
+      const u = (x * Math.cos(ang) + y * Math.sin(ang)) / pitch;
+      const v = (-x * Math.sin(ang) + y * Math.cos(ang)) / pitch;
+      const du = u - Math.round(u);
+      const dv = v - Math.round(v);
+      const d = Math.sqrt(du * du + dv * dv);
+      // Радиус точки по покрытию (площадь ≈ πr²)
+      const rad = Math.sqrt(Math.max(0, Math.min(0.9, cover)) / Math.PI);
+      const ink = d < rad - 0.06 ? 1 : d < rad + 0.06 ? 0.5 : 0;
+      const tone = 0.97 - ink * 0.72 + (r() - 0.5) * 0.03;
+      gray[y * W + x] = Math.round(Math.min(1, Math.max(0, tone)) * 255);
+    }
+  }
+  const file = join(out, "halftone-night.webp");
+  await sharp(gray, { raw: { width: W, height: H, channels: 1 } })
+    .webp({ quality: 82, effort: 6 })
     .toFile(file);
   report(file);
 }

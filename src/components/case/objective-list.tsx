@@ -6,7 +6,8 @@ import type { ObjectiveView } from "@/types/ui";
 import { cn } from "@/lib/utils";
 import { Glyph } from "@/components/kit/glyphs";
 import { Redaction } from "@/components/kit/screen";
-import { surnameAccusative, typo } from "@/components/kit/typo";
+import { RichText } from "@/components/kit/rich-text";
+import { lowerFirst, surnameAccusative, typo } from "@/components/kit/typo";
 
 export interface ObjectiveListProps {
   objectives: ObjectiveView[];
@@ -22,8 +23,8 @@ export interface ObjectiveListProps {
 
 /**
  * Задания (раздел 7.9) — блокнот следователя: нумерованный чек-лист без коробок,
- * рамок и прогресс-баров. Текущее отмечено натриевым маркером, закрытое вымарано.
- * Подсказки (раздел 7.10) — цитаты голосами персонажей.
+ * рамок и прогресс-баров. Текущее отмечено натриевым маркером, закрытое замаскировано.
+ * Подсказки (раздел 7.10) — сообщения персонажей в материале экрана: отправитель, время, текст.
  */
 export function ObjectiveList({
   objectives,
@@ -86,6 +87,39 @@ export function ObjectiveList({
   );
 }
 
+/** «Соколова В. А.» — как отправитель в рабочем мессенджере */
+export function officialName(c: CharacterDef): string {
+  const parts = c.name.trim().split(/\s+/);
+  const surname = parts[parts.length - 1];
+  const given = parts.length > 1 ? parts[0] : "";
+  const initials = [given, c.patronymic].filter(Boolean).map((w) => `${w![0]}.`).join("\u00A0");
+  return initials ? `${surname} ${initials}` : surname;
+}
+
+/** Длины слов скрытого текста: «******* ** ********» */
+function wordLengths(text: string): number[] {
+  return text
+    .replace(/`/g, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.length);
+}
+
+/**
+ * Пункт: колонка состояния 12 px (маркер, галочка или пусто) и колонка номера 18 px —
+ * номер есть у каждого пункта. Глифы выровнены по первой строке текста.
+ */
+function Gutter({ glyph, number, tone }: { glyph?: ReactNode; number: number; tone: string }) {
+  return (
+    <>
+      <span className="flex h-[21px] items-center">{glyph}</span>
+      <span className={cn("text-right mono-12 leading-[21px] tnum", tone)}>{number}</span>
+    </>
+  );
+}
+
+const ROW = "grid grid-cols-[12px_18px_minmax(0,1fr)] gap-x-2";
+
 function ObjectiveItem({
   objective: o,
   number,
@@ -111,29 +145,23 @@ function ObjectiveItem({
   const askLabel = nextBy
     ? `Спросить ${nextBy.shortNameAcc ?? surnameAccusative(nextBy.shortName)}`
     : "Запросить методическую помощь";
+  const lastLevel = revealed + 1 === hints.length;
+  const price =
+    nextHint?.cost === undefined ? null : nextHint.cost === 0 ? "бесплатно" : `−${nextHint.cost} к\u00A0оценке`;
 
   if (o.state === "locked") {
-    // Длины плашек — по длине скрытого текста, чтобы строка не выдавала содержание
-    const len = o.text.length;
-    const bars = len > 44 ? [Math.min(34, Math.round(len * 0.45)), Math.round(len * 0.35), 9] : [Math.max(12, Math.round(len * 0.7)), 8];
     return (
-      <li className="grid grid-cols-[24px_1fr] items-start" aria-label={`Задание ${number} закрыто`}>
-        <span className="mono-12 leading-[20px] text-ink-4">{number}</span>
-        <span className="flex flex-wrap items-center gap-x-2 gap-y-[9px] pt-[6px] font-mono text-[12px] leading-none">
-          {bars.map((w, i) => (
-            <Redaction key={i} chars={w} height={8} />
-          ))}
-        </span>
+      <li className={ROW} aria-label={`Задание ${number} закрыто`}>
+        <Gutter number={number} tone="text-ink-3" />
+        <Redaction chars={o.text.length} words={wordLengths(o.text)} className="mono-12 leading-[21px] break-words" />
       </li>
     );
   }
 
   if (o.state === "done") {
     return (
-      <li className="grid grid-cols-[24px_1fr]">
-        <span className="pt-[5px] text-ink-3">
-          <Glyph name="check" size={12} label="выполнено" />
-        </span>
+      <li className={ROW}>
+        <Gutter glyph={<Glyph name="check" size={12} label="выполнено" className="text-ink-3" />} number={number} tone="text-ink-3" />
         <div className="min-w-0">
           <p className="ui-14 text-ink-3">
             <RichText text={o.text} />
@@ -150,8 +178,8 @@ function ObjectiveItem({
 
   if (!current) {
     return (
-      <li className="grid grid-cols-[24px_1fr]">
-        <span className="pt-px mono-12 text-ink-3">{number}</span>
+      <li className={ROW}>
+        <Gutter number={number} tone="text-ink-3" />
         <p className="min-w-0 ui-14 text-ink-2">
           <RichText text={o.text} />
         </p>
@@ -160,19 +188,29 @@ function ObjectiveItem({
   }
 
   return (
-    <li className="grid grid-cols-[24px_1fr]" aria-current="step">
-      <span className={cn("flex items-center gap-[3px] self-start pt-px", quiet ? "text-ink-3" : "text-sodium")}>
-        <Glyph name="marker" size={10} />
-        <span className="sr-only">текущее</span>
-      </span>
+    <li className={ROW} aria-current="step">
+      <Gutter
+        glyph={
+          <span className={quiet ? "text-ink-3" : "text-sodium"}>
+            <Glyph name="marker" size={10} />
+            <span className="sr-only">текущее</span>
+          </span>
+        }
+        number={number}
+        tone="text-ink-1"
+      />
       <div className="min-w-0">
         <p className="ui-14 text-ink-1">
-          <span className="mr-2 mono-12 text-ink-1">{number}</span>
           <RichText text={o.text} />
         </p>
         {o.detail && (
           <p className="mt-1 ui-13 text-ink-2">
             <RichText text={o.detail} />
+          </p>
+        )}
+        {o.feedback && (
+          <p className="mt-2 ui-13 text-ink-2" role="status">
+            Не засчитано: <RichText text={lowerFirst(o.feedback)} />
           </p>
         )}
 
@@ -182,12 +220,13 @@ function ObjectiveItem({
               const by = hint.speaker ? characters[hint.speaker] : undefined;
               return (
                 <figure key={i} className="border-l border-line-strong pl-3">
-                  <blockquote className="doc-14 text-ink-1 italic">
-                    «<RichText text={hint.text} serif />»
-                  </blockquote>
-                  <figcaption className="mt-1 text-right ui-12 text-ink-3">
-                    —&nbsp;{by ? by.shortName : "пометка на полях"}
+                  <figcaption className="flex items-baseline gap-2 ui-12 text-ink-3">
+                    <span>{by ? officialName(by) : "пометка на полях"}</span>
+                    {hint.at && <span className="mono-12">{hint.at}</span>}
                   </figcaption>
+                  <blockquote className="mt-0.5 ui-14 text-ink-1">
+                    <RichText text={hint.text} />
+                  </blockquote>
                 </figure>
               );
             })}
@@ -195,17 +234,21 @@ function ObjectiveItem({
         )}
 
         {hints.length > 0 && onRevealHint && revealed < hints.length && (
-          <div className="mt-3 flex items-baseline gap-3">
-            <button
-              type="button"
-              onClick={() => onRevealHint(o.id)}
-              className="ui-13 text-ink-2 underline-offset-[3px] hover:text-ink-1 hover:underline max-lg:min-h-11"
-            >
-              {askLabel}
-            </button>
-            <span className="tnum ui-12 text-ink-3">
-              {revealed + 1}&nbsp;из&nbsp;{hints.length}
-            </span>
+          <div className="mt-3">
+            <div className="flex flex-wrap items-baseline gap-x-3">
+              <button
+                type="button"
+                onClick={() => onRevealHint(o.id)}
+                className="ui-13 text-ink-2 underline-offset-[3px] hover:text-ink-1 hover:underline max-lg:min-h-11"
+              >
+                {askLabel}
+              </button>
+              <span className="tnum ui-12 text-ink-3">
+                {revealed + 1}&nbsp;из&nbsp;{hints.length}
+                {price && <>, {price}</>}
+              </span>
+            </div>
+            {lastLevel && <p className="mt-0.5 ui-12 text-ink-3">Задание будет отмечено «с&nbsp;подсказкой».</p>}
           </div>
         )}
       </div>
@@ -241,19 +284,5 @@ function Typed({ text, active }: { text: string; active: boolean }) {
         </span>
       )}
     </>
-  );
-}
-
-/** `код` в обратных кавычках → PT Mono, без подложки и цвета */
-function RichText({ text, serif = false }: { text: string; serif?: boolean }): ReactNode {
-  const parts = text.split(/(`[^`]+`)/g);
-  return parts.map((part, i) =>
-    part.startsWith("`") && part.endsWith("`") && part.length > 2 ? (
-      <code key={i} className={cn("font-mono text-[0.93em] break-words not-italic", serif && "text-[0.88em]")}>
-        {part.slice(1, -1)}
-      </code>
-    ) : (
-      <span key={i}>{typo(part)}</span>
-    )
   );
 }

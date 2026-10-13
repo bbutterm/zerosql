@@ -21,8 +21,10 @@ export interface EvidenceWallProps {
   className?: string;
 }
 
-const HOUR = 160;
-const TAPE = 40;
+/** Шкала внутри событий ночи, px на час; пустые часы до и после сжимаются в разрыв */
+const HOUR = 320;
+const GAP = 56;
+const TAPE = 48;
 const PAD = 48;
 const NO_TIME_GAP = 72;
 const ZOOM_WIDTH = 560;
@@ -53,6 +55,48 @@ function hoursBetween(from: string, to: string): number[] {
   const n = (b - a + 24) % 24 || 24;
   return Array.from({ length: n + 1 }, (_, i) => (a + i) % 24);
 }
+
+/** Отрезок ленты: подробная шкала в часы событий или разрыв на пустые часы */
+interface Segment {
+  kind: "scale" | "gap";
+  /** Минуты ночи (от 18:00) */
+  from: number;
+  to: number;
+  x: number;
+  width: number;
+}
+
+/**
+ * Лента ночи: часы с событиями — 320 px на час (видно четверти часа), пустые часы до и после —
+ * один разрыв 56 px со знаком «//». Плотная ночь 01:30–02:50 не теряется на восьмичасовой ленте.
+ */
+function timeline(startMin: number, endMin: number, events: number[]) {
+  const inRange = events.filter((t) => t >= startMin && t <= endMin);
+  const lo = inRange.length ? Math.max(startMin, Math.floor(Math.min(...inRange) / 60) * 60) : startMin;
+  const hiRaw = inRange.length ? Math.ceil((Math.max(...inRange) + 1) / 60) * 60 : endMin;
+  const hi = Math.min(endMin, Math.max(hiRaw, lo + 60));
+  const segs: Segment[] = [];
+  let x = 0;
+  if (lo > startMin) {
+    segs.push({ kind: "gap", from: startMin, to: lo, x, width: GAP });
+    x += GAP;
+  }
+  const w = ((hi - lo) / 60) * HOUR;
+  segs.push({ kind: "scale", from: lo, to: hi, x, width: w });
+  x += w;
+  if (hi < endMin) {
+    segs.push({ kind: "gap", from: hi, to: endMin, x, width: GAP });
+    x += GAP;
+  }
+  const at = (t: number): number | null => {
+    if (t < startMin - 1 || t > endMin + 1) return null;
+    const s = segs.find((g) => t >= g.from && t <= g.to) ?? segs[segs.length - 1];
+    return s.x + ((t - s.from) / Math.max(1, s.to - s.from)) * s.width;
+  };
+  return { segs, span: x, at };
+}
+
+const hhmm = (nightMin: number) => `${String(Math.floor((nightMin / 60 + 18) % 24)).padStart(2, "0")}:00`;
 
 /**
  * Стена улик (раздел 7.12): стена подвала в масляной краске, на ней лента ночи — полоса
@@ -109,13 +153,17 @@ export function EvidenceWall({
 
 
   const hours = hoursBetween(from, to);
-  const span = (hours.length - 1) * HOUR;
   const startMin = nightMinutes(from) ?? 240;
+  const endMin = startMin + (hours.length - 1) * 60;
+  const line = timeline(
+    startMin,
+    endMin,
+    cards.map((c) => nightMinutes(c.at)).filter((t): t is number => t !== null)
+  );
+  const span = line.span;
   const pos = (at?: string) => {
     const t = nightMinutes(at);
-    if (t === null) return null;
-    const x = ((t - startMin) / 60) * HOUR;
-    return x < -1 || x > span + 1 ? null : x;
+    return t === null ? null : line.at(t);
   };
 
   const timed = cards
@@ -165,14 +213,14 @@ export function EvidenceWall({
     z: p.side === "above" ? 100 - p.lane : 100 + p.lane,
   }));
 
-  // Стена открывается у первого события ночи, лента — посередине видимой части
-  const firstX = placed[0]?.x;
+  // Стена открывается так, что середина событий ночи — посередине видимой части, лента — по центру высоты
+  const medianX = placed.length ? [...placed].sort((a, b) => a.x - b.x)[Math.floor((placed.length - 1) / 2)].x : undefined;
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || vertical) return;
-    if (firstX !== undefined) el.scrollLeft = Math.max(0, PAD + firstX - 96);
+    if (medianX !== undefined) el.scrollLeft = Math.max(0, PAD + medianX + 120 - el.clientWidth / 2);
     el.scrollTop = Math.max(0, tapeY + TAPE / 2 - el.clientHeight / 2);
-  }, [firstX, tapeY, vertical]);
+  }, [medianX, tapeY, vertical, size.w]);
 
   const contentWidth = PAD + span + PAD + (untimed.length ? NO_TIME_GAP + 300 : 0) + PAD;
 
@@ -209,8 +257,9 @@ export function EvidenceWall({
     return (
       <div
         key={c.id}
-        className="absolute"
-        style={{ ...style, zIndex: z, transform: `rotate(${rot}deg)` }}
+        // Наведение и фокус поднимают лист наверх стопки — без «подъёма» и тени
+        className="absolute z-(--z) hover:z-[900] focus-within:z-[900]"
+        style={{ ...style, "--z": z ?? 1, transform: `rotate(${rot}deg)` } as React.CSSProperties}
       >
         <EvidenceCard card={c} className="shadow-pinned" />
         <Tape id={c.id} className="top-[-8px] left-1/2 -ml-6" />
@@ -237,7 +286,7 @@ export function EvidenceWall({
       }}
     >
       {vertical ? (
-        <VerticalWall hours={hours} placed={timed} untimed={untimed} item={item} emptyNote={emptyNote} />
+        <VerticalWall segments={line.segs} span={span} placed={timed} untimed={untimed} item={item} emptyNote={emptyNote} />
       ) : (
         <div
           ref={scrollRef}
@@ -249,7 +298,7 @@ export function EvidenceWall({
         >
           <div className="relative" style={{ width: contentWidth, height: contentHeight }}>
             {/* Лента ночи */}
-            <NightTape hours={hours} left={PAD - 24} top={tapeY} width={span + 48} />
+            <NightTape segments={line.segs} left={PAD - 24} top={tapeY} width={span + 48} />
 
             {placed.map(({ c, x, top, z }) => item(c, { left: PAD + x, top: tapeY + top }, z))}
 
@@ -287,46 +336,77 @@ export function EvidenceWall({
   );
 }
 
-/* ---------- Лента ночи: полоса бумаги с перфорацией и отметками часов ---------- */
+/* ---------- Лента ночи: тракторная бумага принтера, часы и разрывы ---------- */
 
-const PERFORATION = {
+/** Поля перфорации 12 px: круглые отверстия ⌀4 с шагом 24, пунктир линии отрыва */
+const FEED_HOLES = {
   backgroundImage:
-    "radial-gradient(circle at 8px 6px, var(--wall) 2px, transparent 2.5px), radial-gradient(circle at 8px 34px, var(--wall) 2px, transparent 2.5px)",
-  backgroundSize: "16px 40px",
+    "radial-gradient(circle at 12px 6px, var(--wall) 2px, transparent 2.4px), radial-gradient(circle at 12px 42px, var(--wall) 2px, transparent 2.4px)",
+  backgroundSize: "24px 48px",
   backgroundRepeat: "repeat-x",
 } as const;
+const DOTTED = {
+  backgroundImage: "linear-gradient(90deg, var(--print-3) 50%, transparent 50%)",
+  backgroundSize: "4px 1px",
+} as const;
 
-function NightTape({ hours, left, top, width }: { hours: number[]; left: number; top: number; width: number }) {
-  const quarters = (hours.length - 1) * 4;
+function NightTape({ segments, left, top, width }: { segments: Segment[]; left: number; top: number; width: number }) {
+  const marks: Array<{ x: number; hour: boolean; label?: string }> = [];
+  for (const s of segments) {
+    if (s.kind === "gap") {
+      marks.push({ x: s.x, hour: true, label: hhmm(s.from) });
+      continue;
+    }
+    for (let t = s.from; t <= s.to; t += 15) {
+      const x = s.x + ((t - s.from) / 60) * HOUR;
+      const hour = t % 60 === 0;
+      marks.push({ x, hour, label: hour ? hhmm(t) : undefined });
+    }
+  }
+  // Повторы на стыках отрезков убираются
+  const seen = new Set<number>();
+  const unique = marks.filter((m) => (seen.has(Math.round(m.x)) ? false : (seen.add(Math.round(m.x)), true)));
   return (
     <div className="absolute" style={{ left, top, width, height: TAPE }}>
       <div className="absolute inset-0 paper-2 shadow-pinned" />
-      <div aria-hidden className="absolute inset-0" style={PERFORATION} />
-      {/* Линии перфорации отделяют поля 12 px */}
-      <span aria-hidden className="absolute inset-x-0 top-3 h-px bg-print-3/40" />
-      <span aria-hidden className="absolute inset-x-0 bottom-3 h-px bg-print-3/40" />
-      {Array.from({ length: quarters + 1 }, (_, q) => {
-        const isHour = q % 4 === 0;
-        return (
-          <span
-            key={q}
-            aria-hidden
-            className={cn("absolute w-px bg-print-3", isHour ? "top-3 h-[7px]" : "top-3 h-1")}
-            style={{ left: 24 + q * (HOUR / 4) }}
-          />
-        );
-      })}
-      {hours.map((h, i) => (
+      <div aria-hidden className="absolute inset-0" style={FEED_HOLES} />
+      <span aria-hidden className="absolute inset-x-0 top-3 h-px" style={DOTTED} />
+      <span aria-hidden className="absolute inset-x-0 bottom-3 h-px" style={DOTTED} />
+      {unique.map((m) => (
         <span
-          key={i}
-          className="absolute top-[13px] -translate-x-1/2 font-mono text-[12px] leading-[18px] text-print toner"
-          style={{ left: 24 + i * HOUR }}
-        >
-          {String(h).padStart(2, "0")}:00
-        </span>
+          key={m.x}
+          aria-hidden
+          className={cn("absolute top-3 w-px bg-print-3", m.hour ? "h-[7px]" : "h-1")}
+          style={{ left: 24 + m.x }}
+        />
       ))}
-      <Tape id="tape-start" className="top-3 -left-7" style={{ transform: "rotate(-84deg)" }} />
-      <Tape id="tape-end" className="top-3 -right-7" style={{ transform: "rotate(92deg)" }} />
+      {unique
+        .filter((m) => m.label)
+        .map((m) => (
+          <span
+            key={`l${m.x}`}
+            className="absolute top-[20px] font-mono text-[12px] leading-[14px] text-print toner"
+            style={{ left: 24 + m.x + 4 }}
+          >
+            {m.label}
+          </span>
+        ))}
+      {segments
+        .filter((s) => s.kind === "gap")
+        .map((s) => (
+          // Разрыв шкалы: пустые часы сжаты
+          <svg
+            key={`g${s.x}`}
+            aria-hidden
+            viewBox="0 0 12 24"
+            className="absolute top-3 h-6 w-3 text-print-2"
+            style={{ left: 24 + s.x + s.width / 2 + 10 }}
+          >
+            <path d="M2 22 L6 2 M6 22 L10 2" stroke="currentColor" strokeWidth="1" fill="none" />
+          </svg>
+        ))}
+      <Tape id="tape-start" className="top-4 -left-7" style={{ transform: "rotate(-84deg)" }} />
+      <Tape id="tape-end" className="top-4 -right-7" style={{ transform: "rotate(92deg)" }} />
     </div>
   );
 }
@@ -334,19 +414,20 @@ function NightTape({ hours, left, top, width }: { hours: number[]; left: number;
 /* ---------- Мобильный: лента вертикальная слева, предметы справа в одну колонку ---------- */
 
 function VerticalWall({
-  hours,
+  segments,
+  span,
   placed,
   untimed,
   item,
   emptyNote,
 }: {
-  hours: number[];
+  segments: Segment[];
+  span: number;
   placed: Array<{ c: EvidenceCardData; x: number }>;
   untimed: EvidenceCardData[];
   item: (c: EvidenceCardData, style: React.CSSProperties, z?: number) => React.ReactNode;
   emptyNote: string;
 }) {
-  const span = (hours.length - 1) * HOUR;
   // Предметы не налезают друг на друга: следующий — не выше нижнего края предыдущего
   let floor = 0;
   const rows: Array<{ c: EvidenceCardData; y: number }> = [];
@@ -357,6 +438,11 @@ function VerticalWall({
     rows.push({ c, y });
   }
   const height = Math.max(span + 48, floor + 24) + (untimed.length ? untimed.length * 220 + 80 : 0);
+  const labels: Array<{ y: number; text: string }> = [];
+  for (const s of segments) {
+    if (s.kind === "gap") labels.push({ y: s.x, text: hhmm(s.from).slice(0, 2) });
+    else for (let t = s.from; t <= s.to; t += 60) labels.push({ y: s.x + ((t - s.from) / 60) * HOUR, text: hhmm(t).slice(0, 2) });
+  }
   const firstY = rows[0]?.y;
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -366,13 +452,13 @@ function VerticalWall({
     <div ref={ref} className="absolute inset-0 isolate overflow-y-auto">
       <div className="relative" style={{ height }}>
         <div className="absolute top-6 left-3 w-8 paper-2 shadow-pinned" style={{ height: span + 8 }}>
-          {hours.map((h, i) => (
+          {labels.map((l, i) => (
             <span
               key={i}
-              className="absolute left-0 w-full -translate-y-1/2 text-center font-mono text-[12px] leading-[18px] text-print"
-              style={{ top: 4 + i * HOUR }}
+              className="absolute left-0 w-full text-center font-mono text-[12px] leading-[14px] text-print"
+              style={{ top: 4 + l.y + 3 }}
             >
-              {String(h).padStart(2, "0")}
+              {l.text}
             </span>
           ))}
         </div>

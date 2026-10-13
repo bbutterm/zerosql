@@ -64,9 +64,14 @@ export interface EvidenceExcerpt {
 export type ObjectiveState = "done" | "active" | "locked";
 
 export interface ObjectiveHint {
+  /** Текст подсказки; `код` в обратных кавычках набирается PT Mono */
   text: string;
   /** id персонажа, от лица которого подсказка (необязательно) */
   speaker?: string;
+  /** Игровое время, когда подсказка получена: «02:47» */
+  at?: string;
+  /** Цена уровня в очках оценки: 0 — бесплатно, 40 — «−40 к оценке». Не задана — не показывается */
+  cost?: number;
 }
 
 export interface ObjectiveView {
@@ -83,6 +88,11 @@ export interface ObjectiveView {
   hintsRevealed?: number;
   /** Сюжетный итог, показывается у выполненной задачи */
   outcome?: string;
+  /**
+   * Почему последний корректный запрос не засчитан (сообщение валидатора). Показывается под
+   * текущим заданием как «Не засчитано: …», заменяется на каждом запросе, при успехе пропадает
+   */
+  feedback?: string;
 }
 
 /* ---------- Протокол ---------- */

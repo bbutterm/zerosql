@@ -85,7 +85,7 @@ export function StatusBar({
       <FieldDivider />
       <Popover.Root>
         <Popover.Trigger
-          className="h-full min-w-0 flex-1 truncate text-left text-ink-1 outline-none focus-visible:bg-scr-raise"
+          className="h-full min-w-0 flex-1 truncate text-left text-ink-1 focus-visible:-outline-offset-2"
           aria-label="Журнал сообщений"
         >
           {current?.text ?? ""}

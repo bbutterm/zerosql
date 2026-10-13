@@ -38,7 +38,7 @@ export interface PortraitFrameProps {
   className?: string;
   /** Говорит: brightness(1) */
   speaking?: boolean;
-  /** Слушает: brightness(.72) saturate(.85) */
+  /** Слушает: живопись — brightness(.72) saturate(.85), бумажная карточка — только brightness(.92) */
   dimmed?: boolean;
   /** Устарело: подписи эмоций нет */
   showEmotion?: boolean;
@@ -87,8 +87,14 @@ export function PortraitFrame({
     if (src && img && img.complete && img.naturalWidth === 0) markMediaMissing(src);
   }, [src]);
 
+  const listening = dimmed && !speaking;
   const light: CSSProperties = {
-    filter: dimmed && !speaking ? "brightness(.72) saturate(.85)" : "brightness(1)",
+    filter: listening ? "brightness(.72) saturate(.85)" : "brightness(1)",
+    transition: "filter 200ms var(--ease-out)",
+  };
+  // Бумага не «выключается»: слушающая карточка лишь чуть темнее, печать остаётся читаемой
+  const paperLight: CSSProperties = {
+    filter: listening ? "brightness(.92)" : "brightness(1)",
     transition: "filter 200ms var(--ease-out)",
   };
 
@@ -128,16 +134,19 @@ export function PortraitFrame({
           onError={() => markMediaMissing(src)}
         />
       ) : size === "card" ? (
-        <div className="absolute inset-0" style={light}>
+        <div className="absolute inset-0" style={paperLight}>
           <DossierCard character={character} />
         </div>
       ) : (
-        // В зоне портрета карточка лежит по центру, нижний край в 96 px от низа, −0,8°
-        <div className="absolute inset-x-0 bottom-[var(--dossier-bottom,96px)] flex justify-center px-6" style={light}>
-          {/* 360×480; в низкой зоне (мобильный, 42 % высоты) карточка уменьшается по высоте */}
+        // Карточка лежит на столе перед игроком: низко и слева, −0,8°. Узкая зона — по центру
+        <div
+          className="absolute inset-x-0 bottom-[var(--dossier-bottom,40px)] flex justify-center px-6 @min-[480px]:justify-start @min-[480px]:pl-14"
+          style={paperLight}
+        >
+          {/* До 440×586; в низкой зоне (мобильный, 42 % высоты) карточка уменьшается по высоте */}
           <div
             className="-rotate-[0.8deg] shadow-paper"
-            style={{ width: "min(360px, 100cqw - 48px, (100cqh - var(--dossier-bottom, 96px) - 48px) * 0.75)" }}
+            style={{ width: "min(440px, 100cqw - 48px, (100cqh - var(--dossier-bottom, 40px) - 40px) * 0.75)" }}
           >
             <DossierCard character={character} />
           </div>
