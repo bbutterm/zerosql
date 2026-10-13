@@ -222,7 +222,8 @@ describe("деньги", () => {
   });
 
   it("«Щит»: 380 000 за Лыкова (12.11) и 300 000 «доп. соглашение № 7» (20.11 14:05)", () => {
-    expect(rows(world, "SELECT ts, amount, counterparty, purpose FROM transactions WHERE account_id = 'ACC-10017' ORDER BY ts")).toEqual([
+    // Абонентская охрана (180 000 каждое 5-е число) — посадка c09
+    expect(rows(world, "SELECT ts, amount, counterparty, purpose FROM transactions WHERE account_id = 'ACC-10017' AND purpose <> 'абонентская охрана' ORDER BY ts")).toEqual([
       ["2026-11-12 11:47:00", -380000, "МФО «Деньги Сразу»", "погашение займа за Лыкова А. С."],
       ["2026-11-20 14:05:00", 300000, "ООО «Ладога Инвест»", "доп. соглашение № 7"],
     ]);
