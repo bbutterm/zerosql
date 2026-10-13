@@ -8,6 +8,7 @@ import type { Database } from "sql.js";
 import * as F from "@/engine/world/facts";
 import { WORLD_TABLES, tableOpensAt } from "@/engine/world/schema";
 import { PATRONYMIC_OF } from "@/engine/world/pools";
+import { C07 } from "@/engine/world/plants/c07";
 import { sharedWorld, one, rows } from "./helpers";
 
 let db: Database;
@@ -190,7 +191,9 @@ describe("резервы посадок: шум их не повторяет", (
   });
 
   it("деньги группы и фонда — только посадки", () => {
-    expect(one(db, "SELECT COUNT(*) FROM transactions WHERE counterparty LIKE '%Тёплый берег%' AND account_id <> 'ACC-30518'")).toBe(0);
+    // Кроме Пахомовой фонд платит только получателям посадки c07: Ратников (24 + 24 возврата), Шубин, Мирошник, переселенцы
+    const c07Fund = 48 + 36 + 24 + C07.resettlers;
+    expect(one(db, "SELECT COUNT(*) FROM transactions WHERE counterparty LIKE '%Тёплый берег%' AND account_id <> 'ACC-30518'")).toBe(c07Fund);
     expect(one(db, "SELECT COUNT(*) FROM transactions WHERE counterparty LIKE '%Ладога%' OR counterparty LIKE '%Щит%'")).toBe(1);
     expect(one(db, "SELECT COUNT(*) FROM contracts c WHERE c.company_id IN (1,2,3,4,12,13,14,15,16,17,18) AND c.person_id IS NOT NULL")).toBe(0);
     expect(one(db, "SELECT COUNT(*) FROM company_owners WHERE company_id IN (1,2,3,4,12,13,14,15,16,17,18) OR (owner_type = 'company' AND owner_id IN (1,2,3,4,12,13,14,15,16,17,18))")).toBe(0);
