@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "project": "ZeroSQL",
+  "branch": "claude/sql-crime-game-redesign-675mjb",
+  "date_utc": "2026-10-13",
+  "source_batch_library_id": "libfile_d2bb9431db34819196402dab8f8b3a23",
+  "game_code_changed": false,
+  "assets": [
+    {
+      "path": "art-src/refs/nina_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 5231824,
+      "sha256": "cdc7fba07e41d32b28f185cb9af026401ac5d4c2a668abff57115bab2fcd0455",
+      "git_blob_sha": "f53888afc10deff66f21eee79d550a8bcf5b9ce0",
+      "library_file_id": "libfile_269425b904888191997949d23da0f01e",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/nina_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2945916,
+      "sha256": "67a2494bd1852365af8b5dec02c2313da24294f37765d34b1bfdae74b00a23cd",
+      "git_blob_sha": "a8d57449285f6322ce0a5f2966b7c04363f60438",
+      "library_file_id": "libfile_0ec426fec3bc8191acece1b328b8ec3e",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/dasha_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 4862508,
+      "sha256": "e6fad127e292b2f8494c375e5bbe9cbbdd25b589db84bf1fe7dd232989eb41ee",
+      "git_blob_sha": "626736a79bcce7157a0bd1d819f37817129f7e0d",
+      "library_file_id": "libfile_611ae4c5fa808191b9bd3d9ccc66ad89",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/dasha_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2729738,
+      "sha256": "87aeea473703e89d528041e687a6db3d4db00a6dc2b5b638d39bb922d71ac823",
+      "git_blob_sha": "0072413ca4f1fdc9434fd719946fcee8d343830b",
+      "library_file_id": "libfile_64308a03b6648191ae2df57b265a58ed",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/tokha_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 4665744,
+      "sha256": "63cd8293f0d7efa794d6527de0b585e243068a34e81787c4c9832cd0a7961ced",
+      "git_blob_sha": "e5746bc060de3ea7b34b5f86c54c4bc4bfad35d0",
+      "library_file_id": "libfile_911a9a3e285881918285d111670bb23b",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/tokha_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2615754,
+      "sha256": "46d893898e90385422c33806e31c7c17e6426db8cab4711e9535459ffc0089fa",
+      "git_blob_sha": "598255e21831fb05a93a57d380b1624cc990a798",
+      "library_file_id": "libfile_d35981511284819197a53007f49008ca",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/shpala_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 5007391,
+      "sha256": "6b97cb2932e2e7eb7d18a3a4d48188d9981df8b4170c409dfda7bf8b4df9bdf6",
+      "git_blob_sha": "0bd62bbbc9d2c965164a6abf65563e21eeefa01f",
+      "library_file_id": "libfile_bdf6e46cac5881918fd4110541f4fa7a",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/shpala_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2792776,
+      "sha256": "c6fc7ad5de8b0ec790d5630ae870fbd8630e83092a6d095db3e3b24421f79ebf",
+      "git_blob_sha": "d5dc4212da77087a6a4b8b0c9eded5a63dd5f3e7",
+      "library_file_id": "libfile_497d51e4a30c8191a2d2e2f7734a9c85",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/oleg_pakhomov_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 4873579,
+      "sha256": "b83aa6d941fd08338060aaf1496bdd9b7c4b6a9b3f9e8c6071c6612ea4e2b829",
+      "git_blob_sha": "65e5224b90fd588324207afd35e16773c42b3210",
+      "library_file_id": "libfile_7834b4222eac819187fccbcc05f612f8",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/oleg_pakhomov_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2726242,
+      "sha256": "53b524ca26ecb4cd37bef14363c263f944c7d6b1360b3d16a2a5f4aae7d22f2c",
+      "git_blob_sha": "901d5166f173899b37ac022c58280ecb5e83715d",
+      "library_file_id": "libfile_bd74253d03448191907b523f30594d05",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/burtsev_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 4403938,
+      "sha256": "2503585397de6b7b9ed42eb6723d1bc3acde084e3ecbca1ea762e39f7eb24d67",
+      "git_blob_sha": "9cd949f87170a0b62d7ed65e308a7bc61e588ed7",
+      "library_file_id": "libfile_9d0cab3c708c8191a287c60d14ec33bf",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/burtsev_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2475624,
+      "sha256": "749f03ccb0118e94c47f542d3b348cc4f73ac0d8307c9b129f12cc9a4a9f68f2",
+      "git_blob_sha": "75a966270d58d962f0c1eb2b573f8cc6fdb4bb6e",
+      "library_file_id": "libfile_9ffc381b65e08191aa90a75e92a0f7f2",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/valentina_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 4990549,
+      "sha256": "1d656e2f4654c6c2e56b9052b880316c77551221c4ddf2a13a8ac12b23c5f8f7",
+      "git_blob_sha": "f59d6d68f89f1eab4b2a44aee58de3bd88ca1a10",
+      "library_file_id": "libfile_3e461ade0f388191a136bb241f7937f8",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/valentina_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2818245,
+      "sha256": "3e5b804b1f0def4efeb39dca54f9cafb24f7b760d4563c22640d038dfd6a01db",
+      "git_blob_sha": "bdf0ac253ca2b3253de28c5577633624892782e4",
+      "library_file_id": "libfile_d484863dd23081919c4f9167698417a0",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/melnik_sheet.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 4491489,
+      "sha256": "f815932990852115730a6da77bd69c9e27fe0fb52be898af182f400f64256864",
+      "git_blob_sha": "2f9f733b11045a68ffaaf7513bade0ab5fff719f",
+      "library_file_id": "libfile_d1495e5c8e308191861c5ce8dbee8eaa",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/melnik_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2499828,
+      "sha256": "fe58a03e50dbca7e7c96e253da4aba38ce18fc600d1ec04c6f7f77d752040bb5",
+      "git_blob_sha": "6e44a620904b44debf689d938d5efb2c09db79ac",
+      "library_file_id": "libfile_4525f33309ec8191a5e04660c41e1ef0",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/burtsev_hand.png",
+      "role": "reference_export_not_game_asset",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        2304,
+        1536
+      ],
+      "bytes": 3927313,
+      "sha256": "ba3743f8f434af1e9de8cee17a27e89a58b439771e82c118d99266d38c664a91",
+      "git_blob_sha": "05dbea5a1b1ea4811117936e505a4a41a0337a0a",
+      "library_file_id": "libfile_9ca6926477ac819182e973f6db3048d8",
+      "native_dimensions": [
+        1536,
+        1024
+      ],
+      "transformations": "Lanczos technical resize to2304x1536; no artistic changes",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/native/burtsev_hand.png",
+      "role": "native_reference_master",
+      "approval_state": "qa_reviewed_individual_approval_waived",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2228137,
+      "sha256": "f55ed344f167c3134ccdc579c2b922ec2bce257b5292d72a90f198f1a3ff99be",
+      "git_blob_sha": "57a5b74e9a5b89780bbafad63bde59a4cca2442c",
+      "library_file_id": "libfile_f0c27f1e1f3c81919ba6311456e565aa",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/refs/ratnikov_sheet.png",
+      "role": "native_reference_master",
+      "approval_state": "appearance_approved",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2748805,
+      "sha256": "fa066f65e4e0ada8cfd3e787a62aec432843a113265b9bc9ead752f7e145601b",
+      "git_blob_sha": "84cd98e5f7712de778cfc5e5c97d7b372371a78f",
+      "library_file_id": "libfile_ff5b0f05cf18819180f56522eeae588a",
+      "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+    },
+    {
+      "path": "art-src/styleframes/ratnikov-neutral/initial-native.png",
+      "role": "earlier_style_candidate",
+      "approval_state": "superseded_style_candidate",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "bytes": 2450855,
+      "sha256": "f445f5bff9739ec6e0b50f9419f71ac170d51a33398cbb25516372d91538ab7c",
+      "git_blob_sha": "39677b43cde0df86f79e5f8712a694e9cd0988ec",
+      "library_file_id": "libfile_c02942cb6d988191ac6d9c6e4d9bc334",
+      "approval_message_id": null
+    },
+    {
+      "path": "art-src/styleframes/ratnikov-neutral/initial.webp",
+      "role": "style_preview",
+      "approval_state": "superseded_style_candidate",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "bytes": 181760,
+      "sha256": "4838a846a531be50a6ff0fc8b0bcfe919730ecf688c4f4b4f7d0010dc8a397c8",
+      "git_blob_sha": "c0a9e6471f1b6acbb8e828933a9be3547d313052",
+      "library_file_id": null,
+      "backup_note": "Native PNG Library backup is available; this derivative has no separately verified Library ID.",
+      "approval_message_id": null
+    },
+    {
+      "path": "art-src/styleframes/ratnikov-neutral/expressive-native.png",
+      "role": "approved_style_reference_not_production_anchor",
+      "approval_state": "style_approved_composition_not_production_ready",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "bytes": 2657026,
+      "sha256": "780f8d7a3da2d5f1522935f27a885c68af4d195e518c7f3c5583e6fe4eb45be7",
+      "git_blob_sha": "79d9e7f49c551ee6bec93c6a42a4f5008fa1e59b",
+      "library_file_id": "libfile_95249e58c8fc8191960ff00f7378f03f",
+      "approval_message_id": "Sentinel_f31fe9972f888191b99d8a495a456697"
+    },
+    {
+      "path": "art-src/styleframes/ratnikov-neutral/expressive.webp",
+      "role": "style_preview_not_game_asset",
+      "approval_state": "style_approved_composition_not_production_ready",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "bytes": 248298,
+      "sha256": "277ca7b41d76107f38ea368c15984820a5cc4254d792667cf031dfcb96f8017b",
+      "git_blob_sha": "8b7b464c676584605110f6b2fef1b4ea8c81fc52",
+      "library_file_id": "libfile_0e299df6202c8191ad5a4890f73bf4a0",
+      "approval_message_id": "Sentinel_f31fe9972f888191b99d8a495a456697"
+    },
+    {
+      "path": "art-src/backgrounds/basement_b0_03_evening/native.png",
+      "role": "native_background_styleframe",
+      "approval_state": "style_approved",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "bytes": 2742744,
+      "sha256": "3b7101dd6b558cd77906c53601e02f4c45d322ae2d087603e10fc1b6b9cf4835",
+      "git_blob_sha": "2394ca6c0a2fa02b0e1ab77c6fdba57c373922cd",
+      "library_file_id": "libfile_ef55a9ce8e448191b7ea5ec771d97ddc",
+      "approval_message_id": "Sentinel_cb8f35913ec08191b80c4c6140090ede"
+    },
+    {
+      "path": "public/backgrounds/basement_b0_03_evening.webp",
+      "role": "approved_background_export",
+      "approval_state": "style_approved",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "bytes": 253562,
+      "sha256": "d999a5bc4e427536ddfe0a6b28079a50f788071c6eb731dbf48a1944d52294e5",
+      "git_blob_sha": "57b9c775f18a168472ad5cc66caba100ce5613e7",
+      "library_file_id": "libfile_43dfcbac43dc8191a6de1990ab6cf403",
+      "native_dimensions": [
+        1672,
+        941
+      ],
+      "transformations": "Lanczos1920x1081 then crop1bottompixel to1920x1080; WebP quality78",
+      "approval_message_id": "Sentinel_cb8f35913ec08191b80c4c6140090ede"
+    }
+  ]
+}

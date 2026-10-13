@@ -1,0 +1,225 @@
+{
+  "asset": "ZeroSQL Ratnikov / neutral",
+  "status": "style-frame candidate for user review; not an approved anchor and not a fully production-ready game asset",
+  "file": "neutral.webp",
+  "native_original": "ratnikov-neutral-styleframe.png",
+  "tool": "built-in image_gen",
+  "model": "not exposed by tool",
+  "seed": null,
+  "created_date_utc": "2026-10-13",
+  "canonical_prompt_en": "Lev Ratnikov, a 58-year-old Russian police lieutenant colonel, tall and stooped, very large hands, grey crew-cut hair, heavy bushy grey eyebrows, deep-set tired kind eyes, a long lined face with heavy nasolabial folds, grey stubble, reading glasses on a black cord around his neck, a thick grey knitted cardigan over a pale blue-grey uniform shirt with a loosened dark tie and no visible insignia, a small translucent plastic nitroglycerin tube with a white cap sticking out of the shirt breast pocket, looks permanently cold. Expression: calm, warm and weary, a faint ironic smile at one corner of the mouth, heavy brows relaxed, eyes looking at the viewer over the reading glasses lowered on his nose; both big hands hold a tea glass in a metal glass-holder embossed with an icebreaker ship at chest height, a thin curl of steam from the tea. Chest-up bust portrait, vertical 2:3, one person centered, body and face turned three-quarters toward the right of the frame, eyes to the viewer unless stated otherwise, eye line at one third of the height, top of the head one tenth below the top edge, chest cut by the bottom edge, hands kept above the lower third. Split lighting identical in every image: cold teal rim light from the left and behind, warm sodium-amber key light from the right on the face, shadows into deep blue-black. Flat solid dark navy background #1A2442, no texture, no gradient, nothing behind the figure. Painterly graphic-novel oil painting on canvas: loose expressive brushwork with visible strokes and palette-knife scrapes, raw canvas in the darkest areas, slightly exaggerated characterful features, psychological realism, limited palette of polar-night blue-black #0B1020, sodium amber #FFB547, muted aurora teal #2EE6C5 and steam white #F2F5F7 over cool greys, fine grain baked into the paint, matte surface.",
+  "canonical_negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, second person, duplicate figure, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, gradient background, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, insignia patches, medals, beard",
+  "generation_history": [
+    {
+      "iteration": 1,
+      "type": "generate",
+      "prompt": "Use case: stylized-concept\nAsset type: ZeroSQL Ratnikov neutral style-frame candidate. Generate ONE single image, exactly 1024 × 1536 pixels if available, vertical 2:3. Opaque image, no alpha. This is a fictional character; avoid resemblance to any identifiable real person.\n\nPrimary request (canonical CSV prompt_en, verbatim):\nLev Ratnikov, a 58-year-old Russian police lieutenant colonel, tall and stooped, very large hands, grey crew-cut hair, heavy bushy grey eyebrows, deep-set tired kind eyes, a long lined face with heavy nasolabial folds, grey stubble, reading glasses on a black cord around his neck, a thick grey knitted cardigan over a pale blue-grey uniform shirt with a loosened dark tie and no visible insignia, a small translucent plastic nitroglycerin tube with a white cap sticking out of the shirt breast pocket, looks permanently cold. Expression: calm, warm and weary, a faint ironic smile at one corner of the mouth, heavy brows relaxed, eyes looking at the viewer over the reading glasses lowered on his nose; both big hands hold a tea glass in a metal glass-holder embossed with an icebreaker ship at chest height, a thin curl of steam from the tea. Chest-up bust portrait, vertical 2:3, one person centered, body and face turned three-quarters toward the right of the frame, eyes to the viewer unless stated otherwise, eye line at one third of the height, top of the head one tenth below the top edge, chest cut by the bottom edge, hands kept above the lower third. Split lighting identical in every image: cold teal rim light from the left and behind, warm sodium-amber key light from the right on the face, shadows into deep blue-black. Flat solid dark navy background #1A2442, no texture, no gradient, nothing behind the figure. Painterly graphic-novel oil painting on canvas: loose expressive brushwork with visible strokes and palette-knife scrapes, raw canvas in the darkest areas, slightly exaggerated characterful features, psychological realism, limited palette of polar-night blue-black #0B1020, sodium amber #FFB547, muted aurora teal #2EE6C5 and steam white #F2F5F7 over cool greys, fine grain baked into the paint, matte surface.\n\nAvoid / negative_en (canonical CSV, verbatim):\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, second person, duplicate figure, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, gradient background, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, insignia patches, medals, beard\n\nProduction framing clarification: top of hair y=154–184, eyes y=492–522, face center x=462–562 on a 1024×1536 canvas. Both hands, tea glass, and medicine tube fully visible above y=1024; lower third is only quiet dark clothing. Anatomy credible: two hands each with five fingers, allowing natural occlusion. The sculpted relief on the metal glass-holder should read as an icebreaker ship with no letters. Treat canvas texture as texture only on the painted figure; all background pixels should be the same flat solid #1A2442 with no gradient, pattern, grain, or vignette. Cold rim from viewer-left and behind, warm amber key from viewer-right. Oil paint, matte, visible directional brushstrokes.",
+      "output": "exec-9a19c838-9262-425f-89c3-03ea15b720b4.png",
+      "native_library_file_id": "libfile_36d5b87a777081919814384450bbf96c"
+    },
+    {
+      "iteration": 2,
+      "type": "edit",
+      "change": "composition and lifted hands",
+      "prompt": "Use case: identity-preserve\nEdit target: the supplied Ratnikov portrait. Correct ONLY composition and pose for the canonical portrait safe zones, while preserving the SAME man's exact identity, face geometry, age, expression, grey crew cut and short stubble, clothing, glasses, nitroglycerin tube, glass-holder ship relief, oil paint texture, navy background, and lighting.\n\nCurrent image fails safe zones: hair begins too close to top, eyes are too high, hands are too low. Required final canvas 1024×1536, vertical 2:3. Recompose the chest-up portrait with hair top around y=160 and the two eyes centered near y=507, face horizontal center around x=512. Lift BOTH hands holding the same tea glass to high chest height immediately below the chin, with ALL fingers and entire glass-holder between y=700 and y=1000. The top rim of the tea glass can be at y=720. Keep hands large but anatomically credible. Lower third y=1075–1536 contains only quiet dark cardigan fabric and lower torso, never any part of fingers or cup. Torso extends to bottom edge. Preserve the white-capped nitroglycerin tube visibly in his pale shirt breast pocket above y=1000 and keep a fine wisp of steam. Keep slight stoop and three-quarter face orientation towards frame right with gaze directly at viewer over low glasses.\n\nDo not restyle, change facial identity, expression, lighting, costume, or props. No text, letters, numbers, logos, insignia, extra fingers, duplicate figure, glossy skin, photographic skin, anime, smooth digital rendering, beard, or extra objects. Same matte expressive oil brush strokes and palette-knife surface. Cold teal rim from left/behind, warm amber key from right; unchanged navy background. This is solely a safe-zone composition correction, not a new design.",
+      "input": "exec-9a19c838-9262-425f-89c3-03ea15b720b4.png",
+      "output": "exec-f62fd6bd-f3f6-4438-ba82-c2823c7e2bf5.png",
+      "native_library_file_id": "libfile_56e53e7a0f908191b4f0c535ffcde6f6"
+    },
+    {
+      "iteration": 3,
+      "type": "edit",
+      "change": "hands brought immediately below chin",
+      "prompt": "Use case: identity-preserve\nEdit the supplied portrait. One targeted correction: safe-zone pose and framing. The man's likeness, hair, facial features, exact clothes, low reading glasses and black neck cord, oil paint texture, same props and SAME lights must stay. Do NOT reproduce the old low hands pose. Move the whole pair of hands and tea glass DRAMATICALLY higher, DIRECTLY UNDER HIS CHIN, almost touching his collar. His elbows are bent out sideways, forearms much more horizontal. He is warming both hands around the SAME metal tea-glass holder at the base of his neck. The lowest tip of any finger must end ABOVE 65% of canvas height. Cup and hands occupy the band between 48% and 65% of canvas height, about y=740–1000 of the 1024×1536 image. Make the cup slightly smaller if physically necessary, but hands still large relative to face. All fingers anatomically normal, natural occlusion.\n\nKeep 2:3 opaque portrait, 1024×1536. Position top of hair at 10% height, eyes on the horizontal line exactly one-third down canvas, not at one-quarter. His face can be a little more upright, so both eyes lie around y=505. Center face horizontally. The lower entire 30% of canvas is empty of props and hands: only dark gray cardigan torso, arms touching sides, fabric to the bottom edge. The white-capped medicine tube remains exposed in shirt pocket beside the high hands, above 65% height. Fine steam rises to one side of face. Gaze over low glasses directly at viewer, faint weary one-sided smile, no new expression. Left cold teal rim, right warm amber key remain. Preserve background unchanged for this iteration. No words, no insignia, no badges, no new design, no full beard, no photographic smoothness. This is a fictional man.",
+      "input": "exec-f62fd6bd-f3f6-4438-ba82-c2823c7e2bf5.png",
+      "output": "exec-de527a21-63eb-42c7-b748-7d3489ec678e.png",
+      "native_library_file_id": "libfile_c4e6c274a76081919bf549c759e092e5"
+    },
+    {
+      "iteration": 4,
+      "type": "edit",
+      "change": "remove duplicate lower medicine tube and pocket",
+      "prompt": "Use case: precise-object-edit\nEdit target: supplied portrait. REMOVE ONLY the accidental SECOND nitroglycerin tube and its duplicate extra shirt pocket located BELOW the hands near x=645,y=1030 (about 63% across and 67% down the image). Repaint this small lower duplicate-object area with the same plain blue-grey shirt fabric brushstrokes, no new object. There must be exactly ONE tube in the whole portrait: KEEP the existing upper tube with white cap immediately beside the tea glass near x=675,y=730, placed in the one upper shirt breast pocket. The upper tube, face, hair, skin, glasses, cord, both hands, all fingers, cup, engraved icebreaker, steam, pose, framing, matte brush texture, palette, background and lighting must remain unchanged. Do not move anything, do not change proportions, do not add another pocket. This is only removal of the lower duplicate tube and lower duplicate pocket, a small localized defect. Keep same native 1024×1536 pixels and opaque image.",
+      "input": "exec-de527a21-63eb-42c7-b748-7d3489ec678e.png",
+      "output": "exec-a2d2de8b-1c85-46d5-9a64-3407c47b3087.png"
+    }
+  ],
+  "requested_dimensions": [
+    1024,
+    1536
+  ],
+  "technical": {
+    "size": [
+      1024,
+      1536
+    ],
+    "native_mode": "RGB",
+    "native_png_bytes": 2450855,
+    "webp_bytes": 181760,
+    "webp_format": "WEBP",
+    "webp_mode": "RGB",
+    "background_samples": [
+      {
+        "xy": [
+          10,
+          10
+        ],
+        "rgb": [
+          18,
+          34,
+          64
+        ]
+      },
+      {
+        "xy": [
+          500,
+          10
+        ],
+        "rgb": [
+          18,
+          34,
+          64
+        ]
+      },
+      {
+        "xy": [
+          1000,
+          10
+        ],
+        "rgb": [
+          19,
+          35,
+          65
+        ]
+      },
+      {
+        "xy": [
+          10,
+          200
+        ],
+        "rgb": [
+          17,
+          33,
+          63
+        ]
+      },
+      {
+        "xy": [
+          1000,
+          400
+        ],
+        "rgb": [
+          14,
+          32,
+          64
+        ]
+      }
+    ],
+    "shadow_samples": [
+      {
+        "xy": [
+          402,
+          510
+        ],
+        "rgb": [
+          175,
+          109,
+          60
+        ],
+        "hsv": [
+          0.071,
+          0.657,
+          0.686
+        ]
+      },
+      {
+        "xy": [
+          359,
+          562
+        ],
+        "rgb": [
+          107,
+          72,
+          53
+        ],
+        "hsv": [
+          0.059,
+          0.505,
+          0.42
+        ]
+      },
+      {
+        "xy": [
+          290,
+          590
+        ],
+        "rgb": [
+          68,
+          56,
+          49
+        ],
+        "hsv": [
+          0.061,
+          0.279,
+          0.267
+        ]
+      },
+      {
+        "xy": [
+          233,
+          1174
+        ],
+        "rgb": [
+          8,
+          8,
+          8
+        ],
+        "hsv": [
+          0,
+          0,
+          0.031
+        ]
+      },
+      {
+        "xy": [
+          816,
+          1198
+        ],
+        "rgb": [
+          8,
+          8,
+          6
+        ],
+        "hsv": [
+          0.167,
+          0.25,
+          0.031
+        ]
+      }
+    ]
+  },
+  "native_original_sha256": "f445f5bff9739ec6e0b50f9419f71ac170d51a33398cbb25516372d91538ab7c",
+  "transformations_after_generation": [
+    "Exact byte copy of native PNG; SHA256 verified",
+    "WebP technical encoding: sRGB, quality82, method6, metadata stripped; no scaling, no recoloring, no retouching"
+  ],
+  "alpha": false,
+  "master_2048x3072_created": false,
+  "approval": null,
+  "qa": {
+    "subject_and_props": "Fictional adult man, aged around58; grey crew cut, short stubble, heavy brows and lined face. Grey cardigan, pale blue-grey shirt, loose tie, low glasses on black cord, one white-cap translucent medicine tube, two large hands on tea glass in icebreaker-relief metal holder, thin steam.",
+    "anatomy": "Both visible hands inspected at200%; each has a thumb plus4 fingers, natural occlusion. No extra/fused fingers observed.",
+    "lighting": "Teal viewer-left rim and warm amber viewer-right key visibly present.",
+    "emotion": "Weary calm expression and slight asymmetric mouth; legible at300px and0.72 brightness preview.",
+    "texture": "Matte visible directional paint strokes and coarse palette-knife-style texture; no obvious photographic smoothness.",
+    "text": "No visible letters, numbers, insignia, logos or watermark; ship relief inspected at200%.",
+    "safe_zones_partial_failure": "Approximate eye line y395 (25.7%) rather than492–522; hair top y115 (7.5%) rather than154–184. Hands/cup now above lower30%; torso extends to bottom.",
+    "background_failure": "Not exact flat#1A2442. Near-navy background subtly varies; sampled RGB18,34,64 /19,35,65 /17,33,63 /14,32,64. No scenery.",
+    "color": "5 inspected shadow samples contain no saturated purple/magenta hue; warm highlights and cool rim retained.",
+    "alpha_test": "Not applicable: requested opaque style-frame. User will cut out background.",
+    "reference_identity_check": "No approved sheet or anchor supplied; not claimed.",
+    "reverse_image_search": "Not performed; no identifiable real-person likeness intentionally requested.",
+    "production_master": "No2048×3072 master or layered source created. Do not describe a resampled copy as native master."
+  },
+  "publication_approval_state": "superseded_style_candidate"
+}

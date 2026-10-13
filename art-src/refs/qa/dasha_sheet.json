@@ -1,0 +1,55 @@
+{
+  "canonical_csv_row": {
+    "file_path": "art-src/refs/dasha_sheet.png",
+    "character_or_location": "dasha",
+    "emotion_or_variant": "ref_sheet",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Character reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Dasha Kim, a 25-year-old Russian police operative of Koryo-saram (Russian-Korean) heritage, short and wiry, sharp dark eyes, no makeup, a thin white scar on the chin, dark hair pulled into one tight braid with the left temple shaved short, a bright signal-orange expedition parka (#FF6A2B) with silver reflective stripes and a faux-fur hood ruff, a radio earpiece with a coiled wire in her right ear, a small body camera clipped to her chest, black fingerless gloves, scuffed knuckles, chewing gum, restless quick energy.",
+    "negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, black bob haircut, red lipstick, heavy makeup, long loose hair, logo on the parka",
+    "notes_ru": "Рабочий лист-референс (анфас, 3/4, профиль, нейтральный свет). Не в игру. Делается до якоря."
+  },
+  "generation_tool": "built-in image_gen",
+  "native_dimensions": [
+    1536,
+    1024
+  ],
+  "export_dimensions": [
+    2304,
+    1536
+  ],
+  "export_method": "Pillow LANCZOS technical resize only, no content edits",
+  "native_path": "dasha_sheet_native_1536x1024.png",
+  "final_path": "dasha_sheet.png",
+  "full_effective_prompt": "Use case: stylized-concept. Asset type: production character turnaround reference sheet for ZeroSQL.\nRequested canvas size: 2304 x 1536 pixels, landscape.\nInput image 1 is STYLE AND TURNAROUND LAYOUT REFERENCE ONLY. Do not copy the reference man or his identity. Create the entirely different character specified below. Keep the approved rough angular expressive oil-brush graphic-novel medium, matte paint, broken palette-knife marks and simplified planes, never photographic or polished.\n\nFULL CANONICAL CSV PROMPT_EN (preserve all):\nCharacter reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Dasha Kim, a 25-year-old Russian police operative of Koryo-saram (Russian-Korean) heritage, short and wiry, sharp dark eyes, no makeup, a thin white scar on the chin, dark hair pulled into one tight braid with the left temple shaved short, a bright signal-orange expedition parka (#FF6A2B) with silver reflective stripes and a faux-fur hood ruff, a radio earpiece with a coiled wire in her right ear, a small body camera clipped to her chest, black fingerless gloves, scuffed knuckles, chewing gum, restless quick energy.\n\nFULL CANONICAL CSV NEGATIVE_EN (avoid all):\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, black bob haircut, red lipstick, heavy makeup, long loose hair, logo on the parka\n\nProduction clarity: exactly three consistent views of the same character, left frontal, center three-quarter, right true profile. Same head size and eye height across the three separate busts. Entire head and hair inside canvas. Soft flat neutral studio light and plain #6E7378 grey, not portrait dramatic split lighting. No labels, text, borders or drawn divisions. Her anatomical LEFT temple is shaved; her braid is tight and dark; thin white scar on chin. The coiled wired earpiece is in her anatomical RIGHT ear, so choose right-facing profile view to show that earpiece, and make the front view show the shaved left temple on the right side of the image. Keep neutral expression, orange parka, silver reflector bands, faux-fur hood and small body camera. Do not copy the male reference identity.\nApproved canon clarification: Koryo-saram/Russian-Korean facial heritage is confirmed by the owner. Anatomical sidedness is critical: only LEFT temple is shaved, NOT right. For visibility, FRONT at left of sheet, center THREE-QUARTER facing toward image-left to expose anatomical LEFT shaved temple, then true RIGHT-SIDE PROFILE at right of sheet with nose pointing image-right to expose RIGHT earpiece. The opposite right temple keeps tight swept-back hair. One single braid, no second braid. Neutral closed lips with subtle gum chewing, no bubble. Camera clipped consistently on chest. Crop all hands outside the sheet; gloves and scuffed knuckles are wardrobe canon outside this head/upper-chest crop, do not make up hands.",
+  "style_reference": "libfile_ff5b0f05cf18819180f56522eeae588a",
+  "style_reference_scope": "paint technique and turnaround layout only, not male identity",
+  "visual_qa": {
+    "passed": [
+      "same identity in front, opposite-facing 3/4 and true right-side profile",
+      "Koryo-saram appearance with youthful wiry face",
+      "anatomical left shaved temple unchanged across views",
+      "single tight dark braid",
+      "right-ear wired earpiece clearly visible in right profile",
+      "thin white chin scar consistent",
+      "orange parka, silver reflective bands, faux-fur hood",
+      "body camera same chest side",
+      "rough matte oil technique, grey neutral background",
+      "no text, no logos, no hands added"
+    ],
+    "limitations": [
+      "Some short wisps and fringe escape tied braid, no long loose hair.",
+      "Native output 1536x1024; requested 2304x1536 provided as labelled technical resize."
+    ],
+    "owner_clarification": "Koryo-saram/Korean traits explicitly approved."
+  },
+  "sha256_export": "e6fad127e292b2f8494c375e5bbe9cbbdd25b589db84bf1fe7dd232989eb41ee",
+  "sha256_native": "87aeea473703e89d528041e687a6db3d4db00a6dc2b5b638d39bb922d71ac823",
+  "publication_approval_state": "qa_reviewed_individual_approval_waived",
+  "library_backups": {
+    "dasha_sheet.png": "libfile_611ae4c5fa808191b9bd3d9ccc66ad89",
+    "dasha_sheet_native_1536x1024.png": "libfile_64308a03b6648191ae2df57b265a58ed",
+    "dasha_sheet_prompt.txt": "libfile_0c7855d9af5c8191a41550fbcc9252e0",
+    "dasha_sheet_metadata.json": "libfile_4e32a5de8e748191ac6439c2f7eb7dca"
+  }
+}

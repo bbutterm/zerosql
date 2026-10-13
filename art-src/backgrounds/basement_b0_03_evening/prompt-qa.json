@@ -1,0 +1,85 @@
+{
+  "asset": "ZeroSQL: basement_b0_03_evening background styleframe",
+  "production_path": "public/backgrounds/basement_b0_03_evening.webp",
+  "status": "Single completed background styleframe awaiting user approval; not installed in the game.",
+  "date_utc": "2026-10-13",
+  "generation_tool": "built-in image_gen",
+  "generation_mode": "one new environment using approved portrait as style reference only",
+  "reference_library_file_id": "libfile_95249e58c8fc8191960ff00f7378f03f",
+  "reference_role": "Paint handling and palette only; no portrait subject copied.",
+  "canonical_prompt_en": "Interior of a cramped basement office of a provincial Russian police analytics unit in the evening: a low concrete vaulted ceiling painted institutional grey-green, two humming fluorescent tubes, three old desks with bulky monitors, a workstation at the center-left with an abandoned white mug beside the keyboard turned so that no print is visible, cast-iron radiators under a narrow window at ceiling level showing falling snow and an orange sodium streetlight outside, cable trays along the ceiling, a grey metal filing cabinet, an electric kettle with a curl of steam, a steel door with a small wired-glass window to the server corridor. Warm tired interior light from the right, cold teal spill from the window and monitors on the left. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.",
+  "canonical_negative_en": "people, figures, faces, crowd, text, letters, numbers, signage with words, logos, brand names, watermark, signature, frame, border, 3D render, CGI, photorealistic photograph, glossy, anime, cartoon, vector, tilt-shift, fisheye, lens flare, bokeh, neon glow, purple shadows, oversaturated, HDR",
+  "submitted_prompt": "Use case: stylized-concept\nAsset type: ONE original empty environmental background styleframe for the ZeroSQL narrative game's dialogue screen.\nOutput: landscape 16:9, intended native dimensions exactly 1920 by 1080 pixels. One full-bleed painting, no panels, no collage, opaque.\n\nInput image 1 is a STYLE AND PAINT-HANDLING REFERENCE ONLY. Do not copy or depict the man, face, body, hands, glasses, glass, or any portrait subject from the reference. Transfer only its large broken angular oil-paint strokes, scratched paint edges, flat expressive painted color masses, rough matte finish, restrained teal-left/amber-right palette, and melancholy psychological graphic-novel mood to an EMPTY BASEMENT OFFICE. Push the painted stylization as far as the approved reference: architectural planes and furniture formed from bold jagged strokes and simplified irregular color masses, deliberately sketchy unresolved edges. Not a realistic photograph with a paint filter, not smooth digital volumetric rendering. No human silhouettes or face-like shapes.\n\nCanonical CSV prompt_en, complete and verbatim:\nInterior of a cramped basement office of a provincial Russian police analytics unit in the evening: a low concrete vaulted ceiling painted institutional grey-green, two humming fluorescent tubes, three old desks with bulky monitors, a workstation at the center-left with an abandoned white mug beside the keyboard turned so that no print is visible, cast-iron radiators under a narrow window at ceiling level showing falling snow and an orange sodium streetlight outside, cable trays along the ceiling, a grey metal filing cabinet, an electric kettle with a curl of steam, a steel door with a small wired-glass window to the server corridor. Warm tired interior light from the right, cold teal spill from the window and monitors on the left. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.\n\nCanonical CSV negative_en, complete and verbatim:\npeople, figures, faces, crowd, text, letters, numbers, signage with words, logos, brand names, watermark, signature, frame, border, 3D render, CGI, photorealistic photograph, glossy, anime, cartoon, vector, tilt-shift, fisheye, lens flare, bokeh, neon glow, purple shadows, oversaturated, HDR\n\nComposition priority resolving the safe-zone ambiguity: place the key light and most important focal details in the UPPER HALF, while the center-right from x49% to x91%, y20% to y95% remains calm and low-contrast for dialogue text. This is quiet painted room structure, not a featureless blank rectangle. Place the left-side workstations and objects mostly across x5% to x48%; the background workstation may cross into the central mobile strip with muted, dark medium-value shapes. Keep warm ceiling light and window highlights high. The central vertical strip x37% to x63% must, when cropped alone, unmistakably read as a low vaulted institutional basement office with a CRT workstation and ceiling/window/radiator clues. Bottom 10% is quiet dark floor/shadow with no important props or detail. Edge tones naturally settle into deep blue-black #0B1020 and charcoal #0A0C0D, never an added vignette. Midtones must be readable before the game's later overlay; DO NOT bake in the 55% UI darkening or render any dialogue/text/UI.\n\nExact inventory, all visibly identifiable:\n- EXACTLY TWO fluorescent light tubes total, plainly separated, mounted under the low concrete vaulted grey-green ceiling. No extra fluorescent bars, duplicate luminous strips or false reflections.\n- EXACTLY THREE separate old desks, each with ONE bulky old CRT monitor, not modern flat panels. Arrange in staggered recession along the left and toward center, not a row of copy-paste identical objects. Monitors contain only plain dull teal light or abstract unlettered patches, no text.\n- The player workstation at center-left has exactly ONE abandoned plain WHITE CERAMIC MUG clearly BESIDE a keyboard. The mug is blank, no letters, logo or print visible; a keyboard can be indicated in large painted shapes without glyphs.\n- A long narrow high window close to ceiling level, snow falling beyond its panes and one recognizable orange sodium streetlamp visible outside. Cold teal night spill comes from the window's left portion, the streetlamp can sit toward its right end. Cast-iron radiator with clear vertical ribs directly below the window.\n- Ceiling cable trays, grey metal filing cabinet, electric kettle with a small painted curl of steam, steel door with a small WIRED-GLASS window leading to a dark server corridor.\n- Warm tired amber interior light comes physically from a warm shaded fixture high at the far right edge, and the sodium streetlight outside; cold muted teal comes physically from the window and three monitors on the left. Warm/cold accents are limited and not neon.\n- No people, no writing, no logos, no purple, no border.\nRepresent the required objects clearly through expressive massed paint shapes, without photographic microdetail.\n",
+  "native_dimensions": [
+    1672,
+    941
+  ],
+  "requested_dimensions": [
+    1920,
+    1080
+  ],
+  "native_master_2560x1440": false,
+  "native_master_limitation": "The built-in tool returned 1672×941. No 2560×1440 master exists. The game-size WebP is an explicitly resampled export, not a native high-resolution render.",
+  "native_pixels_edited": false,
+  "export_transformations": [
+    "Lanczos proportional enlargement to rounded dimensions 1920×1081",
+    "Crop one bottom pixel to exact 1920×1080",
+    "WebP quality 78, method 6, embedded sRGB profile"
+  ],
+  "overlay_in_export": false,
+  "files": [
+    {
+      "filename": "basement-b0-03-evening-native.png",
+      "role": "unaltered native PNG",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "bytes": 2742744,
+      "sha256": "3b7101dd6b558cd77906c53601e02f4c45d322ae2d087603e10fc1b6b9cf4835"
+    },
+    {
+      "filename": "basement_b0_03_evening.webp",
+      "role": "game-size WebP derivative",
+      "dimensions": [
+        1920,
+        1080
+      ],
+      "bytes": 253562,
+      "sha256": "d999a5bc4e427536ddfe0a6b28079a50f788071c6eb731dbf48a1944d52294e5",
+      "format": "WebP",
+      "quality": 78,
+      "sRGB": true
+    }
+  ],
+  "qa": {
+    "style": "Large visible broken angular strokes, expressive planes, restrained matte oil-paint environment; consistently related to the approved portrait reference.",
+    "fluorescent_tubes": "Exactly two clearly visible ceiling-mounted fluorescent tubes.",
+    "desks_monitors": "Three staggered old desks with three clearly identifiable bulky illuminated CRT monitors. Dark upright rectangular document-holder/binder-like objects between workstations are visually ambiguous but do not establish additional monitors.",
+    "white_mug": "A plain white mug clearly sits beside the keyboard at the foreground center-left workstation. The generation also includes one smaller warm-colored cup at a rear desk.",
+    "window_weather": "High narrow left wall window contains snow and a recognizable orange sodium streetlight outside.",
+    "radiator": "Clear ribbed cast-iron radiator below window.",
+    "other_required_props": "Ceiling cable trays, grey metal filing cabinet, steaming electric kettle, steel door with small wired-glass window all present.",
+    "lights": "Physical sources visible: window and CRTs supply cold teal, sodium streetlight and far-right shaded fixture supply amber. The painting also includes warm desk lamps on the left.",
+    "people_text_logos": "No visible people, lettering, numbers, logos, watermark or border. Screen surfaces are abstract unlettered paint.",
+    "mobile_center_crop": "Inspected x37–63% full-height crop: low vault, cables, workstation monitors, furniture and filing cabinet unmistakably identify a basement office.",
+    "dialogue_test": {
+      "method": "Separate 1440×900 center-cover QA image using PT Serif 18px / 28px lines in x704–1312, y180–855, with #0A0C0D at 55% applied only to QA.",
+      "result": "Visually readable. Right-hand room shapes are calmer than the left, though amber detail and a CRT edge remain within the text region.",
+      "light_text": "#F2F5F7",
+      "contrast_min_across_full_region": 4.284507571739353,
+      "contrast_median_across_full_region": 16.193963947223875,
+      "caveat": "Some isolated bright pixels fall below 4.5:1; this is not an unconditional accessibility certification for every possible text placement."
+    },
+    "bottom_safe_zone": "Bottom tenth contains dark floor, furniture bases and shadows; no important narrative prop is placed there.",
+    "edge_tones": "Dark navy/charcoal along left and bottom. Top and right retain localized painted light; edge-match is not mathematically exact.",
+    "production_caveats": [
+      "Native dimensions below the requested game dimensions; derivative explicitly resampled.",
+      "No 2560×1440 source master.",
+      "Final user style approval and an in-game text layout check are still pending."
+    ]
+  },
+  "approval_gate": "Stop after this one background. No Git work, no deployment, no further images or reference sheet until user approval.",
+  "publication_approval_state": "style_approved",
+  "approval_message_id": "Sentinel_cb8f35913ec08191b80c4c6140090ede"
+}

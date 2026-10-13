@@ -31,7 +31,13 @@ const EMOTIONS = new Set([
 ]);
 /** Говорящие без портрета: МИРА — голос и строка состояния (§2.13), рассказчик и игрок — текст */
 const NO_PORTRAIT = new Set(["mira", "narrator", "player"]);
-const NOT_VOICED = new Set(["narrator", "player"]);
+const NOT_VOICED = new Set(["player"]);
+/**
+ * Рассказчик озвучен только в открытии и закрытии дел; титры и ремарки внутри сцен остаются текстом
+ * (VOICE_BIBLE §2.14). Тот же список — `speakers.narrator.voiced_scenes` в tts-voices.json.
+ */
+const NARRATOR_VOICED_SCENES = new Set(["intro", "outro", "cold_open"]);
+const isVoiced = (l) => !NOT_VOICED.has(l.speaker) && (l.speaker !== "narrator" || NARRATOR_VOICED_SCENES.has(l.sceneId));
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const csvCell = (value) => {
@@ -76,7 +82,7 @@ const fxFor = (line) => {
 };
 /** Тик лжи Ратникова — полсекундная пауза перед ответом (§2.1): голова файла 600 мс вместо 100 */
 const headMsFor = (line) => (line.lie || /ложь/i.test(line.direction ?? "") ? 600 : 100);
-const voicedLinesOf = (list) => list.filter((l) => !NOT_VOICED.has(l.speaker));
+const voicedLinesOf = (list) => list.filter(isVoiced);
 
 const canonSlots = portraitSlots();
 const hasSlot = (characterId, slot) =>
@@ -146,9 +152,9 @@ writeCsv("voice-lines.csv", [
       l.text,
       l.direction ?? "",
       l.text.length,
-      NOT_VOICED.has(l.speaker) ? "" : fxFor(l),
-      NOT_VOICED.has(l.speaker) ? "" : headMsFor(l),
-      NOT_VOICED.has(l.speaker) ? "" : voiceExists(l) ? "yes" : "no",
+      isVoiced(l) ? fxFor(l) : "",
+      isVoiced(l) ? headMsFor(l) : "",
+      isVoiced(l) ? (voiceExists(l) ? "yes" : "no") : "",
     ])
   ),
 ]);
@@ -176,7 +182,7 @@ md += `Всего реплик: **${lines.length}**, к озвучке: **${voic
 md += "| Персонаж | Реплик | Символов |\n|---|---:|---:|\n";
 for (const id of speakerOrder) {
   const list = bySpeaker.get(id);
-  const mark = NOT_VOICED.has(id) ? " — не озвучивается" : "";
+  const mark = NOT_VOICED.has(id) ? " — не озвучивается" : id === "narrator" ? " — озвучены только открытие и закрытие дел" : "";
   md += `| ${speakerName(id)} (\`${id}\`)${mark} | ${list.length} | ${list.reduce((s, l) => s + l.text.length, 0)} |\n`;
 }
 for (const id of speakerOrder) {
@@ -185,7 +191,7 @@ for (const id of speakerOrder) {
   md += `\n## ${speakerName(id)} — \`${id}\`\n\n`;
   if (ch?.voice) md += `**Голос:** ${ch.voice}\n\n`;
   md += "| Файл | Эмоция | Реплика | Ремарка | Обработка |\n|---|---|---|---|---|\n";
-  for (const l of bySpeaker.get(id)) {
+  for (const l of bySpeaker.get(id).filter(isVoiced)) {
     const text = l.text.replace(/\|/g, "\\|").replace(/\n/g, " ");
     const dir = (l.direction ?? "").replace(/\|/g, "\\|");
     md += `| \`${l.id}.mp3\` | ${l.emotion ?? "neutral"} | ${text} | ${dir} | ${fxFor(l)}${headMsFor(l) > 100 ? ", пауза 600 мс" : ""} |\n`;
