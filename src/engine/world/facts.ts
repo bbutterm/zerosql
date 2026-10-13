@@ -9,7 +9,7 @@
 
 export const WORLD_SEED = "POLYNYA-S1";
 /** Версия генератора: входит в ключ кеша байтов мира (world:<version>:<seed>) */
-export const WORLD_GENERATOR_VERSION = 1;
+export const WORLD_GENERATOR_VERSION = 2;
 
 // ------------------------------------------------------------------ дела
 
@@ -98,6 +98,48 @@ export const PERSON = {
 
 /** Наряд охраны Бурцева 2015 года: приметы обнулены призраком */
 export const GUARD_SQUAD_2015 = [1288, 1471, 2650, 3015, 3390] as const;
+
+/**
+ * Резерв шумового жителя под посадку (ctx.reserve("person:adult", id, ref)):
+ * шум кладёт на этот id живого взрослого, рождённого в [bornFrom, bornTo],
+ * и никогда — дубль карточки. Без ref — 30–65 лет на 01.12.2026.
+ */
+export interface AdultReservation {
+  bornFrom: string;
+  bornTo: string;
+}
+
+/**
+ * Инженеры, подписавшие ревизии ПД-117 (разд. 8.4, Д6): construction_docs
+ * 101 → 1620, 102 → 1641, 103 → 1702, 105 → 1755, 106 → 1810, 107 → 1843,
+ * 108 → 1641 (104 — Гранин). Строки сажает c06; core держит эти id за
+ * взрослыми, которым в 2014–2017 годах было 30–60 лет.
+ */
+export const PD117_ENGINEERS = [1620, 1641, 1702, 1755, 1810, 1843] as const;
+export const PD117_ENGINEER_BORN: AdultReservation = { bornFrom: "1956-01-01", bornTo: "1984-12-31" };
+
+/**
+ * Верхняя таблица разд. 8.4, поля без отдельного столбца в библии:
+ * «соседка Сазоновых (Портовая, 3)», «врач, АНО «Медсанчасть Створ»»,
+ * «курьер «Сияние.Доставки»». Номера квартир и даты — решения генератора.
+ */
+export const ADDRESS = {
+  /** Портовая, 3 — квартира Сазоновых (адрес строки 6) */
+  sazonovs: { id: 303, district: "Старый город", street: "Портовая", house: "3", apt: "12" },
+  /** Портовая, 3 — квартира соседки Лапиной Г. П. (подделка 5204) */
+  lapina: { id: 305, district: "Старый город", street: "Портовая", house: "3", apt: "14" },
+} as const;
+
+export const CAST_REGISTRATIONS: readonly { person: number; address: keyof typeof ADDRESS; from: string; to: string | null }[] = [
+  { person: 1388, address: "sazonovs", from: "1996-05-14", to: null },
+  { person: 1389, address: "sazonovs", from: "1996-05-14", to: null },
+  { person: 3550, address: "lapina", from: "1979-08-01", to: "2019-10-11" },
+];
+
+export const CAST_EMPLOYMENT: readonly { person: number; company: number; position: string; from: string; to: string | null }[] = [
+  { person: 1777, company: 90, position: "врач-терапевт", from: "2010-05-17", to: null },
+  { person: 2589, company: 1, position: "курьер «Сияние.Доставки»", from: "2024-03-11", to: null },
+];
 /** Настоящие карточки сотрудников с опечатками в staff.person_id (Д4) */
 export const STAFF_TYPO_PERSONS = [1402, 2771, 3095, 3308] as const;
 
@@ -508,6 +550,10 @@ export const worldFacts = {
   PERSON,
   CAST_PERSONS,
   GUARD_SQUAD_2015,
+  PD117_ENGINEERS,
+  ADDRESS,
+  CAST_REGISTRATIONS,
+  CAST_EMPLOYMENT,
   STAFF_TYPO_PERSONS,
   ACROSTIC,
   ACROSTIC_SYNC_AT,

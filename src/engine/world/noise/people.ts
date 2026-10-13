@@ -17,8 +17,8 @@ import {
   FEMALE_NAMES, FEMALE_NAMES_EXTRA, MALE_NAMES, MALE_NAMES_EXTRA, PATRONYMICS, SURNAMES, feminineSurname,
   patronymicOf, shortName,
 } from "../pools";
-import { DISTRICT_WEIGHTS, SPECIAL_MARKS, STREETS, type District, personCreatedAt } from "../catalog";
-import { CAST_PERSONS, CASE_START } from "../facts";
+import { DISTRICT_WEIGHTS, SPECIAL_MARKS, STREETS, type District, officeMoment, personCreatedAt } from "../catalog";
+import { CAST_PERSONS, CASE_START, KEY_TIMES, type AdultReservation } from "../facts";
 import { addressKey, noiseState, noiseTarget, type NoisePerson } from "./state";
 
 const NOW = parseTs("2026-12-01 00:00:00");
@@ -26,6 +26,11 @@ const YEAR = 365.25 * DAY;
 /** Таблица persons открывается в Д3: позже её старта дат в ней нет */
 const PERSONS_OPEN = parseTs(CASE_START.c03);
 const REG_OPEN = parseTs(CASE_START.c06);
+/**
+ * «Мёртвая душа» 4301 — последняя карточка ПБД (id растут со временем): шумовые
+ * карточки заведены до смерти Ирины, и created_at после неё есть только у Кравца.
+ */
+const NOISE_CREATED_MAX = parseTs(KEY_TIMES.hitAndRun) - 3 * 3_600_000;
 
 const CAST_SHORT = new Set(CAST_PERSONS.map((p) => shortName(p.last, p.first, p.middle)));
 
@@ -145,19 +150,24 @@ export function generatePersons(ctx: WorldContext): void {
     drafts = drafts.concat(extra.map((d) => ({ ...d, father: undefined, mother: undefined, household: d.household + 100_000 })));
   }
 
-  // Порядок id: перемешиваем, но взрослые резервы (директора и т. п.) получают взрослых
+  // Порядок id: перемешиваем, но взрослые резервы (директора, инженеры ПД-117 и т. п.)
+  // получают взрослых нужного возраста и никогда не становятся дублями карточек
   const shuffled = rng.shuffle(drafts);
-  const adultIds = new Set(ctx.reservedValues("person:adult").map(Number));
-  const baseIds = rng.shuffle(freeIds).slice(0, baseCount).sort((a, b) => a - b);
+  const adultIds = new Set(ctx.reservedValues("person:adult").map(Number).filter((id) => freeIds.includes(id)));
+  const others = rng.shuffle(freeIds.filter((id) => !adultIds.has(id)));
+  const baseIds = [...adultIds, ...others.slice(0, baseCount - adultIds.size)].sort((a, b) => a - b);
   const baseSet = new Set(baseIds);
   const dupIds = freeIds.filter((id) => !baseSet.has(id));
-  const isAdultDraft = (d: Draft) => NOW - d.birth > 30 * YEAR && NOW - d.birth < 65 * YEAR;
-  const adultsPool = shuffled.filter(isAdultDraft);
+  const fits = (d: Draft, id: number): boolean => {
+    const ref = ctx.reservedRef<AdultReservation | true>("person:adult", String(id));
+    if (ref && ref !== true) return d.birth >= parseTs(ref.bornFrom) && d.birth <= parseTs(ref.bornTo);
+    return NOW - d.birth > 30 * YEAR && NOW - d.birth < 65 * YEAR;
+  };
   const assigned = new Set<Draft>();
   for (const id of baseIds) {
     if (adultIds.has(id)) {
-      const d = adultsPool.find((x) => !assigned.has(x));
-      if (!d) throw new WorldGenError("persons: не хватает взрослых для резервов");
+      const d = shuffled.find((x) => !assigned.has(x) && fits(x, id));
+      if (!d) throw new WorldGenError(`persons: не хватает взрослых для резерва ${id}`);
       d.id = id;
       assigned.add(d);
     }
@@ -188,13 +198,13 @@ export function generatePersons(ctx: WorldContext): void {
   for (const d of shuffled) {
     const id = d.id as number;
     const death = deaths.get(d) ?? null;
-    const createdAt = Math.max(personCreatedAt(id), d.birth + rng.int(1, 40) * DAY);
+    const createdAt = Math.max(personCreatedAt(id), officeMoment(d.birth + rng.int(1, 40) * DAY, id));
     const deathDate = death !== null && death < PERSONS_OPEN - 7 * DAY && rng.chance(0.7) ? fmtDate(death) : null;
     const row = {
       id, last_name: d.last, first_name: d.first, patronymic: d.middle, birth_date: fmtDate(d.birth), sex: d.sex,
       father_id: d.father?.id ?? null, mother_id: d.mother?.id ?? null, prev_last_name: d.prevLast,
       special_marks: NOW - d.birth > 16 * YEAR && rng.chance(markRate) ? rng.pick(SPECIAL_MARKS) : null,
-      death_date: deathDate, created_at: fmtTs(Math.min(createdAt, PERSONS_OPEN - DAY)),
+      death_date: deathDate, created_at: fmtTs(Math.min(createdAt, NOISE_CREATED_MAX)),
     };
     if (ctx.isExcluded("persons", row)) continue;
     ctx.write("persons", row);
@@ -208,9 +218,16 @@ export function generatePersons(ctx: WorldContext): void {
   }
 
   // Дубли карточек: только шумовые люди, взрослые
-  const sources = rng.sample(st.people.filter((p) => NOW - p.birth > 18 * YEAR), dupIds.length);
+  const dupPool = st.people.filter((p) => NOW - p.birth > 18 * YEAR);
+  const sources = rng.sample(dupPool, dupIds.length);
   dupIds.forEach((id, i) => {
-    const src = sources[i];
+    // Исключения посадок (ctx.exclude) действуют и на дубли: до 20 попыток с другим источником
+    for (let attempt = 0; attempt < 20; attempt++) {
+      if (writeDup(id, attempt === 0 ? sources[i] : rng.pick(dupPool))) return;
+    }
+  });
+
+  function writeDup(id: number, src: NoisePerson): boolean {
     const variant = rng.int(0, 4);
     let last = src.last;
     let first = src.first;
@@ -223,11 +240,13 @@ export function generatePersons(ctx: WorldContext): void {
       const d = new Date(birth);
       if (d.getUTCDate() <= 12) birth = Date.UTC(d.getUTCFullYear(), d.getUTCDate() - 1, d.getUTCMonth() + 1);
     }
+    // Дубль заводят тогда же, когда и любую карточку с этим id (id растут со временем)
     const row = {
       id, last_name: last, first_name: first, patronymic: src.middle, birth_date: fmtDate(birth), sex: src.sex,
       father_id: null, mother_id: null, prev_last_name: null, special_marks: null, death_date: null,
-      created_at: fmtTs(Math.min(personCreatedAt(id) + 30 * DAY, PERSONS_OPEN - DAY)),
+      created_at: fmtTs(Math.min(personCreatedAt(id), NOISE_CREATED_MAX)),
     };
+    if (ctx.isExcluded("persons", row)) return false;
     ctx.write("persons", row);
     const p: NoisePerson = {
       id, last, first, middle: src.middle, sex: src.sex, birth, death: null,
@@ -235,7 +254,8 @@ export function generatePersons(ctx: WorldContext): void {
       dup: true, household: -1,
     };
     st.byId.set(id, p);
-  });
+    return true;
+  }
 
   st.adults = st.people.filter((p) => p.death === null && NOW - p.birth >= 18 * YEAR && NOW - p.birth <= 80 * YEAR);
 }
@@ -273,9 +293,11 @@ export function generateAddresses(ctx: WorldContext): void {
     const key = addressKey(w.street, w.house, w.apt);
     if (seen.has(key) || ctx.isReserved("address", key)) return false;
     seen.add(key);
-    const id = ctx.nextId("addresses");
     const street = rng.chance(0.011) ? `${w.street} ` : w.street;
-    const row = { id, district: w.district, street, house: w.house, apt: w.apt };
+    const probe = { district: w.district, street, house: w.house, apt: w.apt };
+    if (ctx.isExcluded("addresses", probe)) return false;
+    const id = ctx.nextId("addresses");
+    const row = { id, ...probe };
     ctx.write("addresses", row);
     const a = { id, district: w.district, street: w.street, house: w.house, apt: w.apt };
     st.addresses.push(a);
@@ -355,11 +377,17 @@ export function generateRegistrations(ctx: WorldContext): void {
       else st.residents.set(address.id, [m.id]);
     }
   }
-  pending.sort((a, b) => a.from - b.from);
-  for (const r of pending) {
-    const row = { id: ctx.nextId("registrations"), person_id: r.person.id, address_id: r.address, from_date: fmtDate(r.from), to_date: r.to === null ? null : fmtDate(r.to) };
-    if (ctx.isExcluded("registrations", row)) continue;
-    ctx.write("registrations", row);
+  // Плавающие посадки (ctx.insert с orderAt, без id) получают id по from_date вперемешку с шумом
+  const all = [
+    ...ctx.takeDeferred("registrations").map((p) => ({ key: p.key ?? parseTs(String(p.row.from_date)), row: p.row, planted: true })),
+    ...pending.map((r) => ({
+      key: r.from, planted: false,
+      row: { person_id: r.person.id, address_id: r.address, from_date: fmtDate(r.from), to_date: r.to === null ? null : fmtDate(r.to) },
+    })),
+  ].sort((a, b) => a.key - b.key || (a.planted === b.planted ? 0 : a.planted ? -1 : 1));
+  for (const r of all) {
+    if (!r.planted && ctx.isExcluded("registrations", r.row)) continue;
+    ctx.write("registrations", { ...r.row, id: ctx.nextId("registrations") });
   }
   // Незарегистрированным жителям — район по весам (для событий)
   for (const p of st.people) if (!p.district) p.district = rng.weighted(DISTRICT_WEIGHTS);

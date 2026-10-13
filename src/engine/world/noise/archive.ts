@@ -212,6 +212,8 @@ export function generateGsComms(ctx: WorldContext, exts: readonly string[]): voi
     }
   });
   const times = sampleTimes(rng, target, parseTs("2014-01-10 00:00:00"), parseTs("2016-12-28 00:00:00"), (t) => {
+    // Окна, закрытые посадками для всех номеров (вечер 19.02.2015), шум обходит сразу
+    if (ctx.isExcluded("gs_comms_2015", { ts_unix: localToUnix(t), from_ext: "", to_number: "" })) return 0;
     const h = hourOfDay(t);
     return h >= 7 && h < 21 ? 1 : 0.2;
   });

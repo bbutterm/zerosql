@@ -21,6 +21,7 @@ export function plant(ctx: WorldContext): void {
   plantStaffAndLogins(ctx);
   plantWorkstations(ctx);
   plantCompanies(ctx);
+  plantCastResidence(ctx);
   plantCamerasAndVehicles(ctx);
   plantPhonesAndAccounts(ctx);
   plantMoney(ctx);
@@ -73,6 +74,27 @@ function plantPeople(ctx: WorldContext): void {
   }
   ctx.reserveId("persons", F.PERSON.player);
   for (const id of ADULT_PERSON_IDS) ctx.reserve("person:adult", String(id));
+  // Инженеры ревизий ПД-117 (строки сажает c06): взрослые, живые, не дубли
+  for (const id of F.PD117_ENGINEERS) ctx.reserve("person:adult", String(id), F.PD117_ENGINEER_BORN);
+}
+
+/** Поля верхней таблицы разд. 8.4 вне persons: Портовая, 3 (Сазоновы, Лапина), работа Петрова и Олега */
+function plantCastResidence(ctx: WorldContext): void {
+  for (const a of Object.values(F.ADDRESS)) {
+    ctx.insert("addresses", { id: a.id, district: a.district, street: a.street, house: a.house, apt: a.apt });
+  }
+  const castFlats = new Set<number>(Object.values(F.ADDRESS).map((a) => a.id));
+  ctx.exclude("registrations", (r) => castFlats.has(Number(r.address_id)), "в квартирах Сазоновых и Лапиной шум не прописан");
+  for (const r of F.CAST_REGISTRATIONS) {
+    ctx.insert("registrations", {
+      person_id: r.person, address_id: F.ADDRESS[r.address].id, from_date: r.from, to_date: r.to,
+    }, { orderAt: ts(r.from) });
+  }
+  for (const e of F.CAST_EMPLOYMENT) {
+    ctx.insert("employment", {
+      person_id: e.person, company_id: e.company, position: e.position, from_date: e.from, to_date: e.to,
+    }, { orderAt: ts(e.from) });
+  }
 }
 
 // ==================================================================== сотрудники
@@ -690,7 +712,8 @@ function plantChronicle(ctx: WorldContext): void {
     }, { orderAt: tea });
     door(ctx, s.lykovIn, F.BADGE.lykov, "КПП-Б0", "вход");
     if (s.n < 7) {
-      const out = ts(s.end) + rng.int(8 * 60, 17 * 60) * 1000;
+      // Разд. 8.4, Д8: «выход около 03:10» — после конца сеанса, 03:05–03:15
+      const out = Math.max(ts(s.end) + 5 * MINUTE, ts(`${s.start.slice(0, 10)} 03:05:00`)) + rng.int(0, 10 * 60) * 1000;
       door(ctx, fmtTs(out), F.BADGE.lykov, "КПП-Б0", "выход");
     }
   }
@@ -890,5 +913,10 @@ function plantExclusions(ctx: WorldContext): void {
   const eveningFrom = localToUnix(ts("2015-02-19 00:00:00"));
   const eveningTo = localToUnix(ts("2015-02-20 12:00:00"));
   ctx.exclude("gs_comms_2015", (r) => r.from_ext === "2-14" && Number(r.ts_unix) >= eveningFrom && Number(r.ts_unix) < eveningTo, "вечер 19.02 у 2-14 — только посадки");
+  // Последний вечер Сазонова (Д6, задание 4 cron): в окне 18:00–03:00 местного только звонок и SMS
+  // с 2-14; тогда и ловушка UTC держится — «21:00–22:00» без '+3 hours' (00:00–01:00 местного) пусто
+  const nightFrom = localToUnix(ts("2015-02-19 18:00:00"));
+  const nightTo = localToUnix(ts("2015-02-20 03:00:00"));
+  ctx.exclude("gs_comms_2015", (r) => Number(r.ts_unix) >= nightFrom && Number(r.ts_unix) < nightTo, "вечер 19.02 — только посадки");
   ctx.exclude("plate_reads", (r) => r.plate === F.PLATE.taiga || r.plate === F.PLATE.bastion, "машины «Щита» — только посадки");
 }

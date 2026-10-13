@@ -56,8 +56,8 @@ function actors(ctx: WorldContext, t: number): { list: Actor[]; weights: number[
     list.push(a);
     weights.push(w);
   };
-  // Мельник — ~600 легальных UPDATE с WS-IT-01 (ложный след Д4)
-  push({ login: LOGIN.melnik, workstation: "WS-IT-01", kind: "melnik" }, day ? 42 : 4);
+  // Мельник — ~600 легальных UPDATE с WS-IT-01 к старту Д4 (разд. 8.4; ложный след Д4)
+  push({ login: LOGIN.melnik, workstation: "WS-IT-01", kind: "melnik" }, day ? 80 : 7);
   push({ login: LOGIN.nina, workstation: "АРХ-01", kind: "nina" }, day ? 9 : 0.3);
   if (day) push({ login: LOGIN.lykov, workstation: "WS-IT-02", kind: "lykov" }, 3);
   for (const s of st.staff) {

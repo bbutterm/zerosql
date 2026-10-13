@@ -78,7 +78,10 @@ export function generateCompanies(ctx: WorldContext): void {
       form === "ИП" ? `5190${String(rng.int(0, 99_999_999)).padStart(8, "0")}` : `5190${String(rng.int(0, 999_999)).padStart(6, "0")}`
     );
     const registered = randomDate(rng, parseTs("1996-01-01"), COMPANIES_OPEN - 10 * DAY);
-    const liquidated = rng.chance(0.08) ? randomDate(rng, registered + 2 * YEAR, COMPANIES_OPEN - 10 * DAY) : null;
+    // Ликвидация — не раньше двух лет после регистрации и не позже старта Д3 (таблица без горизонта)
+    const liqFrom = registered + 2 * YEAR;
+    const liqTo = COMPANIES_OPEN - 10 * DAY;
+    const liquidated = rng.chance(0.08) && liqFrom < liqTo ? randomDate(rng, liqFrom, liqTo) : null;
     const row = ctx.tryRow("companies", () => ({
       id: ctx.nextId("companies"), name, inn, kind: form, registered_at: fmtDate(registered),
       liquidated_at: liquidated && liquidated > registered ? fmtDate(liquidated) : null, director_person_id: director.id,
@@ -105,43 +108,52 @@ export function generateCompanyOwners(ctx: WorldContext): void {
   const plantedOwned = new Set(ctx.planted("company_owners").map((p) => Number(p.row.company_id)));
   const companies = noiseCompanies(ctx).filter((c) => c.kind !== "ИП" && !plantedOwned.has(c.id)).sort((a, b) => a.id - b.id);
   const nominees = rng.sample(st.adults.filter((p) => parseTs("2026-12-01") - p.birth > 30 * YEAR), 3);
-  const rows: Row[] = [];
+  // Компании берутся целиком: срез по объёму не должен отрезать часть текущих долей (сумма — 100)
+  const owned = new Map<number, Row[]>();
+  let count = 0;
   const seenCompanies: NoiseCompany[] = [];
   for (const c of companies) {
     const split = rng.pick(SPLITS);
+    if (count + split.length > target) break;
     const since = fmtDate(c.registered);
+    const list: Row[] = [];
     for (const share of split) {
       let ownerType = "person";
       let ownerId: number;
       const roll = rng.next();
-      if (roll < 0.16 && seenCompanies.length > 0) {
-        // Владелец — шумовая компания, зарегистрированная раньше: лес без циклов
+      // Владелец-компания — шумовая, с меньшим id (лес без циклов) и уже существовавшая
+      const elder = seenCompanies.filter((x) => x.registered <= c.registered);
+      if (roll < 0.16 && elder.length > 0) {
         ownerType = "company";
-        ownerId = rng.pick(seenCompanies).id;
+        ownerId = rng.pick(elder).id;
       } else if (roll < 0.3) ownerId = rng.pick(nominees).id;
       else ownerId = adult(rng, st.adults, 23).id;
-      rows.push({ company_id: c.id, owner_type: ownerType, owner_id: ownerId, share, since, until: null });
+      list.push({ company_id: c.id, owner_type: ownerType, owner_id: ownerId, share, since, until: null });
     }
+    owned.set(c.id, list);
+    count += list.length;
     seenCompanies.push(c);
   }
-  // История: прежние владельцы (until заполнен) до нужного объёма
+  // История: прежние владельцы (until заполнен) до нужного объёма. Прежний владелец владел
+  // долей с её прежнего since до даты передачи, нынешний — с даты передачи: периоды не пересекаются
+  const ownedIds = [...owned.keys()];
   let guard = 0;
-  while (rows.length < target && guard++ < target * 10) {
-    const c = rng.pick(companies);
-    const current = rows.filter((r) => r.company_id === c.id && r.until === null);
-    if (current.length === 0) continue;
-    const cut = randomDate(rng, c.registered + YEAR, COMPANIES_OPEN - 30 * DAY);
-    if (cut <= c.registered + YEAR) continue;
-    const victim = rng.pick(current);
-    // Прежний владелец передал долю нынешнему: since нынешнего = дата передачи
-    rows.push({
-      company_id: c.id, owner_type: "person", owner_id: adult(rng, st.adults, 23).id, share: victim.share,
-      since: fmtDate(c.registered), until: fmtDate(cut),
+  while (count < target && guard++ < target * 10 && ownedIds.length > 0) {
+    const list = owned.get(rng.pick(ownedIds)) as Row[];
+    const victim = rng.pick(list.filter((r) => r.until === null));
+    const from = parseTs(String(victim.since));
+    const cut = randomDate(rng, from + YEAR, COMPANIES_OPEN - 30 * DAY);
+    if (cut <= from + YEAR) continue;
+    list.push({
+      company_id: victim.company_id, owner_type: "person", owner_id: adult(rng, st.adults, 23).id, share: victim.share,
+      since: victim.since, until: fmtDate(cut),
     });
     victim.since = fmtDate(cut);
+    count++;
   }
+  const rows = [...owned.values()].flat();
   rows.sort((a, b) => String(a.since).localeCompare(String(b.since)) || Number(a.company_id) - Number(b.company_id));
-  for (const r of rows.slice(0, target)) {
+  for (const r of rows) {
     const row = { id: ctx.nextId("company_owners"), ...r };
     if (!ctx.isExcluded("company_owners", row)) ctx.write("company_owners", row);
   }
@@ -193,10 +205,12 @@ export function generateEmployment(ctx: WorldContext): void {
     rows.push({ person_id: null, company_id: c.id, position: "подрядчик (внешний)", from_date: fmtDate(from), to_date: null });
   }
   rows.sort((a, b) => String(a.from_date).localeCompare(String(b.from_date)));
-  for (const r of rows.slice(0, target)) {
-    const row = { id: ctx.nextId("employment"), ...r };
-    if (!ctx.isExcluded("employment", row)) ctx.write("employment", row);
-  }
+  // Плавающие посадки (ctx.insert с orderAt, без id) получают id по from_date вперемешку с шумом
+  const all = [
+    ...ctx.takeDeferred("employment").map((p) => ({ row: p.row, planted: true })),
+    ...rows.slice(0, target).filter((r) => !ctx.isExcluded("employment", r)).map((row) => ({ row, planted: false })),
+  ].sort((a, b) => String(a.row.from_date).localeCompare(String(b.row.from_date)) || (a.planted === b.planted ? 0 : a.planted ? -1 : 1));
+  for (const r of all) ctx.write("employment", { ...r.row, id: ctx.nextId("employment") });
 }
 
 // ==================================================================== contracts

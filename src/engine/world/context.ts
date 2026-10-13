@@ -17,6 +17,13 @@
  */
 import type { Database, SqlValue, Statement } from "sql.js";
 import { Rng } from "./rng";
+import { TABLE_BY_NAME } from "./schema";
+
+/** У таблицы целочисленный первичный ключ id (его выдаёт аллокатор) */
+function hasIntegerId(table: string): boolean {
+  const pk = TABLE_BY_NAME.get(table)?.columns.find((c) => c.pk);
+  return pk?.name === "id" && pk.type === "INTEGER";
+}
 
 export type Row = Record<string, SqlValue | boolean | undefined>;
 
@@ -118,13 +125,20 @@ export class WorldContext {
    * строка откладывается до заполнения таблицы шумом.
    */
   insert(table: string, row: Row, opts: InsertOptions = {}): void {
+    let allocated = false;
+    if (opts.orderAt === undefined && row.id === undefined && hasIntegerId(table)) {
+      // Без id и без ключа порядка: id выдаёт аллокатор. Иначе SQLite взял бы
+      // max(rowid) + 1, а шум потом выдал бы тот же id (UNIQUE constraint failed).
+      row = { ...row, id: this.nextId(table) };
+      allocated = true;
+    }
     const planted: PlantedRow = { row, key: opts.orderAt };
     if (this.phase === "plants") this.pushMap(this.plantedRows, table, planted);
     if (opts.orderAt !== undefined && row.id === undefined) {
       this.pushMap(this.deferredRows, table, planted);
       return;
     }
-    if (typeof row.id === "number") {
+    if (typeof row.id === "number" && !allocated) {
       if (this.usedIds(table).has(row.id)) throw new WorldGenError(`${table}: id ${row.id} уже занят`);
       if (opts.orderAt !== undefined) this.pushMap(this.anchorsByTable, table, { id: row.id, key: opts.orderAt });
     }

@@ -199,11 +199,15 @@ export function generateMessenger(ctx: WorldContext): void {
   const cell = (p: NoisePerson) => `${rng.pick(CELL_CODES[(p.district ?? "Старый город") as District])}-${String(rng.int(1, 24)).padStart(2, "0")}`;
   const times = sampleTimes(rng, target, MSG_FROM, MSG_TO, messagingWeight);
   const out: { key: number; row: Row }[] = [];
-  // Сбой часов: три строки «из будущего» (настоящая — только у Ирины)
+  // Сбой часов: три строки «из будущего» (настоящая — только у Ирины). Все три созданы
+  // до старта Д8 (горизонт — created_at): в Д8 их видно вместе с голосовым Ирины
+  const glitchBefore = parseTs(CASE_START.c08) - 3 * DAY;
+  const early = times.findIndex((t) => t >= glitchBefore);
+  const span = early < 0 ? times.length : early;
   const glitch = new Map<number, string>([
-    [rng.int(100, 600), "2099-01-01 00:00:00"],
-    [rng.int(700, 1200), "2099-12-31 23:59:00"],
-    [rng.int(1300, 1800), "year"],
+    [rng.int(Math.floor(span * 0.05), Math.floor(span * 0.3)), "2099-01-01 00:00:00"],
+    [rng.int(Math.floor(span * 0.35), Math.floor(span * 0.6)), "2099-12-31 23:59:00"],
+    [rng.int(Math.floor(span * 0.65), span - 1), "year"],
   ]);
   times.forEach((t, idx) => {
     const row = ctx.maybeRow("messenger_events", () => {
@@ -261,6 +265,21 @@ export function generateDoorAccess(ctx: WorldContext): void {
     if (!ctx.isExcluded("door_access", row)) out.push({ key: ts, row });
   };
   const at = (day: number, h1: number, h2: number) => day + rng.float(h1, h2) * HOUR;
+  /**
+   * Визиты одного человека за день не пересекаются (иначе в ленте «вход, вход,
+   * выход, выход» и LEAD по пропуску врёт): окно [t, t + длительность] берётся,
+   * только если оно не задевает уже занятые с запасом в 3 минуты.
+   */
+  const visits = (day: number, k: number, h1: number, h2: number, minLen: number, maxLen: number, busy: [number, number][]) => {
+    const out: [number, number][] = [];
+    for (let i = 0; i < k; i++) {
+      const t = at(day, h1, h2);
+      const end = t + rng.float(minLen, maxLen) * MINUTE;
+      if ([...busy, ...out].some(([a, b]) => t < b + 3 * MINUTE && end > a - 3 * MINUTE)) continue;
+      out.push([t, end]);
+    }
+    return out.sort((a, b) => a[0] - b[0]);
+  };
   for (let day = startOfDay(DOOR_FROM); day < DOOR_TO; day += DAY) {
     if (isWeekend(day) || HOLIDAYS.has(fmtDate(day))) continue;
     for (const p of people) {
@@ -269,11 +288,9 @@ export function generateDoorAccess(ctx: WorldContext): void {
       const forget = !p.cast && rng.chance(0.02);
       if (p.kind === "it" && !p.cast) {
         // Шумовой ИТ: визиты в серверную
-        for (let k = rng.weighted([[0, 45], [1, 45], [2, 10]] as const); k > 0; k--) {
-          const t = at(day, 9.5, 17);
+        for (const [t, out1] of visits(day, rng.weighted([[0, 45], [1, 45], [2, 10]] as const), 9.5, 17, 15, 80, [])) {
           ev(t, p.badge, "КПП-Б0", "вход");
           ev(t + rng.float(1, 2) * MINUTE, p.badge, "Серверная", "вход");
-          const out1 = t + rng.float(15, 80) * MINUTE;
           ev(out1, p.badge, "Серверная", "выход");
           if (!forget) ev(out1 + rng.float(1, 3) * MINUTE, p.badge, "КПП-Б0", "выход");
         }
@@ -288,17 +305,17 @@ export function generateDoorAccess(ctx: WorldContext): void {
         ev(tin + rng.float(1, 3) * MINUTE, p.badge, "Архив", "вход");
         ev(tout - rng.float(2, 6) * MINUTE, p.badge, "Архив", "выход");
       }
+      // Обед вне контура Б0; серверная — только пока человек внутри контура
+      const lunch: [number, number][] = rng.chance(0.18) ? visits(day, 1, 12.4, 12.9, 30, 55, []) : [];
       if (p.kind === "it") {
-        for (let k = rng.int(1, 2); k > 0; k--) {
-          const t = at(day, 10, 16.5);
+        for (const [t, end] of visits(day, rng.int(1, 2), 10, 16.5, 10, 70, lunch)) {
           ev(t, p.badge, "Серверная", "вход");
-          ev(t + rng.float(10, 70) * MINUTE, p.badge, "Серверная", "выход");
+          ev(end, p.badge, "Серверная", "выход");
         }
       }
-      if (rng.chance(0.18)) {
-        const t = at(day, 12.4, 12.9);
+      for (const [t, back] of lunch) {
         ev(t, p.badge, "КПП-Б0", "выход");
-        ev(t + rng.float(30, 55) * MINUTE, p.badge, "КПП-Б0", "вход");
+        ev(back, p.badge, "КПП-Б0", "вход");
       }
       if (rng.chance(0.15)) ev(at(day, 10, 17), p.badge, rng.pick(["Лестница А", "Лестница Б"]), rng.pick(["вход", "выход"]));
       if (!forget) ev(tout, p.badge, "КПП-Б0", "выход");
@@ -321,9 +338,13 @@ export function generateDoorAccess(ctx: WorldContext): void {
   while (out.length + 1 < target) {
     const t = Math.floor(rng.float(DOOR_FROM, DOOR_TO) / 1000) * 1000;
     if (!rng.chance(Math.max(0.05, officeWeight(t)))) continue;
+    // Принимающий — шумовой сотрудник в штате на этот день: гость «к Вальц И. П.» после
+    // её смерти или «к Ратникову» в кардиологии был бы ложной уликой
+    const hosts = st.staff.filter((s) => !s.cast && s.hired <= t && (s.fired === null || s.fired > t));
+    if (hosts.length === 0) continue;
     const badge = ctx.unique("badge", () => `G-${String(rng.int(1, 9999)).padStart(4, "0")}`);
     const guest = rng.pick(st.adults);
-    const host = rng.pick(st.staff);
+    const host = rng.pick(hosts);
     const note = `гость: ${guest.short} (к ${host.short})`;
     ev(t, badge, "КПП-1", "вход", note);
     ev(t + rng.float(15, 120) * MINUTE, badge, "КПП-1", "выход", note);

@@ -106,14 +106,20 @@ export function generateStaff(ctx: WorldContext): void {
     let hired = t0 + ((id - 1) / 149) * (t1 - t0) + rng.float(-200, 200) * DAY;
     if (officer) hired = Math.min(hired, parseTs(officer.hiredBefore) - rng.float(30, 2000) * DAY);
     hired = Math.min(Math.floor(hired / DAY) * DAY, t1);
-    const idx = pool.findIndex((p) => hired - p.birth >= 20 * YEAR && hired - p.birth <= 42 * YEAR && t1 - p.birth < 64 * YEAR);
+    // Подходящий житель, на котором строка не попадает под исключения посадок (ctx.exclude)
+    const suits = (p: NoisePerson) => hired - p.birth >= 20 * YEAR && hired - p.birth <= 42 * YEAR && t1 - p.birth < 64 * YEAR
+      && !ctx.isExcluded("staff", { id, person_id: p.id, full_name: p.short, badge_id: `B-${p.id}` });
+    const idx = pool.findIndex(suits);
     if (idx < 0) throw new WorldGenError(`staff: нет подходящего жителя для id ${id}`);
     const person = pool.splice(idx, 1)[0];
     const dept = officer
       ? rng.pick(STAFF_DEPTS.filter((d) => d.uniformed && d.dept !== "следственный отдел"))
       : rng.weighted(STAFF_DEPTS.map((d) => [d, d.weight] as const));
-    const fired = !officer?.active && rng.chance(officer ? 0.4 : 0.12)
-      ? Math.floor(rng.float(hired + YEAR, SEASON_START - 10 * DAY) / DAY) * DAY
+    // Увольнение — не раньше чем через год после приёма и до старта пролога (staff открыта с П, горизонта нет)
+    const fireFrom = hired + YEAR;
+    const fireTo = SEASON_START - 10 * DAY;
+    const fired = !officer?.active && rng.chance(officer ? 0.4 : 0.12) && fireFrom < fireTo
+      ? Math.floor(rng.float(fireFrom, fireTo) / DAY) * DAY
       : null;
     const login = ctx.unique("login", (() => {
       let n = 0;
@@ -196,6 +202,31 @@ export function generateLogins(ctx: WorldContext): void {
 const INCIDENTS_FROM = parseTs("2026-04-15 00:00:00");
 const INCIDENTS_TO = parseTs("2027-01-11 11:00:00");
 
+/**
+ * Номера КУСП для серии происшествий между соседними посаженными номерами
+ * (lo, hi — исключительно; 0 и 1 000 000 — «границы нет»). В incidents попадает
+ * примерно каждое второе сообщение, поэтому номера — случайная выборка из
+ * доступного диапазона без повторов: пропуски естественные, длинные серии
+ * подряд редки (у посаженных 4514–4519 серия подряд — примета ночи 18.11).
+ */
+export function spreadKusp(rng: Rng, estimates: readonly number[], lo: number, hi: number, skip: (v: number) => boolean): number[] {
+  const n = estimates.length;
+  const from = lo > 0 ? lo : Math.max(0, Math.round(estimates[0]) - 3);
+  let to = hi < 1_000_000 ? hi : Math.round(estimates[n - 1]) + 3;
+  const free = (a: number, b: number) => {
+    const out: number[] = [];
+    for (let v = a + 1; v < b; v++) if (!skip(v)) out.push(v);
+    return out;
+  };
+  let pool = free(from, to);
+  if (pool.length < n && hi >= 1_000_000) {
+    to = from + 2 * n + 4;
+    pool = free(from, to);
+  }
+  if (pool.length < n) return fitSequence(estimates, lo, hi, skip);
+  return rng.sample(pool, n).sort((a, b) => a - b);
+}
+
 export function generateIncidents(ctx: WorldContext): void {
   const rng = ctx.rng("noise.incidents");
   const st = noiseState(ctx);
@@ -244,7 +275,8 @@ export function generateIncidents(ctx: WorldContext): void {
     const lo = before && yearOf(before.key) === year ? (before.kusp as number) : 0;
     const hi = after && yearOf(after.key) === year && after.kusp !== undefined ? after.kusp : 1_000_000;
     const run = items.slice(runStart, runEnd + 1);
-    const values = fitSequence(run.map((it) => kuspEstimate(it.key) + rng.int(-1, 1)), lo, hi, (v) => ctx.isReserved(`kusp:${year}`, String(v)));
+    const skip = (v: number) => ctx.isReserved(`kusp:${year}`, String(v));
+    const values = spreadKusp(rng, run.map((it) => kuspEstimate(it.key)), lo, hi, skip);
     run.forEach((it, k) => (it.kusp = values[k]));
     runStart = runEnd + 1;
   }

@@ -197,15 +197,30 @@ export function doorbellWeight(ms: number): number {
 
 /**
  * Дата создания карточки в ПБД по id: «Сокол» с 2015-03-01, ПБД с 2017-го,
- * id растут со временем. Используют и посадки, и шум — у каста те же правила.
+ * id растут со временем, последняя шумовая — до вечера 18.11.2026. Используют
+ * и посадки, и шум — у каста те же правила.
  */
 export function personCreatedAt(id: number): number {
   const t0 = parseTs("2015-03-01 09:00:00");
-  const t1 = parseTs("2026-11-19 18:00:00");
+  // До вечера 18.11: после смерти Ирины в ПБД завели одну карточку — «мёртвую душу» 4301
+  const t1 = parseTs("2026-11-18 18:00:00");
   const f = Math.min(1, Math.max(0, (id - 1) / 4300));
   const jitter = (((id * 2654435761) >>> 0) % 7200) * 60_000; // до 5 суток, детерминированно
   const base = t0 + f * (t1 - t0 - 5 * DAY);
-  return Math.floor((base + jitter) / 1000) * 1000;
+  return officeMoment(base + jitter, id);
+}
+
+/**
+ * Тот же день (или ближайший будний до него), но в рабочее время 08:30–18:30
+ * с детерминированными минутами и секундами: карточки ПДн заводят днём. Ночная
+ * карточка — примета подделки (Кравец, 2026-11-20 02:22:00).
+ */
+export function officeMoment(ms: number, salt: number): number {
+  let day = startOfDay(ms);
+  while (isWeekend(day)) day -= DAY;
+  const minute = 8 * 60 + 30 + (((salt * 40503 + 7) >>> 0) % 600);
+  const second = ((salt * 2246822519) >>> 0) % 60;
+  return day + minute * 60_000 + second * 1000;
 }
 
 /** Ровно час: удобно для сдвигов */

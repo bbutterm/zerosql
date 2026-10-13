@@ -12,6 +12,7 @@
  */
 import type { Row, WorldContext } from "../context";
 import { WorldGenError, flushByTime, sampleTimes } from "../context";
+import type { Rng } from "../rng";
 import { DAY, HOUR, MINUTE, dayOfYear, fmtDate, fmtTs, hourOfDay, parseTs } from "../rng";
 import { homoglyphPlate, plateNoRegion } from "../pools";
 import {
@@ -145,12 +146,14 @@ export function generatePlateReads(ctx: WorldContext): void {
   const commuters = active.filter((v) => v.kind === "легковая");
   const directions = (cam: number) => (cam === 12 || cam === 15 ? ["въезд", "выезд"] : ["в центр", "из центра"]);
   const times = sampleTimes(rng, target, READS_FROM, READS_TO, trafficWeight);
-  const out: { key: number; row: Row }[] = [];
+  const out: { key: number; row: Row; registry: boolean }[] = [];
   for (const t of times) {
+    let registry = false;
     const row = ctx.maybeRow("plate_reads", () => {
       const h = hourOfDay(t);
       const nightTime = h < 5.5 || h >= 23;
       const pool = nightTime ? night : rng.chance(0.82) ? commuters : night;
+      registry = false;
       if (rng.chance(0.025)) {
         // Чужие номера: в реестре города их нет (транзит)
         const cam = rng.pick(allCams);
@@ -158,15 +161,41 @@ export function generatePlateReads(ctx: WorldContext): void {
       }
       const v = rng.pick(pool);
       const cam = rng.pick(routes.get(v.id) ?? allCams);
-      const ocr = rng.chance(0.005);
-      return {
-        camera_id: cam, plate: ocr ? homoglyphPlate(rng, v.plate) : v.plate, read_at: fmtTs(t),
-        confidence: ocr ? round2(rng.float(0.55, 0.8)) : round2(rng.float(0.86, 0.995)), direction: rng.pick(directions(cam)),
-      };
+      registry = true;
+      return { camera_id: cam, plate: v.plate, read_at: fmtTs(t), confidence: round2(rng.float(0.86, 0.995)), direction: rng.pick(directions(cam)) };
     });
-    if (row) out.push({ key: t, row });
+    if (row) out.push({ key: t, row, registry });
   }
+  applyOcrHomoglyphs(ctx, rng, out);
   flushByTime(ctx, "plate_reads", out, "read_at");
+}
+
+/**
+ * Гомоглифы OCR (0,5 %, разд. 8.3) — ровно заданное число строк: ★ Д10 «Все
+ * номера, считанные латиницей» — 17 строк на часах Д10, из них одна посажена
+ * в Д1 (K372OK), остальные 16 — шум до старта Д10. Ещё 4 — после Нового года.
+ */
+export const OCR_LATIN_READS = { beforeC10: 16, afterNewYear: 4 } as const;
+
+function applyOcrHomoglyphs(ctx: WorldContext, rng: Rng, out: { key: number; row: Row; registry: boolean }[]): void {
+  const c10 = parseTs(CASE_START.c10);
+  const newYear = parseTs("2027-01-01 00:00:00");
+  const convert = (eligible: number[], n: number) => {
+    let made = 0;
+    for (const i of rng.shuffle(eligible)) {
+      if (made >= n) break;
+      const plate = homoglyphPlate(rng, String(out[i].row.plate));
+      if (!/[A-Z]/.test(plate)) continue;
+      const row = { ...out[i].row, plate, confidence: round2(rng.float(0.55, 0.8)) };
+      if (ctx.isExcluded("plate_reads", row)) continue;
+      out[i].row = row;
+      made++;
+    }
+    if (made < n) throw new WorldGenError(`plate_reads: гомоглифов ${made} из ${n}`);
+  };
+  const idx = out.map((_, i) => i).filter((i) => out[i].registry);
+  convert(idx.filter((i) => out[i].key < c10), OCR_LATIN_READS.beforeC10);
+  convert(idx.filter((i) => out[i].key >= newYear), OCR_LATIN_READS.afterNewYear);
 }
 
 const round2 = (x: number) => Math.round(x * 100) / 100;
