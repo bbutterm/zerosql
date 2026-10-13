@@ -448,7 +448,7 @@ export function GameDesk({ journal = false }: { journal?: boolean }) {
       }}
       centerView={center}
       onCenterViewChange={setCenter}
-      badges={{ evidence: cards.length }}
+      badges={cards.length ? { evidence: cards.length } : {}}
       badgeAlerts={unseen ? ["evidence"] : []}
       statusMessage={status}
       currentObjective={currentNo ? { number: currentNo, text: objectives[firstOpen].text } : null}

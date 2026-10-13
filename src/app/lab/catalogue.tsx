@@ -819,7 +819,7 @@ function KitSection() {
           </Frame>
 
           <Frame className="flex flex-col bg-scr-base">
-            <MirrorMenuBar onAction={() => {}} right={<span className="ui-13 text-ink-2">Дело 01. Тёплая вода</span>} />
+            <MirrorMenuBar onAction={() => {}} right={<span className="truncate ui-13 text-ink-2">Дело 01. Тёплая вода</span>} />
             <div className="flex flex-1 items-end justify-end p-4">
               <MessengerNote
                 sender="Соколова В. А."
