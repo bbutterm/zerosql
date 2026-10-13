@@ -159,6 +159,9 @@ export function generatePersons(ctx: WorldContext): void {
   const baseSet = new Set(baseIds);
   const dupIds = freeIds.filter((id) => !baseSet.has(id));
   const fits = (d: Draft, id: number): boolean => {
+    // Исключения посадок (ctx.exclude) выкинули бы карточку ниже — резерв остался бы пустым
+    const card = { id, last_name: d.last, first_name: d.first, patronymic: d.middle, birth_date: fmtDate(d.birth), sex: d.sex, prev_last_name: d.prevLast };
+    if (ctx.isExcluded("persons", card)) return false;
     const ref = ctx.reservedRef<AdultReservation | true>("person:adult", String(id));
     if (ref && ref !== true) return d.birth >= parseTs(ref.bornFrom) && d.birth <= parseTs(ref.bornTo);
     return NOW - d.birth > 30 * YEAR && NOW - d.birth < 65 * YEAR;

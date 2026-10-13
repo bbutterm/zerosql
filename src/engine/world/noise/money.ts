@@ -175,6 +175,8 @@ export function generateTransactions(ctx: WorldContext): void {
 
 const MSG_FROM = parseTs("2026-09-01 00:00:00");
 const MSG_TO = parseTs("2027-01-11 11:00:00");
+/** Потолок часов Д8 (case-08-prizrak, clock.cap) */
+const D8_CLOCK_CAP = "2026-12-24 13:00:00";
 
 export function generateMessenger(ctx: WorldContext): void {
   const rng = ctx.rng("noise.messenger");
@@ -197,7 +199,13 @@ export function generateMessenger(ctx: WorldContext): void {
     contacts.set(p.id, [...family, ...rng.sample(sameDistrict, Math.max(0, k - family.length))]);
   }
   const cell = (p: NoisePerson) => `${rng.pick(CELL_CODES[(p.district ?? "Старый город") as District])}-${String(rng.int(1, 24)).padStart(2, "0")}`;
-  const times = sampleTimes(rng, target, MSG_FROM, MSG_TO, messagingWeight);
+  // Пока идут часы Д8 (24.12 09:00–13:00), шум молчит: ★М17 «последнее событие каждого
+  // номера» за дело не меняется. Окно сдвигаем за потолок — поток rng и число строк те же
+  const d8From = parseTs(CASE_START.c08);
+  const d8To = parseTs(D8_CLOCK_CAP);
+  const times = sampleTimes(rng, target, MSG_FROM, MSG_TO, messagingWeight)
+    .map((t) => (t >= d8From && t <= d8To ? t + (d8To - d8From) + MINUTE : t))
+    .sort((a, b) => a - b);
   const out: { key: number; row: Row }[] = [];
   // Сбой часов: три строки «из будущего» (настоящая — только у Ирины). Все три созданы
   // до старта Д8 (горизонт — created_at): в Д8 их видно вместе с голосовым Ирины
