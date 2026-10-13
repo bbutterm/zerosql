@@ -390,3 +390,44 @@ describe("validateSeasonContent", () => {
     expect(problems).toContain("case-04-next: introScene: сцена «nope» не найдена");
   });
 });
+
+describe("локации сцен (src/data/locations.json)", () => {
+  const LOCATIONS = new Set(["basement_b0_03_evening", "basement_b0_03_night"]);
+  const withLocations = (caseDef: CaseDef) => validateCaseContent(caseDef, CHARACTERS, EVIDENCE, LOCATIONS);
+
+  it("известный id и сцена без location — без проблем", () => {
+    expect(withLocations(withScene(base, "intro", { location: "basement_b0_03_night" }))).toEqual([]);
+    expect(withLocations(base)).toEqual([]);
+  });
+
+  it("неизвестный id локации", () => {
+    expectProblem(
+      withLocations(withScene(base, "intro", { location: "office_1_12" })),
+      "сцена «intro»: неизвестная локация «office_1_12» — её нет в src/data/locations.json"
+    );
+  });
+
+  it("подпись вместо id — отдельная жалоба", () => {
+    expectProblem(
+      withLocations(withScene(base, "intro", { location: "Подвал ГУ, ОЦР, кабинет Б0-03" })),
+      "сцена «intro»: location «Подвал ГУ, ОЦР, кабинет Б0-03» — подпись, а не id локации"
+    );
+  });
+
+  it("CaseDef.location — подпись для титра, id фона там — ошибка", () => {
+    expectProblem(withLocations({ ...base, location: "basement_b0_03_evening" }), "location «basement_b0_03_evening» — id фона, а не подпись");
+    expect(withLocations({ ...base, location: "ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03" })).toEqual([]);
+  });
+
+  it("без списка локаций правило не проверяется", () => {
+    expect(problemsOf(withScene(base, "intro", { location: "Подвал ГУ" }))).toEqual([]);
+  });
+
+  it("validateSeasonContent передаёт список локаций делам", () => {
+    const bad = withScene(base, "intro", { location: "nowhere" });
+    expect(validateSeasonContent([bad], CHARACTERS)).toEqual([]);
+    expect(validateSeasonContent([bad], CHARACTERS, LOCATIONS)).toEqual([
+      `${base.id}: сцена «intro»: неизвестная локация «nowhere» — её нет в src/data/locations.json`,
+    ]);
+  });
+});

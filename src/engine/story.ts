@@ -165,14 +165,22 @@ function duplicates(values: readonly string[]): string[] {
   return [...dup];
 }
 
+/** id локации (фона): snake_case латиницей, имя файла public/backgrounds/<id>.webp */
+export const LOCATION_ID_RE = /^[a-z0-9_]+$/;
+
 /**
  * Проверяет дело на ошибки контента. Возвращает список проблем на русском;
  * пустой список — дело корректно. Предназначено для тестов контента.
+ *
+ * `locations` — известные id локаций (канон — src/data/locations.json, `LOCATION_IDS` из `@/data`).
+ * С ним `Scene.location` обязан быть одним из них, а `CaseDef.location` — подписью для титра, а не
+ * id фона. Без него локации не проверяются (модульные тесты валидатора на выдуманных делах).
  */
 export function validateCaseContent(
   caseDef: CaseDef,
   characters: readonly CharacterDef[],
-  allEvidenceIds: ReadonlySet<string>
+  allEvidenceIds: ReadonlySet<string>,
+  locations?: ReadonlySet<string>
 ): string[] {
   const problems: string[] = [];
   const add = (text: string) => problems.push(`${caseDef.id}: ${text}`);
@@ -209,6 +217,10 @@ export function validateCaseContent(
   const mpq = caseDef.minutesPerQuery;
   if (mpq !== undefined && !(Number.isFinite(mpq) && mpq >= 0)) add(`minutesPerQuery должен быть числом ≥ 0, а не ${mpq}`);
   if (!caseDef.protocol && !caseDef.outroScene) add("нет ни протокола, ни outroScene — дело нечем завершить");
+  // Титр сцены («ГУ МВД, цокольный этаж, Б0-03. 2 декабря, 18:05») игрок читает: id фона там — опечатка
+  if (locations && caseDef.location !== undefined && locations.has(caseDef.location)) {
+    add(`location «${caseDef.location}» — id фона, а не подпись: из него собирается титр сцены, который видит игрок`);
+  }
 
   // --- Сцены и реплики ---
   for (const id of duplicates(caseDef.scenes.map((s) => s.id))) add(`сцена «${id}» объявлена дважды`);
@@ -220,6 +232,13 @@ export function validateCaseContent(
     const where = `сцена «${scene.id}»`;
     if (!SCENE_ID_RE.test(scene.id)) add(`${where}: id сцены должен состоять из a-z, 0-9, «_», «-»`);
     if (scene.lines.length === 0) add(`${where}: нет ни одной реплики`);
+    if (locations && scene.location !== undefined && !locations.has(scene.location)) {
+      add(
+        LOCATION_ID_RE.test(scene.location)
+          ? `${where}: неизвестная локация «${scene.location}» — её нет в src/data/locations.json`
+          : `${where}: location «${scene.location}» — подпись, а не id локации из src/data/locations.json`
+      );
+    }
 
     for (const line of scene.lines) {
       const at = `реплика «${line.id}»`;
@@ -613,9 +632,13 @@ const BLANK_KINDS = new Set(["person", "number", "datetime", "text"]);
 
 /**
  * Проверка всего сезона: каждое дело плюс сквозные правила — уникальные id
- * и order дел, уникальные id улик между делами.
+ * и order дел, уникальные id улик между делами. `locations` — как у validateCaseContent.
  */
-export function validateSeasonContent(cases: readonly CaseDef[], characters: readonly CharacterDef[]): string[] {
+export function validateSeasonContent(
+  cases: readonly CaseDef[],
+  characters: readonly CharacterDef[],
+  locations?: ReadonlySet<string>
+): string[] {
   const problems: string[] = [];
   for (const id of duplicates(cases.map((c) => c.id))) problems.push(`сезон: дело «${id}» объявлено дважды`);
   for (const order of duplicates(cases.map((c) => String(c.order)))) {
@@ -643,6 +666,6 @@ export function validateSeasonContent(cases: readonly CaseDef[], characters: rea
   }
 
   const allEvidence = collectEvidenceIds(cases);
-  for (const c of cases) problems.push(...validateCaseContent(c, characters, allEvidence));
+  for (const c of cases) problems.push(...validateCaseContent(c, characters, allEvidence, locations));
   return problems;
 }

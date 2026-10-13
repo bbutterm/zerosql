@@ -495,6 +495,7 @@ export interface CaseDef {
   minutesPerQuery?: number;
   /** Часы дела: старт, потолок, остановки */
   clock?: CaseClockDef;
+  /** Подпись места для титра сцены («ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03»); не id фона */
   location?: string;
   difficulty: Difficulty;
   /** Новые статьи справочника, которые открывает дело */

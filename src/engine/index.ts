@@ -170,6 +170,7 @@ export {
   lineIdProblem,
   portraitKey,
   LINE_ID_RE,
+  LOCATION_ID_RE,
   SERVICE_LINE_PREFIXES,
   nightBeatKind,
   NIGHT_BEAT_KINDS,

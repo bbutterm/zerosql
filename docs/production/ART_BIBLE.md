@@ -3,11 +3,11 @@
 Портреты, фоны и ключевые картины: стиль, палитра, свет, размеры, процесс генерации, готовые промпты и приёмка. Документ для арт-директора, художников на фрилансе и операторов генеративных моделей.
 
 > **Как пользоваться.** Списки и промпты собираются командой **`npm run manifest`**. Она пишет:
-> - `docs/production/prompts.csv` — по строке на каждое изображение: путь файла, размер, промпт, негатив, пояснение (95 строк: 63 портрета, 17 фонов и ключевых картин, 15 рабочих референсов);
+> - `docs/production/prompts.csv` — по строке на каждое изображение: путь файла, размер, промпт, негатив, пояснение (106 строк: 63 портрета, 28 фонов и ключевых картин, 15 рабочих референсов);
 > - `docs/production/portraits.csv` и `backgrounds.csv` — что нужно игре и что уже лежит в `public/` (столбец `exists`);
 > - разделы 7, 11.3, 14 и 15 этого документа (между маркерами `<!-- art-…:begin/end -->`).
 >
-> Промпты правятся **только** в `scripts/art-prompts.mjs`, потом `npm run manifest`. Ручные правки внутри маркеров затрутся.
+> Промпты правятся **только** в `scripts/art-prompts.mjs`, потом `npm run manifest`. Ручные правки внутри маркеров затрутся. Список локаций (id, подписи, запасные картины) — в `src/data/locations.json`: его же читает игра.
 >
 > Канон: `GAME_DESIGN.md` §1.5 (палитра, стиль), §2 (персонажи), §9.3 (сцена), §11.1–11.2 (слоты и спецификация); `UI_ART_DIRECTION.md` §0, §5.8, §7.14–7.15, §13. Где эта библия решает иначе, причина записана в разд. 1.
 
@@ -254,6 +254,10 @@ node -e "require('sharp')('/tmp/title.png').avif({quality:50,effort:6}).toFile('
 - Людей нет. Исключение — `interrogation_glass`: Даша строго со спины.
 - Фон затемняется на 55 %, поэтому средние тона пишите на ступень светлее, чем хочется. Края кадра сажайте в `#0A0C0D`–`#0B1020`.
 - Вывески, таблички, номера кабинетов («Б0-03»), слоганы билбордов — только вручную, по-русски и по согласованию. Генератор текст не пишет.
+
+**Запасные картины (семьи).** Пока у локации нет своей картины, сцена показывает картину её семьи — ту же комнату в другое время суток (`fallback` в `src/data/locations.json`, столбец `fallback` в `backgrounds.csv`, последний столбец таблицы разд. 15). Поэтому сданный вечерний подвал `basement_b0_03_evening` уже стоит во всех сценах подвала: ночью, днём, утром, в новогоднюю ночь и в день финала. Варианты одной комнаты держите в одном ракурсе и композиции с основной картиной: при замене запасной на свою кадр не должен прыгать. Своя картина вытесняет запасную сама, как только файл появится в `public/backgrounds/`.
+
+**В сцене** (UI §7.14) картина лежит под сплошной комнатой: зона портрета (x < 640 при 1440) — `--room` 0.55, всё правее, за логом, — 0.85; на телефоне над портретом 0.72, за логом 0.85. На вечернем подвале это даёт тексту лога не меньше 4,5:1 — правило «яркость правой половины не выше 8 %» (UI §13) держите и дальше.
 
 ### 5.6 Ключевые картины холодного открытия (UI §7.1, §13)
 
@@ -560,7 +564,7 @@ A friendly corporate voice-assistant logo mark: a smooth glossy ring shaped like
 | Фон | 3–5 |
 | Ключевая картина | 6–10 |
 
-Весь сезон — около 150–180 часов.
+Весь сезон — около 185–235 часов (28 фонов и ключевых картин; до разбора локаций сценария их было 17 и 150–180 часов).
 
 ### 11.3 Волны
 
@@ -570,20 +574,20 @@ A friendly corporate voice-assistant logo mark: a smooth glossy ring shaped like
 | Волна | Портретов | Фонов | Всего |
 |---|---:|---:|---:|
 | P0 | 10 | 5 | 15 |
-| P1 | 26 | 5 | 31 |
-| P2 | 19 | 2 | 21 |
-| P3 | 8 | 5 | 13 |
-| **Итого** | **63** | **17** | **80** |
+| P1 | 26 | 7 | 33 |
+| P2 | 19 | 7 | 26 |
+| P3 | 8 | 9 | 17 |
+| **Итого** | **63** | **28** | **91** |
 
 Плюс рабочие файлы, которые в игру не идут: 12 листов-референсов и 3 этюда кистей (их делают первыми, до якорей).
 
 **Волна P0 — первые 15 (пролог и акт I, якоря и стиль-фреймы):** 1. `ratnikov/neutral`; 2. `basement_b0_03_evening` (фон); 3. `nina/neutral`; 4. `dasha/neutral`; 5. `tokha/neutral`; 6. `title_night` (фон); 7. `dasha/neutral_outdoor`; 8. `substation_promzona_2` (фон); 9. `shpala/neutral`; 10. `interrogation_glass` (фон); 11. `oleg_pakhomov/neutral`; 12. `burtsev/neutral`; 13. `valentina/neutral`; 14. `melnik/neutral`; 15. `basement_b0_03_night` (фон).
 
-**Волна P1 — остальное для пролога и акта I (П–Д4):** `ratnikov/happy`, `ratnikov/tired`, `ratnikov/uneasy`, `ratnikov/lie`, `dasha/smug`, `dasha/angry`, `dasha/determined`, `nina/happy`, `nina/thinking`, `tokha/happy`, `tokha/uneasy`, `tokha/scared`, `tokha/lie`, `burtsev/cold`, `burtsev/smug`, `burtsev/thinking`, `granin/happy`, `melnik/smug`, `valentina/sad`, `valentina/determined`, `shpala/happy`, `shpala/scared`, `oleg_pakhomov/scared`, `oleg_pakhomov/angry`, `irina/neutral`, `irina/happy`, `archive_nina` (фон), `server_room_b0_11` (фон), `ratnikov_office` (фон), `pakhomova_apartment` (фон), `polyarnaya_street_night` (фон).
+**Волна P1 — остальное для пролога и акта I (П–Д4):** `ratnikov/happy`, `ratnikov/tired`, `ratnikov/uneasy`, `ratnikov/lie`, `dasha/smug`, `dasha/angry`, `dasha/determined`, `nina/happy`, `nina/thinking`, `tokha/happy`, `tokha/uneasy`, `tokha/scared`, `tokha/lie`, `burtsev/cold`, `burtsev/smug`, `burtsev/thinking`, `granin/happy`, `melnik/smug`, `valentina/sad`, `valentina/determined`, `shpala/happy`, `shpala/scared`, `oleg_pakhomov/scared`, `oleg_pakhomov/angry`, `irina/neutral`, `irina/happy`, `basement_b0_03_day` (фон), `archive_nina` (фон), `server_room_b0_11` (фон), `ratnikov_office` (фон), `gu_corridor` (фон), `pakhomova_apartment` (фон), `polyarnaya_street_night` (фон).
 
-**Волна P2 — акт II (Д5–Д8):** `ratnikov/ashamed`, `ratnikov/broken`, `ratnikov/hurt`, `dasha/scared`, `dasha/determined_outdoor`, `dasha/hurt`, `nina/sad`, `nina/scared`, `nina/angry`, `nina/ashamed`, `tokha/ashamed`, `tokha/broken`, `granin/neutral`, `granin/smug`, `melnik/angry`, `alla/neutral`, `alla/smug`, `valentina/hurt`, `valentina/hurt_outdoor`, `cardiology_corridor` (фон), `black_ice_mostki` (фон).
+**Волна P2 — акт II (Д5–Д8):** `ratnikov/ashamed`, `ratnikov/broken`, `ratnikov/hurt`, `dasha/scared`, `dasha/determined_outdoor`, `dasha/hurt`, `nina/sad`, `nina/scared`, `nina/angry`, `nina/ashamed`, `tokha/ashamed`, `tokha/broken`, `granin/neutral`, `granin/smug`, `melnik/angry`, `alla/neutral`, `alla/smug`, `valentina/hurt`, `valentina/hurt_outdoor`, `basement_b0_03_morning` (фон), `basement_b0_03_morning_tv` (фон), `cardiology_corridor` (фон), `polynya_ice_morning` (фон), `black_ice_mostki` (фон), `polynya_shore_noon` (фон), `pier_lantern_night` (фон).
 
-**Волна P3 — акт III, интерлюдия, финал, эпилог (Д9–Д11):** `dasha/broken`, `burtsev/scared`, `granin/cold`, `granin/shaken`, `granin/scared`, `melnik/scared`, `alla/tired`, `alla/ashamed`, `cafe_stvor` (фон), `gu_hall_ceremony` (фон), `basement_new_year` (фон), `mostki_dawn` (фон), `title_dawn` (фон).
+**Волна P3 — акт III, интерлюдия, финал, эпилог (Д9–Д11):** `dasha/broken`, `burtsev/scared`, `granin/cold`, `granin/shaken`, `granin/scared`, `melnik/scared`, `alla/tired`, `alla/ashamed`, `cafe_stvor` (фон), `gu_hall_ceremony` (фон), `basement_new_year` (фон), `ocr_office` (фон), `stairwell_b` (фон), `server_tambour` (фон), `first_sun_window` (фон), `mostki_dawn` (фон), `title_dawn` (фон).
 
 <!-- art-waves:end -->
 
@@ -1625,25 +1629,38 @@ Irina Valts, a 29-year-old police data analyst, pale skin with many freckles, li
 
 Фоны — мастер 2560×1440, в игру 1920×1080 WebP (`public/backgrounds/<id>.webp`). Ключевые картины холодного открытия — мастер 3840×2160, в игру 2560×1440 WebP + AVIF. Негатив по умолчанию — NEGATIVE (фоны) из разд. 7; где он другой, он указан под промптом.
 
-| # | id | Локация | Волна | Где в игре |
-|---|---|---|---|---|
-| 1 | `basement_b0_03_evening` | Подвал Б0-03, вечер | P0, топ-15 №2 | Пролог (первый вечер), сцены у стола до полуночи |
-| 2 | `basement_b0_03_night` | Подвал Б0-03, ночь | P0, топ-15 №15 | Основной ночной фон: сцены у стола после полуночи во всех делах |
-| 3 | `archive_nina` | Архив Нины | P1 | Сцены с Ниной: пролог, Д5 («Девочка говорила. Я печатала»), Д10 (диск) |
-| 4 | `server_room_b0_11` | Серверная Б0-11 | P1 | Сцены с Тохой; Д4 (сироты, WS-07), Д8 («Две чашки чабреца»), финал (Нина держит дверь) |
-| 5 | `interrogation_glass` | Допросная «за стеклом» | P0, топ-15 №10 | Допросы «Наушник»: Д1 (Шпала), Д2 (Олег), Д3 (Бурцев), Д11 (Гранин); вставка «за стеклом» |
-| 6 | `ratnikov_office` | Кабинет Ратникова | P1 | Разговоры с Ратниковым (финал Д4 «Вы сказали, она уволилась», Д5–Д6) |
-| 7 | `cardiology_corridor` | Коридор кардиологии | P2 | Д7 (инфаркт Ратникова, тень Бурцева), звонки «из кардиологии» Д8–Д9 |
-| 8 | `substation_promzona_2` | Подстанция «Промзона-2» | P0, топ-15 №8 | Д1 «Медь» (кража кабеля); уличные сцены Даши |
-| 9 | `pakhomova_apartment` | Квартира Пахомовой | P1 | Д2 «Минус сорок один» |
-| 10 | `polyarnaya_street_night` | Полярная улица ночью | P1 | Д3 «Наезд на Полярной»; уличные сцены Старого города |
-| 11 | `black_ice_mostki` | Чёрный лёд у мостков (ключевой арт) | P2 | Д6 «Полынья» (машина подо льдом); ключевой арт сезона, маркетинг |
-| 12 | `cafe_stvor` | Кафе «Створ» у маяка | P3 | Д9 (встреча с Аллой, признание) |
-| 13 | `gu_hall_ceremony` | Холл ГУ (церемония) | P3 | Д9 (церемония Гранина в ГУ) |
-| 14 | `basement_new_year` | Подвал в новогоднюю ночь | P3 | Интерлюдия «Черновик» (репетиция в новогоднюю ночь) |
-| 15 | `mostki_dawn` | Мостки на рассвете | P3 | Финал (первое солнце 11.01 в 12:58), эпилог: Валентина слушает последнее голосовое |
-| 16 | `title_night` | Холодное открытие, ночь (ключевая картина) | P0, топ-15 №6 | Холодное открытие и экран входа (UI §7.1), каждый запуск |
-| 17 | `title_dawn` | Холодное открытие после финала | P3 | Холодное открытие после финала (GAME_DESIGN §9.1): вместо пара — лёд и солнце |
+Пока у локации нет своей картины, сцена показывает запасную (столбец «Пока нет — показывается», `src/data/locations.json`): одна сданная картина закрывает все времена суток своей комнаты.
+
+| # | id | Локация | Волна | Где в игре | Пока нет — показывается |
+|---|---|---|---|---|---|
+| 1 | `basement_b0_03_evening` | Подвал Б0-03, вечер | P0, топ-15 №2 | Пролог (первый вечер), сцены у стола до полуночи | — |
+| 2 | `basement_b0_03_night` | Подвал Б0-03, ночь | P0, топ-15 №15 | Основной ночной фон: сцены у стола после полуночи во всех делах | `basement_b0_03_evening` |
+| 3 | `basement_b0_03_day` | Подвал Б0-03, день | P1 | Дневные сцены у стола: Д4 «Мёртвая душа», утро после Д5, Д9 «Матрёшка», Д10 «Копирка» | `basement_b0_03_evening` |
+| 4 | `basement_b0_03_morning` | Подвал Б0-03, утро | P2 | Утренние сцены у стола: Д6 «Полынья» (после выезда на лёд), Д10 «Копирка» (утро 31 декабря) | `basement_b0_03_evening` |
+| 5 | `basement_b0_03_morning_tv` | Подвал Б0-03, утро: телевизор в коридоре | P2 | Д6 «Полынья», вступление: в коридоре цокольного этажа бубнит телевизор («Полынья замёрзла впервые за 11 лет») | `basement_b0_03_evening` |
+| 6 | `archive_nina` | Архив Нины | P1 | Сцены с Ниной: пролог, Д5 («Девочка говорила. Я печатала»), Д10 (диск) | — |
+| 7 | `server_room_b0_11` | Серверная Б0-11 | P1 | Сцены с Тохой: Д8 (кода, терминал CRON-01), Д10 (агент на WS-07, импорт диска Нины); пока нет своей картины — и тамбур серверной в финале | — |
+| 8 | `interrogation_glass` | Допросная «за стеклом» | P0, топ-15 №10 | Допросы «Наушник»: Д1 (Шпала), Д2 (Олег), Д3 (Бурцев), Д11 (Гранин); вставка «за стеклом» | — |
+| 9 | `ratnikov_office` | Кабинет Ратникова | P1 | Разговоры с Ратниковым: Д4 «Вы сказали, она уволилась», Д7 «Служебная квартира» (признание) | — |
+| 10 | `gu_corridor` | Коридор первого этажа ГУ | P1 | Д3 «Наезд на Полярной», финал: Валентина у окна с фотографией дочери | — |
+| 11 | `cardiology_corridor` | Коридор кардиологии | P2 | Д7 (инфаркт Ратникова, тень Бурцева), звонки «из кардиологии» Д8–Д9 | — |
+| 12 | `substation_promzona_2` | Подстанция «Промзона-2» | P0, топ-15 №8 | Д1 «Медь» (кража кабеля); уличные сцены Даши | — |
+| 13 | `pakhomova_apartment` | Квартира Пахомовой | P1 | Д2 «Минус сорок один» | — |
+| 14 | `polyarnaya_street_night` | Полярная улица ночью | P1 | Д3 «Наезд на Полярной»; уличные сцены Старого города | — |
+| 15 | `polynya_ice_morning` | Лёд бывшей полыньи, утро | P2 | Д6 «Полынья»: Даша выходит на лёд бывшей полыньи с бодикамерой | — |
+| 16 | `black_ice_mostki` | Чёрный лёд у мостков (ключевой арт) | P2 | Д6 «Полынья» (машина подо льдом); ключевой арт сезона, маркетинг | — |
+| 17 | `polynya_shore_noon` | Берег у оголовка, полдень | P2 | Д6 «Полынья»: подъём машины из-подо льда, Валентина у ленты | — |
+| 18 | `pier_lantern_night` | Мостки с фонарём, вечер | P2 | Д6 «Полынья», финал: разговор с Дашей на мостках («сон») | — |
+| 19 | `cafe_stvor` | Кафе «Створ» у маяка | P3 | Д9 (встреча с Аллой, признание) | — |
+| 20 | `gu_hall_ceremony` | Холл ГУ (церемония) | P3 | Д9 (церемония Гранина в ГУ) | — |
+| 21 | `basement_new_year` | Подвал в новогоднюю ночь | P3 | Интерлюдия «Черновик» (репетиция в новогоднюю ночь) | `basement_b0_03_evening` |
+| 22 | `ocr_office` | Б0-03 в день финала | P3 | Д11 «Первое солнце»: утро финала у стола, пакет и отправка | `basement_b0_03_evening` |
+| 23 | `stairwell_b` | Лестница Б, пролёт к Б0 | P3 | Д11 «Первое солнце»: Даша берёт Бурцева на лестнице Б (задача 11.1, исход «лестница») | — |
+| 24 | `server_tambour` | Б0, тамбур серверной | P3 | Д11 «Первое солнце»: Нина держит дверь серверной (задача 11.1, исход «дверь») | `server_room_b0_11` |
+| 25 | `first_sun_window` | Первое солнце в окне Б0-03 | P3 | Д11 «Первое солнце», финал: 12:58, над заливом впервые за сорок дней солнце | `ocr_office` |
+| 26 | `mostki_dawn` | Мостки на рассвете | P3 | Финал (первое солнце 11.01 в 12:58), эпилог: Валентина слушает последнее голосовое | — |
+| 27 | `title_night` | Холодное открытие, ночь (ключевая картина) | P0, топ-15 №6 | Холодное открытие и экран входа (UI §7.1), каждый запуск | — |
+| 28 | `title_dawn` | Холодное открытие после финала | P3 | Холодное открытие после финала (GAME_DESIGN §9.1): вместо пара — лёд и солнце | — |
 
 ### 15.1 `basement_b0_03_evening` — Подвал Б0-03, вечер
 
@@ -1657,11 +1674,45 @@ Interior of a cramped basement office of a provincial Russian police analytics u
 
 Тот же подвал около 02:30: верхний свет выключен, тёплый конус настольной лампы, холодное свечение двух мониторов, косой оранжевый прямоугольник фонаря из окна на стене, крошечные огоньки коммутатора; стул пуст. Композиция и ракурс — как у вечернего варианта.
 
+Пока картины нет, сцена показывает `basement_b0_03_evening`.
+
 ```text
 The same cramped basement police office at half past two in the morning, the same camera angle and layout as the evening version: fluorescent tubes switched off, the room lit only by a desk lamp throwing a warm amber cone onto the central desk and by the cold teal-white glow of two monitors, deep blue-black shadows, orange sodium light from the ceiling-level window falling as a slanted rectangle on the wall, snow outside, tiny green status lights of a network switch, the white mug by the keyboard, the chair empty. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.3 `archive_nina` — Архив Нины
+### 15.3 `basement_b0_03_day` — Подвал Б0-03, день
+
+Тот же подвал в полдень полярной ночи: горят обе лампы дневного света, в окне у потолка — сизые сумерки без солнца и погасший фонарь, на столах распечатки и папки, мониторы включены, чайник, белая кружка у клавиатуры. Композиция и ракурс — как у вечернего варианта.
+
+Пока картины нет, сцена показывает `basement_b0_03_evening`.
+
+```text
+The same cramped basement police office at midday in the polar night, the same camera angle and layout as the evening version: both fluorescent tubes on, flat cold institutional light, the narrow ceiling-level window showing deep blue-grey twilight with no sun and the sodium streetlight switched off, stacks of printouts and case folders tied with string on the desks, monitors on, the white mug by the keyboard turned so that no print is visible, the electric kettle, cast-iron radiators, a tired working day. Cold teal light from the window and monitors on the left, warmer tube light from the right. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.4 `basement_b0_03_morning` — Подвал Б0-03, утро
+
+Тот же подвал около девяти утра: лампы только включили, одна ещё мигает, в окне у потолка — тёмно-синяя ночь, иней на стекле и горящий натриевый фонарь, от чайника пар, на спинке стула куртка с подтаявшим снегом, мониторы просыпаются. Композиция и ракурс — как у вечернего варианта.
+
+Пока картины нет, сцена показывает `basement_b0_03_evening`.
+
+```text
+The same cramped basement police office at nine in the morning, the same camera angle and layout as the evening version: the fluorescent tubes just switched on, one of them still flickering, the narrow ceiling-level window still showing dark blue night with hoarfrost on the glass and an orange sodium streetlight burning outside, the electric kettle steaming, a winter jacket with melting snow thrown over a chair back, monitors waking up, the white mug by the keyboard, a cold room slowly warming. Cold teal from the window on the left, warm light from the right. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.5 `basement_b0_03_morning_tv` — Подвал Б0-03, утро: телевизор в коридоре
+
+Утро в том же подвале, ракурс от столов к двери: стальная дверь распахнута в коридор цоколя, там на кронштейне под потолком старый телевизор с новостями — на экране белый лёд залива и бегущая строка (нечитаемо), голубое мерцание экрана на стенах коридора и линолеуме; в кабинете горят лампы, парит чайник, слева на переднем плане угол стола с белой кружкой.
+
+> Бегущая строка «Полынья замёрзла впервые за 11 лет» — только ручным набором или вовсе без текста.
+
+Пока картины нет, сцена показывает `basement_b0_03_evening`.
+
+```text
+The same basement police office in the early morning, the view from the desks toward the door: the steel door with a small wired-glass window stands open onto the basement corridor, where an old television hangs on a wall bracket under the ceiling showing a news broadcast of a white frozen bay with a ticker band of unreadable blur, its pale blue flicker spilling across the corridor walls and the linoleum; inside the office the fluorescent tubes are on and the kettle steams, a desk corner with the white mug in the foreground on the left. Cold blue television light from the corridor, warm tube light in the office. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.6 `archive_nina` — Архив Нины
 
 Подвальный архив: узкие проходы между высокими металлическими стеллажами с папками на завязках, деревянный картотечный шкаф с латунными ручками, старая электрическая пишущая машинка и стопка копирки, круглая синяя жестяная коробка из-под печенья, тарелка сушек, рыжий кот спит на чугунной батарее, настенные часы, тёплая лампа, пыль в воздухе.
 
@@ -1669,7 +1720,7 @@ The same cramped basement police office at half past two in the morning, the sam
 A basement police archive: narrow aisles between tall metal shelving packed with cardboard case folders tied with string, a wooden card-catalog cabinet with small brass handles, an old electric typewriter on a desk beside a stack of carbon copies, a round blue tin cookie box with no print and a plate of ring-shaped dry bagels, a ginger cat asleep on a cast-iron radiator, a round wall clock with a plain face, a mustard knitted shawl on the chair back, a warm table lamp on the right, dust floating in the lamplight, cold teal darkness deep in the aisles on the left. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.4 `server_room_b0_11` — Серверная Б0-11
+### 15.7 `server_room_b0_11` — Серверная Б0-11
 
 Тесная серверная: два ряда чёрных стоек с зелёными и бирюзовыми огоньками, жгуты кабелей, фальшпол; в углу раскладушка со спальником (Тоха ночует), банки энергетика без этикеток, у стены на отдельном столике старый системный блок (WS-07 — тихая подсадка), холодная дымка, конденсат на трубе, одна тёплая лампа.
 
@@ -1677,7 +1728,7 @@ A basement police archive: narrow aisles between tall metal shelving packed with
 A cramped basement server room: two rows of black server racks with tiny green and teal status LEDs, thick bundles of cables, raised floor tiles, a folding camp bed with a crumpled sleeping bag in the corner, empty unlabeled energy-drink cans, a small desk with a laptop, and by the wall a separate old dusty workstation tower on its own little table, cold air haze, condensation on a ceiling pipe, cold teal light from the racks on the left, one warm amber desk lamp on the right. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.5 `interrogation_glass` — Допросная «за стеклом»
+### 15.8 `interrogation_glass` — Допросная «за стеклом»
 
 Вид из тёмной комнаты наблюдения сквозь большое одностороннее стекло в маленькую зелёно-серую допросную: привинченный стол, два стула, конусная лампа, батарея, часы без цифр. Даша строго со спины сидит справа (коса, оранжевая парка, провод гарнитуры), стул напротив слева пуст — на его место «садится» портрет подозреваемого. На стекле слабые отражения мониторов наблюдения.
 
@@ -1687,7 +1738,7 @@ View from a dark observation room through a large one-way mirror into a small in
 
 Негатив для этой картины: `text, letters, numbers, signage with words, logos, brand names, watermark, signature, frame, border, 3D render, CGI, photorealistic photograph, glossy, anime, cartoon, vector, tilt-shift, fisheye, lens flare, bokeh, neon glow, purple shadows, oversaturated, HDR, visible face of the woman, second person, people in the empty chair`
 
-### 15.6 `ratnikov_office` — Кабинет Ратникова
+### 15.9 `ratnikov_office` — Кабинет Ратникова
 
 Кабинет старого подполковника: потёртый советский стол с зелёным сукном, стакан в подстаканнике с ледоколом, стопки дел, полка с потрёпанными книгами, зимняя удочка и ящик для подлёдной рыбалки в углу, серый кардиган на спинке стула, рамка с фото лицом вниз (Тамара), большое окно на площадь Труда — полярная ночь, натриевые фонари, снег; карта побережья без подписей.
 
@@ -1695,7 +1746,15 @@ View from a dark observation room through a large one-way mirror into a small in
 The office of an old police lieutenant colonel: a worn Soviet-era wooden desk with a green cloth inlay, a glass of tea in a metal glass-holder embossed with an icebreaker, stacks of case files, a shelf of worn paperback books, a winter ice-fishing rod and an ice-fishing box in the corner, a grey knitted cardigan on the back of the chair, a framed photo lying face down on the desk, a wall map of a coastline drawn only as shapes with no lettering, a radiator, a large window onto a snowy square in the polar night with sodium streetlights on the right, warm desk lamp light, cold teal glow from the window glass on the left. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.7 `cardiology_corridor` — Коридор кардиологии
+### 15.10 `gu_corridor` — Коридор первого этажа ГУ
+
+Казённый коридор первого этажа ГУ ночью: стены в две краски, вытертый линолеум с отблесками, ряд закрытых дверей с пустыми табличками, стенд с объявлениями (нечитаемо), деревянная скамья, батарея, половина ламп погашена, в конце — высокое окно на площадь: полярная ночь, снег, натриевые фонари.
+
+```text
+A long institutional corridor on the ground floor of a regional police headquarters at night: walls painted two-tone, dark green to shoulder height and whitewashed above, scuffed brown linoleum with soft reflections, a row of closed office doors with blank plates, a notice board with pinned papers and no readable text, a wooden bench along the wall, a radiator, half of the ceiling lights switched off, at the far end a tall window onto a snowy square in the polar night with orange sodium streetlights. Cold teal light from the window, warm tired light from the right. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.11 `cardiology_corridor` — Коридор кардиологии
 
 Длинный больничный коридор ночью: зелёная плитка до плеча, вытертый линолеум с мокрыми отблесками, ряд пластиковых стульев, дверь палаты с окошком, в котором бирюзово светит кардиомонитор, сестринский пост с тёплой лампой в дальнем конце, мигающая потолочная лампа, пустое кресло-каталка, дальний конец тонет в тени — место для чужой тени.
 
@@ -1703,7 +1762,7 @@ The office of an old police lieutenant colonel: a worn Soviet-era wooden desk wi
 A long hospital cardiology corridor at night: pale green tiles up to shoulder height, scuffed linoleum with wet reflections, a row of plastic chairs, a closed ward door with a small window glowing faint teal from a heart monitor inside, a nurses' station with a warm desk lamp at the far end, one flickering ceiling light, an empty wheelchair against the wall, a tall narrow window with polar night, the far end of the corridor dissolving into deep shadow, tense stillness. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.8 `substation_promzona_2` — Подстанция «Промзона-2»
+### 15.12 `substation_promzona_2` — Подстанция «Промзона-2»
 
 Подстанция в промзоне при −40 ночью: трансформаторы и решётчатые порталы в изморози, изоляторы в инее, сетчатый забор с прорезанной дырой, вскрытая кабельная траншея в снегу, натриевые прожекторы режут ледяной туман, на заднем плане парят градирни дата-центра «Глубины», будка охраны с горящим окном, следы шин.
 
@@ -1711,7 +1770,7 @@ A long hospital cardiology corridor at night: pale green tiles up to shoulder he
 An electrical substation in an Arctic industrial zone at minus forty at night: frost-covered transformers and steel lattice gantries, insulators furred with hoarfrost, a chain-link fence with a cut gap, an opened cable trench in the snow with a severed cable end, sodium floodlights throwing amber cones through ice fog, steam plumes rising from the cooling towers of a huge data center in the background on the right, a guard booth with one lit window, tire tracks in the snow, power lines vanishing into the dark. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.9 `pakhomova_apartment` — Квартира Пахомовой
+### 15.13 `pakhomova_apartment` — Квартира Пахомовой
 
 Комната пожилой женщины в пятиэтажке 1960-х после отключения тепла при −41: морозные узоры изнутри стекла, ковёр на стене, сервант с хрусталём, кресло с вязаным пледом, выключенный ламповый телевизор, холодная батарея, градусник на стене, открытая пустая шкатулка на столе, чашка с замёрзшим чаем. Тела нет.
 
@@ -1719,7 +1778,7 @@ An electrical substation in an Arctic industrial zone at minus forty at night: f
 The living room of an elderly woman's flat in a 1960s five-storey building after the heating failed at minus forty-one: frost ferns on the inside of the window glass, a patterned carpet hanging on the wall, a polished sideboard with crystal glassware, an armchair with a crocheted blanket, an old tube TV switched off, a cold radiator, a room thermometer on the wall, an open empty jewelry box on the table, a cup of tea frozen solid, breath-cold bluish air, a single warm floor lamp on the right, sodium streetlight glowing through the frosted window, no people, no body. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.10 `polyarnaya_street_night` — Полярная улица ночью
+### 15.14 `polyarnaya_street_night` — Полярная улица ночью
 
 Улица Старого города ночью: пятиэтажки с выцветшими яркими фасадами (жёлтый, розовый, бирюзовый), натриевые фонари на укатанном снегу, полузанесённый пешеходный переход с тёмными следами торможения, сугробы, снегоуборщик, большой фиолетовый билборд с улыбающимся пожилым мужчиной (Гранин; место под слоган пустое), ледяной туман, слабое бирюзовое сияние.
 
@@ -1729,7 +1788,15 @@ The living room of an elderly woman's flat in a 1960s five-storey building after
 A street in the old town of an Arctic city at night: five-storey Soviet apartment blocks with faded brightly painted facades in yellow, pink and turquoise, sodium streetlights casting amber pools on packed snow, a pedestrian crossing half buried in snow with dark skid marks across it, snowdrifts, a parked snowplow, a large backlit violet billboard on the right showing a smiling heavy-set elderly man with a blank empty band where a slogan will go, ice fog, a polar night sky with a faint teal aurora. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.11 `black_ice_mostki` — Чёрный лёд у мостков (ключевой арт)
+### 15.15 `polynya_ice_morning` — Лёд бывшей полыньи, утро
+
+Залив тёмным утром полярной ночи: бывшая полынья впервые за одиннадцать лет затянута чёрным прозрачным льдом, сквозь него видно дно; следы коньков и санок, вдоль берега — прожекторы и гирлянда стихийного катка, слева старые мостки на сваях, на горизонте парят градирни ЦОДа «Глубина» с нитью натриевых огней.
+
+```text
+A frozen Arctic bay in the dark morning of the polar night: the former polynya frozen over for the first time in eleven years with clear black ice through which the shallow seabed is faintly visible, skate marks and sled tracks scratched across the ice, temporary floodlights and a string of warm lights along the shore for an improvised skating rink, old wooden walkways on stilts at the left edge, on the far horizon the steaming cooling towers of a huge data center outlined by a thin thread of sodium lights, a deep blue sky with a faint teal glow; cold, wide and quiet. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.16 `black_ice_mostki` — Чёрный лёд у мостков (ключевой арт)
 
 Ключевой арт сезона: крыша затонувшей легковушки сквозь прозрачный чёрный лёд прямо под поверхностью у старых деревянных мостков на сваях, край парящей полыньи, луч фонаря сверху высвечивает крышу, трещины расходятся от неё, пар над чёрной водой, вдали маяк со слабым лучом, на горизонте натриевые огни ЦОДа, полярная ночь, едва заметное сияние.
 
@@ -1739,7 +1806,23 @@ A street in the old town of an Arctic city at night: five-storey Soviet apartmen
 The season's key art: the roof of a sunken passenger car seen through clear black ice just under the surface, beside old wooden fishing walkways on stilts at the edge of a steaming open-water polynya, the car roof caught by a flashlight beam from above, cracks radiating through the ice around it, steam rising off the black water, a lighthouse in the distance with a weak beam, a thin thread of sodium lights of a data center on the far horizon, polar night sky with a barely visible teal aurora, cold silence; the car roof in the lower center, the walkways leading in from the left, horizon at about sixty percent of the height. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.12 `cafe_stvor` — Кафе «Створ» у маяка
+### 15.17 `polynya_shore_noon` — Берег у оголовка, полдень
+
+Полдень полярной ночи у Старого причала: синие сумерки, во льду выпилен прямоугольник чёрной воды, над ним треножник с лебёдкой и натянутым тросом, по кромке мокрые обломки льда, сигнальная лента на кольях, машина МЧС с мигалками (без надписей), рабочий прожектор, у причала из льда торчит бетонный оголовок трубы сброса.
+
+```text
+Midday twilight of the polar night at an old pier on a frozen bay: a rectangle of black open water cut into the ice, a steel tripod with a winch and a taut cable above it, wet broken ice slabs around the edge, red-and-white warning tape on stakes in the snow, an emergency rescue truck with flashing blue and orange lights and no lettering parked on the shore, a work floodlight, the concrete head of a discharge pipe sticking out of the ice beside the old pier, a low deep-blue sky. Cold teal ambient light, warm floodlight accents on the right. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.18 `pier_lantern_night` — Мостки с фонарём, вечер
+
+Вечер у старых деревянных мостков над бывшей полыньёй: на столбе одинокий фонарь, тёплый круг света на досках, под ним чёрный лёд и свежевырубленная прорубь с тёмной водой, снег на досках, забытая леска, справа вдали маяк со слабым лучом, на горизонте огни ЦОДа. Тихо и пусто.
+
+```text
+Evening at old wooden fishing walkways on stilts over a frozen polynya: a single lantern on a wooden pole throwing a warm amber circle onto the boards, beneath it black ice and a freshly cut ice hole with dark water, snow on the planks, a forgotten fishing line, the walkways leading in from the left, a distant lighthouse with a weak beam on the right and a thin thread of data center lights on the horizon, a polar night sky, deep blue-black shadows; quiet and intimate. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.19 `cafe_stvor` — Кафе «Створ» у маяка
 
 Маленькое тёплое кафе в старом рыбацком доме у маяка: запотевшие окна, за ними медленно проходит луч маяка и пар полыньи, деревянные столы с клеёнкой, титан для кипятка, сети и старый спасательный круг на стене (без надписей), тёплые подвесные лампы, пустой столик у окна с двумя чашками.
 
@@ -1747,7 +1830,7 @@ The season's key art: the roof of a sunken passenger car seen through clear blac
 A small warm cafe inside an old wooden fishermen's house beside a lighthouse: fogged windows with the slow sweep of the lighthouse beam outside and steam from the polynya beyond, wooden tables with oilcloth covers, a big metal water boiler, fishing nets and an old life ring on the wall with no lettering, a few hanging lamps with warm amber light, an empty table by the window with two cups, snow on the outer windowsill, cold teal night pressing against the glass on the left. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.13 `gu_hall_ceremony` — Холл ГУ (церемония)
+### 15.20 `gu_hall_ceremony` — Холл ГУ (церемония)
 
 Парадный холл ГУ полиции перед церемонией: мраморный пол, квадратные колонны, советское абстрактное мозаичное панно (море и сияние, без фигур с текстом), ряды складных стульев, трибуна с пучком микрофонов, штативы телекамер, большие экраны «Сияния» с абстрактной фиолетовой волной (без текста), флаги без символики, смесь холодных прожекторов и тёплой люстры.
 
@@ -1757,15 +1840,55 @@ A small warm cafe inside an old wooden fishermen's house beside a lighthouse: fo
 The grand lobby of a regional police headquarters prepared for a ceremony: a polished marble floor, square columns, a Soviet-era abstract mosaic panel of the sea and the northern lights with no lettering, rows of folding chairs, a lectern with a cluster of microphones, tripods with TV cameras, large corporate screens on stands glowing with an abstract violet wave graphic and no text, plain flags with no symbols, cold floodlights mixing with warm chandelier light, polished reflections on the floor. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.14 `basement_new_year` — Подвал в новогоднюю ночь
+### 15.21 `basement_new_year` — Подвал в новогоднюю ночь
 
 Тот же подвал Б0-03 в новогоднюю ночь: крошечная искусственная ёлка с мишурой на картотечном шкафу, гирлянда тёплых огоньков по кабельному лотку, маленький старый телевизор в углу мерцает трансляцией курантов (изображение нечитаемо), мандарины и два стакана чая на столе, в окне у потолка вспышки далёкого салюта.
+
+Пока картины нет, сцена показывает `basement_b0_03_evening`.
 
 ```text
 The same cramped basement police office on New Year's Eve, same layout as before: a tiny artificial fir tree with tinsel and a few glass ornaments on top of the filing cabinet, a string of warm fairy lights along the ceiling cable tray, a small old TV in the corner flickering with an unreadable broadcast of a clock tower, tangerines and two glasses of tea on a desk, the ceiling-level window flashing with distant fireworks, warm intimate light and deep shadows, monitors asleep. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.15 `mostki_dawn` — Мостки на рассвете
+### 15.22 `ocr_office` — Б0-03 в день финала
+
+Тот же подвал Б0-03 11 января около полудня: верхний свет горит, окно у потолка впервые за сорок дней розовеет рассветными сумерками, иней на стекле подтаивает; на столах архивные коробки с бечёвкой и стопки распечаток, на мониторах таблицы (нечитаемо), белая кружка у клавиатуры. Композиция и ракурс — как у вечернего варианта.
+
+Пока картины нет, сцена показывает `basement_b0_03_evening`.
+
+```text
+The same cramped basement police office on the last day, around noon at the end of the polar night, the same camera angle and layout as the evening version: fluorescent tubes on, the narrow ceiling-level window glowing for the first time with a pale pink and gold dawn twilight, hoarfrost on the glass beginning to melt, cardboard archive boxes tied with string and piles of printouts on the desks, monitors showing tables of unreadable blurred data, the white mug by the keyboard; a tense, expectant morning. The first warm daylight from the window mixing with the cold tube light. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.23 `stairwell_b` — Лестница Б, пролёт к Б0
+
+Служебная лестница Б вниз, к цокольному этажу: бетонные марши, стальные перила с облупленной краской, стены в две краски, на площадке огнетушитель и батарея, лампа под сеткой, внизу — стальная дверь с армированным стеклом в коридор Б0, на стене трафаретная стрелка без букв.
+
+```text
+A service stairwell in an old police headquarters leading down to the basement: concrete flights of stairs, steel handrails with chipped paint, walls painted two-tone green and whitewashed, a fire extinguisher and a radiator on the landing, a caged ceiling lamp, at the bottom a steel door with a small wired-glass window into the basement corridor glowing teal, a stenciled arrow on the wall with no letters, deep shadows in the stair well; tense stillness. Warm lamp light from above on the right, cold teal glow from below on the left. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.24 `server_tambour` — Б0, тамбур серверной
+
+Тесный тамбур перед серверной Б0-11: тяжёлая стальная дверь с кодовым замком и окошком, в котором светятся бирюзовые огоньки стоек, кабельные лотки и трубы под низким потолком, огнетушитель, табурет, резиновый коврик с талым снегом, одна лампа под сеткой.
+
+Пока картины нет, сцена показывает `server_room_b0_11`.
+
+```text
+A cramped vestibule in front of a basement server room: a heavy grey steel door with a keypad lock and a small wired-glass window through which tiny teal and green rack lights glow, cable trays and pipes under a low ceiling, a fire extinguisher on the wall, a wooden stool, a rubber mat with melted snow, a single caged lamp; tight and claustrophobic. Cold teal light from the door window on the left, warm lamp light from the right. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.25 `first_sun_window` — Первое солнце в окне Б0-03
+
+Подвал Б0-03 в 12:58: в узком окне под потолком впервые за сорок дней низкое солнце, длинная полоса золотого света ложится через свод на стол и белую кружку, пылинки в луче, иней на стекле горит, лампы дневного света вдруг кажутся бледными. Самая тёплая картина подвала, но всё ещё холодная.
+
+Пока картины нет, сцена показывает `ocr_office`.
+
+```text
+The same cramped basement police office at two minutes to one in the afternoon on the first day of sunlight after the polar night: through the narrow ceiling-level window a low sun appears for the first time in forty days and a long band of warm gold light falls across the vaulted ceiling onto the desk and the white mug, dust floating in the beam, hoarfrost on the glass glowing, the fluorescent tubes suddenly looking pale, cold teal shadows deep in the corners on the left; the warmest image of the basement but still cold, quiet and luminous. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
+```
+
+### 15.26 `mostki_dawn` — Мостки на рассвете
 
 Деревянные мостки на сваях у замёрзшей полыньи в первый рассвет после полярной ночи: солнце — тонкая полоска над морским горизонтом, низкий розово-золотой свет скользит по молодому льду и инею, длинные синие тени, пар становится золотым, справа маяк, позёмка. Самая тёплая картина сезона, но всё ещё холодная.
 
@@ -1773,7 +1896,7 @@ The same cramped basement police office on New Year's Eve, same layout as before
 Wooden walkways on stilts at the edge of a frozen-over polynya at the first sunrise after the polar night: the sun just a thin sliver above the sea horizon, low pink-gold light raking across new ice and hoarfrost, long blue shadows, faint steam turning gold, the lighthouse on the right, wind-blown snow drifting over the boards, silent and luminous, the warmest image of the season but still cold; the walkways run from the left into the center. Dialogue-screen composition: a calm low-contrast center-right for text, the key light and focal detail in the right third or the upper half, the central third reads as the place by itself, nothing important in the bottom tenth. Painterly graphic-novel environment painting in oil on canvas: loose visible brush strokes, simplified massed shapes, limited palette of polar-night blue-black #0B1020, sodium-amber #FFB547 lamps, muted aurora-teal #2EE6C5 cold light and steam white #F2F5F7 over desaturated greys, haze and fine grain baked into the paint, matte, cinematic wide shot at eye level, 16:9. Empty of people.
 ```
 
-### 15.16 `title_night` — Холодное открытие, ночь (ключевая картина)
+### 15.27 `title_night` — Холодное открытие, ночь (ключевая картина)
 
 По UI §7.1/§13: горизонт на 62 % высоты; ЦОД в правой трети с нитью натриевых огней; полынья — передний план слева, чёрная парящая вода; небо почти чёрное с сине-зелёным; сияние едва различимо (насыщенность ≤ 10 %); левый нижний угол 640×360 спокойный — под текст. Зерно и дымка вшиты.
 
@@ -1783,7 +1906,7 @@ Night panorama of an Arctic town on a bay, horizon line at sixty-two percent of 
 
 Негатив для этой картины: `people, figures, faces, crowd, text, letters, numbers, signage with words, logos, brand names, watermark, signature, frame, border, 3D render, CGI, photorealistic photograph, glossy, anime, cartoon, vector, tilt-shift, fisheye, lens flare, bokeh, neon glow, purple shadows, oversaturated, HDR, visible bright aurora, stars, moon, logo, boats`
 
-### 15.17 `title_dawn` — Холодное открытие после финала
+### 15.28 `title_dawn` — Холодное открытие после финала
 
 Та же композиция, что `title_night` (делать img2img/правкой от неё, denoise 0,45–0,6): полынья затянута молодым льдом, пара нет, низкое первое солнце над горизонтом, бледное золото на льду, огни ЦОДа ещё горят.
 

@@ -5,13 +5,14 @@
  *   docs/production/voice-master.tsv      — план мастеринга для bash: id, говорящий, fx, head_ms
  *   docs/production/voice-by-character.md — сценарий записи, сгруппированный по персонажам
  *   docs/production/portraits.csv         — все файлы портретов по слотам GAME_DESIGN §11.1 (эмоции + варианты `<emotion>_outdoor`)
- *   docs/production/backgrounds.csv       — фоны и ключевые картины (public/backgrounds/<id>.webp)
+ *   docs/production/backgrounds.csv       — фоны и ключевые картины (public/backgrounds/<id>.webp) и запасные картины
  *   docs/production/prompts.csv           — промпты для генерации всех изображений (scripts/art-prompts.mjs)
  *   docs/production/ART_BIBLE.md          — обновляется блок промптов между маркерами
  *   docs/production/VOICE_BIBLE.md        — обновляются таблицы словаря ударений и настроек TTS между маркерами
  *
  * Запуск: npm run manifest
- * Источники: src/data/characters.json, src/data/cases/<case>/{case,script}.json, scripts/art-prompts.mjs.
+ * Источники: src/data/characters.json, src/data/locations.json (через art-prompts), src/data/cases/<case>/{case,script}.json,
+ * scripts/art-prompts.mjs.
  * Если контента ещё нет, манифест всё равно пишет канонические списки портретов и фонов.
  */
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -123,7 +124,7 @@ for (const caseDir of caseDirs) {
       if (/^[a-z0-9_]+$/.test(scene.location)) {
         if (!usedLocations.has(scene.location)) usedLocations.set(scene.location, meta.id);
       } else {
-        warnings.push(`${meta.id}/${scene.id}: location «${scene.location}» — подпись, а не id фона (ожидается snake_case из backgrounds.csv)`);
+        warnings.push(`${meta.id}/${scene.id}: location «${scene.location}» — подпись, а не id фона (ожидается id из src/data/locations.json)`);
       }
     }
     for (const line of scene.lines ?? []) {
@@ -250,18 +251,18 @@ writeCsv("portraits.csv", portraitRows);
 
 // ─── backgrounds.csv ────────────────────────────────────────────────────────
 
-const backgroundRows = [csvRow(["id", "name", "file", "export_px", "tier", "used_in_script", "canon", "exists"])];
+const backgroundRows = [csvRow(["id", "name", "file", "export_px", "tier", "used_in_script", "canon", "exists", "fallback"])];
 let backgroundsDone = 0;
 const canonLocationIds = new Set(LOCATIONS.map((l) => l.id));
 const backgroundEntries = [
-  ...LOCATIONS.map((l) => ({ id: l.id, name: l.name, file: backgroundFile(l), px: (l.title ? TITLE.export : BACKGROUND.export).join("x"), tier: l.rank ? `${l.tier} №${l.rank}` : l.tier, canon: true })),
-  ...[...usedLocations.keys()].filter((id) => !canonLocationIds.has(id)).map((id) => ({ id, name: id, file: `public/backgrounds/${id}.webp`, px: BACKGROUND.export.join("x"), tier: "", canon: false })),
+  ...LOCATIONS.map((l) => ({ id: l.id, name: l.name, file: backgroundFile(l), px: (l.title ? TITLE.export : BACKGROUND.export).join("x"), tier: l.rank ? `${l.tier} №${l.rank}` : l.tier, canon: true, fallback: l.fallback ?? "" })),
+  ...[...usedLocations.keys()].filter((id) => !canonLocationIds.has(id)).map((id) => ({ id, name: id, file: `public/backgrounds/${id}.webp`, px: BACKGROUND.export.join("x"), tier: "", canon: false, fallback: "" })),
 ];
 for (const b of backgroundEntries) {
   const exists = existsSync(join(root, b.file));
   if (exists) backgroundsDone += 1;
-  if (!b.canon) warnings.push(`фон «${b.id}» используется в сценарии (${usedLocations.get(b.id)}), но его нет в каноне LOCATIONS`);
-  backgroundRows.push(csvRow([b.id, b.name, b.file, b.px, b.tier, usedLocations.has(b.id) ? "yes" : "no", b.canon ? "yes" : "no", exists ? "yes" : "no"]));
+  if (!b.canon) warnings.push(`фон «${b.id}» используется в сценарии (${usedLocations.get(b.id)}), но его нет в src/data/locations.json`);
+  backgroundRows.push(csvRow([b.id, b.name, b.file, b.px, b.tier, usedLocations.has(b.id) ? "yes" : "no", b.canon ? "yes" : "no", exists ? "yes" : "no", b.fallback]));
 }
 writeCsv("backgrounds.csv", backgroundRows);
 

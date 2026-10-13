@@ -26,8 +26,9 @@ import type { Settings } from "@/stores/game/types";
 import { StatusBar } from "@/components/desk/status-bar";
 import { Redaction, ScreenButton } from "@/components/kit/screen";
 import { typo } from "@/components/kit/typo";
-import { isMediaMissing, markMediaMissing, useMediaCacheVersion } from "@/components/story/media-cache";
+import { useBackground } from "@/components/story/scene-backdrop";
 import { useLineAudio } from "@/components/story/line-audio";
+import { NIGHT_BACKGROUND } from "@/data/backgrounds";
 
 /**
  * «Ночь 03:12» (docs/design/NIGHTS.md): между разбором и вступлением игрок видит
@@ -38,9 +39,6 @@ import { useLineAudio } from "@/components/story/line-audio";
  * Время ночи идёт кадрами (requestAnimationFrame): в скрытой вкладке кадры
  * встают сами, голос и гул ставятся на паузу.
  */
-
-/** Фон ночи: картина подвала Б0-03 под слоем --room. Ночная версия кадра заменит id здесь */
-export const NIGHT_BACKGROUND = "basement_b0_03_evening";
 
 const WINDOW_ROWS = 6;
 const PHONE_ROWS = 4;
@@ -53,7 +51,10 @@ export interface NightScreenProps {
   /** «К делу»: Enter, кнопка, второй Esc на карточке или «Авто» */
   onStart: () => void;
   settings: Pick<Settings, "autoAdvance" | "voiceVolume" | "musicVolume" | "sfxVolume" | "reducedMotion">;
-  /** id картины public/backgrounds/<id>.webp; null — чистая комната */
+  /**
+   * id локации (src/data/locations.json): картина по цепочке запасных, как у сцен диалога.
+   * По умолчанию подвал Б0-03 ночью (пока ночного кадра нет — вечерний); null — чистая комната
+   */
   background?: string | null;
   /** «ноль@зеркало» */
   login?: string;
@@ -438,9 +439,10 @@ export function NightScreen({
 
   /* ---------- Кадр ---------- */
 
-  useMediaCacheVersion();
-  const bgUrl = background ? `/backgrounds/${background}.webp` : null;
-  const showBg = bgUrl !== null && !isMediaMissing(bgUrl);
+  const bgUrl = useBackground(background).url;
+  const showBg = bgUrl !== null;
+  // Картина, готовая к первому кадру, проявляется вместе с экраном; догрузившаяся — своим затуханием
+  const [bgAtStart] = useState(bgUrl);
 
   const frame = frameAt(night, pos, voicePlaying);
   const stampTyped = pos.stage !== "stamp" || reduced ? night.stamp.length : Math.max(0, Math.floor((pos.t - T.stampStart) / T.stampChar));
@@ -477,8 +479,8 @@ export function NightScreen({
             src={bgUrl}
             alt=""
             draggable={false}
-            onError={() => markMediaMissing(bgUrl)}
             className="pointer-events-none absolute inset-0 -z-10 size-full object-cover"
+            style={{ animation: reduced || bgUrl === bgAtStart ? undefined : "zs-fade-in 400ms var(--ease-out) both" }}
           />
           <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-room/72 lg:bg-room/55" />
         </>

@@ -1,0 +1,42 @@
+{
+  "locations": [
+    { "id": "basement_b0_03_evening", "name": "Подвал Б0-03, вечер" },
+    { "id": "basement_b0_03_night", "name": "Подвал Б0-03, ночь" },
+    { "id": "basement_b0_03_day", "name": "Подвал Б0-03, день" },
+    { "id": "basement_b0_03_morning", "name": "Подвал Б0-03, утро" },
+    { "id": "basement_b0_03_morning_tv", "name": "Подвал Б0-03, утро: телевизор в коридоре" },
+    { "id": "archive_nina", "name": "Архив Нины" },
+    { "id": "server_room_b0_11", "name": "Серверная Б0-11" },
+    { "id": "interrogation_glass", "name": "Допросная «за стеклом»" },
+    { "id": "ratnikov_office", "name": "Кабинет Ратникова" },
+    { "id": "gu_corridor", "name": "Коридор первого этажа ГУ" },
+    { "id": "cardiology_corridor", "name": "Коридор кардиологии" },
+    { "id": "substation_promzona_2", "name": "Подстанция «Промзона-2»" },
+    { "id": "pakhomova_apartment", "name": "Квартира Пахомовой" },
+    { "id": "polyarnaya_street_night", "name": "Полярная улица ночью" },
+    { "id": "polynya_ice_morning", "name": "Лёд бывшей полыньи, утро" },
+    { "id": "black_ice_mostki", "name": "Чёрный лёд у мостков (ключевой арт)" },
+    { "id": "polynya_shore_noon", "name": "Берег у оголовка, полдень" },
+    { "id": "pier_lantern_night", "name": "Мостки с фонарём, вечер" },
+    { "id": "cafe_stvor", "name": "Кафе «Створ» у маяка" },
+    { "id": "gu_hall_ceremony", "name": "Холл ГУ (церемония)" },
+    { "id": "basement_new_year", "name": "Подвал в новогоднюю ночь" },
+    { "id": "ocr_office", "name": "Б0-03 в день финала" },
+    { "id": "stairwell_b", "name": "Лестница Б, пролёт к Б0" },
+    { "id": "server_tambour", "name": "Б0, тамбур серверной" },
+    { "id": "first_sun_window", "name": "Первое солнце в окне Б0-03" },
+    { "id": "mostki_dawn", "name": "Мостки на рассвете" },
+    { "id": "title_night", "name": "Холодное открытие, ночь (ключевая картина)", "title": true },
+    { "id": "title_dawn", "name": "Холодное открытие после финала", "title": true }
+  ],
+  "fallback": {
+    "basement_b0_03_night": "basement_b0_03_evening",
+    "basement_b0_03_day": "basement_b0_03_evening",
+    "basement_b0_03_morning": "basement_b0_03_evening",
+    "basement_b0_03_morning_tv": "basement_b0_03_evening",
+    "basement_new_year": "basement_b0_03_evening",
+    "ocr_office": "basement_b0_03_evening",
+    "first_sun_window": "ocr_office",
+    "server_tambour": "server_room_b0_11"
+  }
+}

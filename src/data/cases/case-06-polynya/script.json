@@ -38,7 +38,7 @@
     },
     {
       "id": "ice",
-      "location": "polynya_ice_old_pier",
+      "location": "black_ice_mostki",
       "music": "ice_wind",
       "outdoor": true,
       "lines": [

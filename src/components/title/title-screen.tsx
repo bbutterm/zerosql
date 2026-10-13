@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Glyph } from "@/components/kit/glyphs";
 import { StickyNote } from "@/components/kit/paper";
 import { MENU_ITEM, MENU_POPUP, ScreenButton, ScreenField, screenButtonClass } from "@/components/kit/screen";
+import { useBackground } from "@/components/story/scene-backdrop";
+import { TITLE_PAINTING } from "@/data/backgrounds";
 
 export interface TitleMenuAction {
   /** Ссылка (next/link) или колбэк */
@@ -254,8 +256,11 @@ export function AgeWarning({ onAccept, className }: { onAccept?: () => void; cla
 /* ---------- Холодное открытие ---------- */
 
 export interface ColdOpenProps {
-  /** Ключевая картина; без неё — титр на чистой комнате */
-  image?: string;
+  /**
+   * Ключевая картина: id из src/data/locations.json, файл public/backgrounds/<id>.webp
+   * (по умолчанию title_night). Нет файла или null — титр на чистой комнате
+   */
+  painting?: string | null;
   /** Первая строка (печатается): «Полярная ночь. 14 декабря 2026 года, 01:40.» */
   stamp?: string;
   /** Вторая строка (PT Serif) */
@@ -265,13 +270,19 @@ export interface ColdOpenProps {
   className?: string;
 }
 
+/** Сколько ждать ключевую картину, прежде чем начать титром, мс */
+const PAINTING_WAIT_MS = 800;
+
 /**
  * Холодное открытие (раздел 7.1). С картиной — кадр на весь экран, текст слева снизу,
  * знак и название продукта слева сверху. Без картины — киношный титр: чистая комната,
  * по центру колонка 640 px, время PT Mono над фразой PT Serif. Пейзажа кодом нет.
+ *
+ * Раскладка выбирается один раз, до первой буквы: картина, если она загрузилась (404 запоминает
+ * media-cache), иначе титр. Пока картина грузится (не дольше 800 мс), на экране чистая комната.
  */
 export function ColdOpen({
-  image,
+  painting = TITLE_PAINTING,
   stamp = "Полярная ночь. 14 декабря 2026 года, 01:40.",
   line = "Город греет дата-центр. Полынья в заливе не замерзает даже в минус сорок.",
   onContinue,
@@ -281,8 +292,25 @@ export function ColdOpen({
   const [typed, setTyped] = useState(0);
   const [phase, setPhase] = useState(0);
 
+  const art = useBackground(painting);
+  const [waited, setWaited] = useState(false);
+  const [layout, setLayout] = useState<{ image: string | null } | null>(null);
+  if (layout === null && (art.url !== null || !art.pending || waited)) setLayout({ image: art.url });
+  const image = layout?.image ?? null;
+  const started = layout !== null;
+
   useEffect(() => {
     rootRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
+    if (started) return;
+    const t = window.setTimeout(() => setWaited(true), PAINTING_WAIT_MS);
+    return () => window.clearTimeout(t);
+  }, [started]);
+
+  useEffect(() => {
+    if (!started) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const t = window.setTimeout(() => {
         setTyped(stamp.length);
@@ -305,7 +333,7 @@ export function ColdOpen({
       window.clearInterval(tick);
       timers.forEach(window.clearTimeout);
     };
-  }, [stamp]);
+  }, [stamp, started]);
 
   const text = (
     <>
@@ -338,7 +366,7 @@ export function ColdOpen({
       data-testid="cold-open"
       className={cn("relative h-dvh min-h-[480px] w-full overflow-hidden bg-room outline-none", className)}
     >
-      {image ? (
+      {!started ? null : image ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element -- ключевая картина из public/ */}
           <img src={image} alt="" className="absolute inset-0 size-full object-cover object-[30%_70%]" draggable={false} />

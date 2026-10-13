@@ -34,6 +34,7 @@ import {
   PROTOCOL,
   PROTOCOL_ANSWERS,
   SCENES,
+  sceneTitleOf,
 } from "./mock";
 import { LAB_QUERIES, SAMPLE_SQL, TABLE_NOTES, UNLOCKED_TABLES, WIDE_SQL, type LabWorld } from "./world";
 import { CASE_DATE, DeskDemo, useObjectives, useProtocol } from "./desk-demo";
@@ -286,6 +287,7 @@ function DialogueSection() {
       scene={scene}
       characters={CHARACTERS}
       evidence={EVIDENCE}
+      locationLabel={sceneTitleOf}
       startAt={startAt}
       autoFocus={variant === "overlay" || run > 0}
       onChoice={handleChoice}
@@ -301,7 +303,7 @@ function DialogueSection() {
     <Section
       id="dialogue"
       title="Диалог"
-      note="Лог сцены растёт снизу вверх, старые реплики гаснут. Клик, Пробел или Enter допечатывают реплику, следующее нажатие листает. Esc пропускает сцену, 1–9 выбирают вариант, M — звук, A — автопрокрутка."
+      note="Лог сцены растёт снизу вверх, старые реплики гаснут. Клик, Пробел или Enter допечатывают реплику, следующее нажатие листает. Esc пропускает сцену, 1–9 выбирают вариант, M — звук, A — автопрокрутка. Под сценой — картина локации по цепочке запасных (подвал ночью → вечерний кадр); сцены сезона с их картинами — /lab?scene=story."
       actions={
         <>
           <ScreenButton variant="text" onClick={() => restart("interrogation")}>
@@ -342,12 +344,14 @@ function DialogueSection() {
       <EventLog entries={log} />
 
       <div className="mt-6 grid gap-6 2xl:grid-cols-2">
-        <Frame className="h-[640px]" label="выбор: один вариант без улики">
+        <Frame className="h-[640px]" label="выбор: один вариант без улики; без картины — чистая комната">
           <DialoguePlayer
             variant="inline"
             scene={SCENES.interrogation}
             characters={CHARACTERS}
             evidence={EVIDENCE}
+            locationLabel={sceneTitleOf}
+            background={null}
             startAt="end"
             defaultMuted
           />
@@ -369,6 +373,7 @@ function PresentDemo() {
       scene={SCENES.present}
       characters={CHARACTERS}
       evidence={EVIDENCE}
+      locationLabel={sceneTitleOf}
       startAt="end"
       defaultMuted
       onCancelPresent={() => undefined}

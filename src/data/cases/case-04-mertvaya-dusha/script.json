@@ -332,7 +332,7 @@
     },
     {
       "id": "talk",
-      "location": "office_1_12",
+      "location": "ratnikov_office",
       "music": "desk_low",
       "lines": [
         {
@@ -365,7 +365,7 @@
     },
     {
       "id": "talk_soft",
-      "location": "office_1_12",
+      "location": "ratnikov_office",
       "music": "desk_low",
       "lines": [
         {
@@ -400,7 +400,7 @@
     },
     {
       "id": "talk_hard",
-      "location": "office_1_12",
+      "location": "ratnikov_office",
       "music": "desk_low",
       "lines": [
         {

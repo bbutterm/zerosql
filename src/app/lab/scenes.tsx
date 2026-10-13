@@ -6,14 +6,17 @@ import { buildNightView, DEFAULT_SETTINGS, type Flags, type Season } from "@/sto
 import { AgeWarning, ColdOpen, LockScreen, TitleScreen } from "@/components/title/title-screen";
 import { NightScreen } from "@/components/play/night-screen";
 import { DeskDemo, CASE_DATE } from "./desk-demo";
+import { StoryLab } from "./story-lab";
 import type { LabWorld } from "./world";
 
 /**
  * Собранные сцены для приёмки (раздел 14): на весь экран, без рамок и подписей витрины.
  * /lab?scene=desk — стол; protocol и wall — тот же стол с бланком или стеной в центре;
- * dialogue — допрос поверх стола (&step=line | choices | present); title, coldopen, warning, lock.
+ * dialogue — допрос поверх стола (&step=line | choices | present) на картине подвала; title, coldopen, warning, lock.
+ * story — сцена сезона с картиной своей локации: &case=<id дела>&id=<id сцены>; без id — список сцен дела.
  * night — ночь между делами: &case=<id дела> (по умолчанию первое дело с ночью), &flags=имя,имя=значение
- * (флаги ранних дел), &cron=2,3 (задания zero, сработавшие ночью после прошлого дела), &bg=0 — без фона.
+ * (флаги ранних дел), &cron=2,3 (задания zero, сработавшие ночью после прошлого дела).
+ * &bg=0 — без картины (чистая комната) для dialogue, story, coldopen и night.
  */
 export const LAB_SCENES = [
   ["title", "вход"],
@@ -22,12 +25,15 @@ export const LAB_SCENES = [
   ["protocol", "заключение"],
   ["wall", "стена"],
   ["dialogue", "допрос"],
+  ["story", "сцены дел"],
   ["night", "ночь"],
 ] as const;
 
-/** Параметры ночи в лаборатории (строки из адреса) */
+/** Параметры сцен лаборатории (строки из адреса) */
 export interface NightParams {
   caseId?: string;
+  /** id сцены дела (?scene=story) */
+  sceneId?: string;
   flags?: string;
   cron?: string;
   bg?: string;
@@ -94,9 +100,12 @@ function NightLab({ params }: { params: NightParams }) {
 
 export function SceneView({ scene, step, world, night }: { scene: string; step?: string; world: LabWorld | null; night?: NightParams }) {
   const [run, setRun] = useState(0);
+  const noBg = night?.bg === "0";
   switch (scene) {
     case "night":
       return <NightLab params={night ?? {}} />;
+    case "story":
+      return <StoryLab params={{ caseId: night?.caseId, sceneId: night?.sceneId, bg: night?.bg }} />;
     case "title":
       return (
         <TitleScreen
@@ -108,7 +117,7 @@ export function SceneView({ scene, step, world, night }: { scene: string; step?:
         />
       );
     case "coldopen":
-      return <ColdOpen key={run} onContinue={() => setRun((r) => r + 1)} />;
+      return <ColdOpen key={run} painting={noBg ? null : undefined} onContinue={() => setRun((r) => r + 1)} />;
     case "warning":
       return <AgeWarning />;
     case "lock":
@@ -125,13 +134,14 @@ export function SceneView({ scene, step, world, night }: { scene: string; step?:
       return (
         <DeskDemo
           world={world}
-          dialogue={
-            step === "choices"
+          dialogue={{
+            ...(step === "choices"
               ? { scene: "interrogation", startAt: "end" }
               : step === "present"
                 ? { scene: "present", startAt: "end" }
-                : { scene: "interrogation", startAt: 1 }
-          }
+                : { scene: "interrogation", startAt: 1 }),
+            ...(noBg ? { background: null } : {}),
+          }}
         />
       );
     case "desk":

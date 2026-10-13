@@ -114,7 +114,7 @@
     },
     {
       "id": "talk",
-      "location": "basement_archive_night",
+      "location": "archive_nina",
       "music": "desk_low",
       "lines": [
         { "id": "c05.talk.001", "speaker": "narrator", "text": "Нина ставит перед тобой кружку. Свою не трогает." },
@@ -146,7 +146,7 @@
     },
     {
       "id": "talk_press",
-      "location": "basement_archive_night",
+      "location": "archive_nina",
       "music": "desk_low",
       "lines": [
         { "id": "c05.talk_press.001", "speaker": "nina", "emotion": "angry", "text": "Порядок у меня был! Номер к номеру. Кроме тех, что люди портили.", "direction": "вспыхивает и тут же гаснет" },
@@ -155,7 +155,7 @@
     },
     {
       "id": "talk_miss",
-      "location": "basement_archive_night",
+      "location": "archive_nina",
       "music": "desk_low",
       "lines": [
         { "id": "c05.talk_miss.001", "speaker": "nina", "emotion": "neutral", "text": "Это не то, голубчик. Это я и так знаю.", "direction": "с облегчением" },
@@ -164,7 +164,7 @@
     },
     {
       "id": "nina",
-      "location": "basement_archive_night",
+      "location": "archive_nina",
       "music": "desk_low",
       "next": "rec05",
       "lines": [

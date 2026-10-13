@@ -25,7 +25,7 @@
     },
     {
       "id": "intro",
-      "location": "Подвал ГУ, ОЦР, кабинет Б0-03",
+      "location": "basement_new_year",
       "music": "desk_low",
       "lines": [
         {
@@ -132,6 +132,7 @@
     },
     {
       "id": "helper_tokha",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.helper_tokha.001",
@@ -176,6 +177,7 @@
     },
     {
       "id": "helper_melnik",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.helper_melnik.001",
@@ -219,6 +221,7 @@
     },
     {
       "id": "helper_nina",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.helper_nina.001",
@@ -257,6 +260,7 @@
     },
     {
       "id": "rollback",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.rollback.001",
@@ -287,6 +291,7 @@
     },
     {
       "id": "tv",
+      "location": "basement_new_year",
       "music": "twist_low",
       "lines": [
         {
@@ -364,6 +369,7 @@
     },
     {
       "id": "draft",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.draft.001",
@@ -473,6 +479,7 @@
     },
     {
       "id": "redacted",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.redacted.001",
@@ -509,6 +516,7 @@
     },
     {
       "id": "chimes",
+      "location": "basement_new_year",
       "music": "theme_polynya",
       "lines": [
         {
@@ -586,6 +594,7 @@
     },
     {
       "id": "valentina_sms",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.valentina_sms.001",
@@ -610,6 +619,7 @@
     },
     {
       "id": "outro",
+      "location": "basement_new_year",
       "lines": [
         {
           "id": "c11.outro.001",

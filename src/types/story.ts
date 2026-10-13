@@ -199,7 +199,10 @@ export interface InterrogationDef {
 export interface Scene {
   /** Уникален в пределах кейса */
   id: string;
-  /** id фона/локации */
+  /**
+   * id локации из src/data/locations.json: картина public/backgrounds/<id>.webp (или запасная
+   * картина её семьи). Без location сцена продолжает картину прошлой сцены потока
+   */
   location?: string;
   /** id музыкальной темы */
   music?: string;

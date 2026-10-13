@@ -6,6 +6,7 @@
  *   handbook      HandbookEntry[] — src/data/handbook/cNN.json
  *   achievements  AchievementDef[] — src/data/achievements.json
  *   secrets       SecretDef[]     — src/data/secrets.json (тайники, EASTER_EGGS.md)
+ *   locations     LocationDef[]   — src/data/locations.json (локации и запасные картины, backgrounds.ts)
  */
 import type { AchievementDef, SecretDef } from "@/types/case";
 import type { CharacterDef } from "@/types/story";
@@ -16,6 +17,7 @@ import secretsJson from "./secrets.json";
 
 export { cases, getCase } from "./cases";
 export { handbook, handbookById, handbookByCase } from "./handbook";
+export { locations, locationById, LOCATION_IDS, type LocationDef } from "./backgrounds";
 
 /** Массив объектов с обязательными строковыми полями — минимальная проверка формы JSON */
 function records(source: string, raw: unknown, required: readonly string[]): Record<string, unknown>[] {

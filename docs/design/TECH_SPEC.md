@@ -20,6 +20,7 @@ src/data/
   handbook.json              HandbookEntry[] — справочник, статьи открываются делами (CaseDef.concepts)
   secrets.json               SecretDef[]     — тайники/пасхалки
   achievements.json          AchievementDef[]
+  locations.json             { locations, fallback } — локации (фоны сцен) и запасные картины; backgrounds.ts — цепочка
   cases/
     index.ts                 собирает все дела (импорт case.json + script.json), экспортирует cases: CaseDef[]
     case-00-<slug>/case.json CaseDef без scenes
@@ -35,8 +36,9 @@ src/data/
 - Улика: `ev.cNN.<slug>`, уникальна в пределах сезона.
 - Задача: `[a-z0-9_-]+`, уникальна в пределах дела: `p1`…`p5` в прологе, `o5_1`, `o10_2b` в делах, `i1`…`i4` в интерлюдии. Те же id пишутся в `query_log.objective_id`.
 - Персонаж: `snake_case` латиницей. Портреты: `public/portraits/<id>/<emotion>.webp`.
+- Локация (`Scene.location`): `snake_case` id из `src/data/locations.json`, картина `public/backgrounds/<id>.webp`; пока её нет — запасная картина семьи (`fallback`). `CaseDef.location` — не id, а подпись для титра сцены, которую видит игрок.
 
-Всю структурную целостность проверяет `validateCaseContent` / `validateSeasonContent` из `@/engine`. Тест сезона обязан проходить.
+Всю структурную целостность проверяет `validateCaseContent` / `validateSeasonContent` из `@/engine`; список локаций (`LOCATION_IDS` из `@/data`) передаётся последним аргументом. Тест сезона обязан проходить.
 
 ## 3. Мир (генерируемая база данных)
 

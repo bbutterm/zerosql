@@ -26,6 +26,7 @@ import {
   handbook,
   handbookByCase,
   handbookById,
+  LOCATION_IDS,
 } from "@/data";
 
 /** Канонический порядок дел (TECH_SPEC разд. 2, GAME_DESIGN разд. 5 и 11.3) */
@@ -94,12 +95,12 @@ describe("дела сезона", () => {
   });
 
   it("validateSeasonContent: проблем нет (заготовкам прощается только отсутствие задач)", () => {
-    expect(withoutStubGaps(validateSeasonContent(cases, characters))).toEqual([]);
+    expect(withoutStubGaps(validateSeasonContent(cases, characters, LOCATION_IDS))).toEqual([]);
   });
 
   const evidence = collectEvidenceIds(cases);
   it.each(cases.map((c) => [c.id, c] as const))("validateCaseContent: %s", (_id, c) => {
-    expect(withoutStubGaps(validateCaseContent(c, characters, evidence))).toEqual([]);
+    expect(withoutStubGaps(validateCaseContent(c, characters, evidence, LOCATION_IDS))).toEqual([]);
   });
 
   it("код, акт, сложность и время начала", () => {

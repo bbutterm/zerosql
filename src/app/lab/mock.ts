@@ -59,10 +59,24 @@ export const CHARACTERS: Record<string, CharacterDef> = {
 
 /* ---------- Сцены ---------- */
 
+/**
+ * Титры сцен: первая строка лога. В сцене location — id картины (подвал ночью; пока ночного
+ * кадра нет, цепочка показывает вечерний), а подпись для игрока — отдельно, как в игре.
+ */
+export const SCENE_TITLES: Record<string, string> = {
+  interrogation: "Подвал УВД. 14 декабря, 02:31",
+  present: "Подвал УВД. 14 декабря, 02:40",
+  "present-ok": "Подвал УВД. 14 декабря, 02:42",
+  "present-fail": "Подвал УВД. 14 декабря, 02:42",
+};
+
+/** Титр сцены лаборатории для DialoguePlayer.locationLabel */
+export const sceneTitleOf = (scene: Scene): string | undefined => SCENE_TITLES[scene.id];
+
 export const SCENES: Record<string, Scene> = {
   interrogation: {
     id: "interrogation",
-    location: "Подвал УВД. 14 декабря, 02:31",
+    location: "basement_b0_03_night",
     lines: [
       {
         id: "c01.interrogation.001",
@@ -124,7 +138,7 @@ export const SCENES: Record<string, Scene> = {
   },
   present: {
     id: "present",
-    location: "Подвал УВД. 14 декабря, 02:40",
+    location: "basement_b0_03_night",
     lines: [
       {
         id: "c01.present.001",
@@ -148,7 +162,7 @@ export const SCENES: Record<string, Scene> = {
   },
   "present-ok": {
     id: "present-ok",
-    location: "Подвал УВД. 14 декабря, 02:42",
+    location: "basement_b0_03_night",
     lines: [
       {
         id: "c01.present-ok.001",
@@ -177,7 +191,7 @@ export const SCENES: Record<string, Scene> = {
   },
   "present-fail": {
     id: "present-fail",
-    location: "Подвал УВД. 14 декабря, 02:42",
+    location: "basement_b0_03_night",
     lines: [
       {
         id: "c01.present-fail.001",

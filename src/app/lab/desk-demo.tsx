@@ -24,7 +24,7 @@ import { ProtocolForm } from "@/components/case/protocol-form";
 import { DialoguePlayer } from "@/components/story/dialogue-player";
 import { MessengerNote } from "@/components/kit/messenger";
 import { lowerFirst } from "@/components/kit/typo";
-import { CHARACTERS, EVIDENCE, HANDBOOK, HANDBOOK_NOTES, IDLE_LINES, OBJECTIVES, PROTOCOL, PROTOCOL_ANSWERS, SCENES } from "./mock";
+import { CHARACTERS, EVIDENCE, HANDBOOK, HANDBOOK_NOTES, IDLE_LINES, OBJECTIVES, PROTOCOL, PROTOCOL_ANSWERS, SCENES, sceneTitleOf } from "./mock";
 import { ANSWER_SQL, SAMPLE_SQL, TABLE_NOTES, UNLOCKED_TABLES, type LabWorld } from "./world";
 
 export const CASE_DATE = "14.12.2026";
@@ -200,8 +200,8 @@ export interface DeskDemoProps {
   initialPanel?: DeskPanelId;
   /** Сообщение Соколовой в окне мессенджера */
   withMessage?: boolean;
-  /** Сцена допроса поверх стола (для ?scene=dialogue) */
-  dialogue?: { scene: keyof typeof SCENES; startAt: number | "end" } | null;
+  /** Сцена допроса поверх стола (для ?scene=dialogue); background: null — без картины (&bg=0) */
+  dialogue?: { scene: keyof typeof SCENES; startAt: number | "end"; background?: null } | null;
   className?: string;
 }
 
@@ -405,6 +405,8 @@ export function DeskDemo({
               scene={SCENES[scene.scene]}
               characters={CHARACTERS}
               evidence={cards}
+              locationLabel={sceneTitleOf}
+              background={dialogue?.background}
               startAt={scene.startAt}
               onChoice={(choice: DialogueChoice) => {
                 if (choice.goto) window.setTimeout(() => setScene({ scene: choice.goto as keyof typeof SCENES, startAt: 0 }), 500);

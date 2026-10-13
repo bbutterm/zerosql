@@ -21,6 +21,7 @@ import { EVIDENCE_ITEM_WIDTH, EVIDENCE_KIND_META, EvidenceCard } from "@/compone
 import { sortByNight } from "@/components/case/evidence-board";
 import { PortraitFrame } from "./portrait";
 import { useLineAudio, type VoiceState } from "./line-audio";
+import { SceneBackdrop, useBackground } from "./scene-backdrop";
 
 export interface DialoguePlayerProps {
   scene: Scene;
@@ -33,8 +34,11 @@ export interface DialoguePlayerProps {
   onFinish?: () => void;
   /** overlay — поверх стола на весь экран; inline — внутри родителя (position: relative) */
   variant?: "overlay" | "inline";
-  /** Титр локации: «Подвал УВД. 14 декабря, 02:31.» */
-  locationLabel?: string;
+  /**
+   * Титр локации: «Подвал УВД. 14 декабря, 02:31.» Строка — для всех сцен, функция — своя у
+   * каждой сцены. Без титра сцена начинается с первой реплики (id локации игроку не показывается)
+   */
+  locationLabel?: string | ((scene: Scene) => string | undefined);
   /** Имя игрока в логе */
   playerName?: string;
   /** Почему вариант недоступен, по умолчанию «нужна улика» — дописывается к строке курсивом через тире */
@@ -51,8 +55,20 @@ export interface DialoguePlayerProps {
   autoFocus?: boolean;
   voiceBasePath?: string;
   portraitBasePath?: string;
-  /** Картина локации: на весь экран под слоем --room 0.55 */
-  background?: string;
+  backgroundBasePath?: string;
+  /**
+   * Картина сцены: id локации (src/data/locations.json) вместо scene.location; null — чистая
+   * комната. По умолчанию — scene.location, а у сцены без location — картина прошлой сцены потока
+   */
+  background?: string | null;
+  /**
+   * Сцена продолжает поток (родитель пересоздаёт плеер на каждую сцену): комната уже на экране
+   * с этой картиной (id локации или null). Гашения и проявления нет, смена картины —
+   * перекрёстным затуханием; сцена без location остаётся на этой картине
+   */
+  continueFrom?: { background: string | null };
+  /** «Меньше движения» из «Параметров»; prefers-reduced-motion учитывается всегда */
+  reducedMotion?: boolean;
   /** «Отмена» в предъявлении; без колбэка кнопки нет */
   onCancelPresent?: () => void;
   className?: string;
@@ -95,8 +111,7 @@ function titleOf(label: string): string {
 
 function sceneEntries(scene: Scene, label?: string): Entry[] {
   const out: Entry[] = [];
-  const loc = label ?? scene.location;
-  if (loc) out.push({ key: `${scene.id}:title`, kind: "title", text: titleOf(loc) });
+  if (label) out.push({ key: `${scene.id}:title`, kind: "title", text: titleOf(label) });
   for (const line of scene.lines) {
     out.push({
       key: line.id,
@@ -114,6 +129,7 @@ function sceneEntries(scene: Scene, label?: string): Entry[] {
  * Диалог (раздел 7.14): комната, портрет слева на всю высоту, справа — лог сцены,
  * растущий снизу вверх. Реплики печатаются; Ноль — единственное окрашенное имя (натрий).
  * Выбор — нумерованные строки PT Serif; предъявление — реестр и предмет на столе.
+ * Под всем — картина локации (SceneBackdrop) по цепочке запасных; нет картины — чистая комната.
  */
 export function DialoguePlayer({
   scene,
@@ -134,16 +150,21 @@ export function DialoguePlayer({
   autoFocus,
   voiceBasePath = "/voice",
   portraitBasePath = "/portraits",
+  backgroundBasePath = "/backgrounds",
   background,
+  continueFrom,
+  reducedMotion = false,
   onCancelPresent,
   className,
 }: DialoguePlayerProps) {
-  const reduced = usePrefersReducedMotion();
+  const prefersReduced = usePrefersReducedMotion();
+  const reduced = prefersReduced || reducedMotion;
+  const labelOf = (s: Scene) => (typeof locationLabel === "function" ? locationLabel(s) : locationLabel);
 
   /* ---------- Сцена и история: лог переживает смену сцены ---------- */
 
   const initialIndex = (s: Scene, at: number | "end") => {
-    const items = sceneEntries(s, locationLabel);
+    const items = sceneEntries(s, labelOf(s));
     if (at === "end") return Math.max(items.length - 1, 0);
     const offset = items[0]?.kind === "title" ? 1 : 0;
     return Math.min(Math.max(at + offset, 0), Math.max(items.length - 1, 0));
@@ -160,10 +181,12 @@ export function DialoguePlayer({
   const [table, setTable] = useState<{ id: string; raised: boolean } | null>(null);
   const [muted, setMuted] = useState(defaultMuted);
   const [auto, setAuto] = useState(defaultAutoAdvance);
+  // Место сцены: своя локация или картина прошлой сцены потока (сцена без location не меняет места)
+  const [place, setPlace] = useState<string | null>(() => scene.location ?? continueFrom?.background ?? null);
 
   // Новая сцена от родителя: прошлая уходит в историю, печать начинается заново
   if (scene.id !== current.id) {
-    const prevItems = sceneEntries(current, locationLabel);
+    const prevItems = sceneEntries(current, labelOf(current));
     setHistory((h) => [...h, ...prevItems.slice(0, index + 1), ...trailing]);
     setTrailing([]);
     setCurrent(scene);
@@ -172,9 +195,10 @@ export function DialoguePlayer({
     setAtEnd(scene.lines.length === 0);
     setResolved(false);
     setPicked(null);
+    setPlace(scene.location ?? place);
   }
 
-  const items = sceneEntries(scene, locationLabel);
+  const items = sceneEntries(scene, labelOf(scene));
   const item: Entry | undefined = items[Math.min(index, items.length - 1)];
   const text = item?.text ?? "";
   const visible = reduced || atEnd ? text.length : Math.min(shown, text.length);
@@ -397,6 +421,13 @@ export function DialoguePlayer({
   const showNext = !typing && !showChoices && !showPresent && !(atEnd && resolved);
   const tableCard = table ? evidence.find((e) => e.id === table.id) : undefined;
 
+  // Картина под сценой: проп важнее места сцены; null — чистая комната
+  const shownPlace = background !== undefined ? background : place;
+  const painting = useBackground(shownPlace, backgroundBasePath).url !== null;
+  // Новая сцена поверх стола: гашение экрана (240 мс), затем проявление комнаты (400 мс).
+  // Продолжение потока — комната уже на экране; меньше движения — сразу
+  const entering = variant === "overlay" && !continueFrom && !reduced;
+
   return (
     <div
       ref={rootRef}
@@ -413,25 +444,19 @@ export function DialoguePlayer({
         className
       )}
     >
-      {/* Гашение экрана «Зеркала» (240 мс), затем проявление комнаты (400 мс) */}
+      {/* Гашение экрана «Зеркала» (240 мс), затем проявление комнаты (400 мс). --zone — зона портрета */}
       <div
-        className="absolute inset-0"
-        style={{ animation: variant === "overlay" ? "zs-fade-in 400ms var(--ease-out) 240ms both" : undefined }}
+        className="absolute inset-0 [--zone:min(640px,44.4cqw)]"
+        style={{ animation: entering ? "zs-fade-in 400ms var(--ease-out) 240ms both" : undefined }}
       >
-        {background && (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element -- картина локации из public/ */}
-            <img src={background} alt="" className="absolute inset-0 size-full object-cover" draggable={false} />
-            <div aria-hidden className="absolute inset-0 bg-room/55" />
-            {/* За колонкой лога — сплошная комната 0.85: текст читается поверх любой картины */}
-            <div
-              aria-hidden
-              className="absolute inset-x-0 top-[42%] bottom-0 bg-room/85 @3xl:top-0 @3xl:left-[calc(var(--zone)_+_32px)]"
-            />
-          </>
-        )}
+        <SceneBackdrop
+          location={shownPlace}
+          from={continueFrom ? continueFrom.background : undefined}
+          reduced={reduced}
+          basePath={backgroundBasePath}
+        />
 
-        <div className="absolute inset-0 cursor-default [--zone:min(640px,44.4cqw)]" onClick={onStageClick}>
+        <div className="absolute inset-0 cursor-default" onClick={onStageClick}>
           {/* Портрет: широко — слева на всю высоту; узко — сверху 42 % */}
           <div
             className={cn(
@@ -497,7 +522,7 @@ export function DialoguePlayer({
                     characters={characters}
                     playerName={playerName}
                     next={partial !== undefined && showNext}
-                    floor={background ? "ink-2" : "ink-3"}
+                    floor={painting ? "ink-2" : "ink-3"}
                   />
                 ))}
 
@@ -637,7 +662,7 @@ export function DialoguePlayer({
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10 bg-room"
-          style={{ animation: "zs-fade-in 240ms var(--ease-in) both" }}
+          style={{ animation: entering ? "zs-fade-in 240ms var(--ease-in) both" : undefined }}
         />
       )}
     </div>
