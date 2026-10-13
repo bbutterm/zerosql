@@ -62,6 +62,34 @@
   "briefing": "21.12.2026, 16:00. Самая длинная ночь года. Через сутки после подъёма машины прокуратура города признала смерть П. И. Сазонова несчастным случаем: «съехал в промоину». Дело о «бухгалтере-беглеце» закрыто тихо, без извинений. Начальник ОЦР подполковник Ратников с утра «на совещании». На последней странице тетради И. Вальц: «Кто въехал на Северную в пятнадцатом? Не строители». Выдан допуск: реестр недвижимости (properties), кадры (employment), счета (accounts), горздрав (hospital_admissions).",
   "starterSql": "-- Тетрадь Ирины, последняя страница: «Кто въехал на Северную в пятнадцатом? Не строители».\n-- Новый допуск: properties, employment, accounts, hospital_admissions.\nSELECT * FROM properties LIMIT 20;",
   "introScene": "intro",
+  "night": {
+    "from": "2026-12-17 18:30",
+    "stamp": "Б0-03, WS-03. 17–21 декабря 2026 года.",
+    "beats": [
+      {
+        "at": "2026-12-17 18:40:00",
+        "row": { "table": "morgue_records", "text": "Сазонов П. И.  опознан (Вальц В. С.)  КУСП 4921" },
+        "check": {
+          "sql": "SELECT kusp_no, full_name_text, identified_by FROM morgue_records WHERE identified_at = '2026-12-17 18:40:00'",
+          "expect": [[4921, "Сазонов Пётр Ильич", "по документам и часам; Вальц В. С."]]
+        }
+      },
+      { "scene": "night", "line": 1 },
+      { "at": "2026-12-18 03:12:00", "click": "full", "cron": true },
+      { "at": "2026-12-18 09:00", "scene": "night_note", "when": { "dasha_knows_burial": true } },
+      { "at": "2026-12-18 09:00", "scene": "night_gum", "when": { "dasha_knows_burial": false } },
+      { "montage": { "from": "2026-12-19", "to": "2026-12-20" } },
+      { "at": "2026-12-21 03:12:00", "click": "short", "login": true },
+      {
+        "at": "2026-12-21 05:01:51",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-21 05:01:51'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o7_1",

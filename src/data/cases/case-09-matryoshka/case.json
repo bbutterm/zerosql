@@ -76,6 +76,26 @@
   "briefing": "28 декабря, 11:00. В холле ГУ ленточка и камеры: Гранин лично привёз новые серверы для миграции и новогодние подарки от фонда «Тёплый берег». До финализации «Сокола» — 14 дней, до выборов — 20.\n\nРатников звонит из кардиологии: «Щит» гасил займ Лыкова, «Тайга» «Щита» была на Полярной в ночь смерти Ирины. Кто стоит за «Щитом»?\n\nЗЕРКАЛО открыло реестр владельцев «Сияния» и его соседей: company_owners, share_deals, contracts, grant_requests, расписание миграции migration_jobs. Банк «Северный кредит» прислал ответ на запрос ОЦР — bank_statements.\n\nОдно правило на этот день: журнал запросов читают не только свои. Фамилий в запросах не пиши.",
   "starterSql": "-- Реестр владельцев: кто какой долей какой компании владеет\n-- owner_type = 'company' — владелец тоже компания (её id в owner_id)\nSELECT o.company_id, c.name, o.owner_type, o.owner_id, o.share, o.since, o.until\nFROM company_owners o\nJOIN companies c ON c.id = o.company_id\nWHERE c.name LIKE '%«Щит»%';",
   "introScene": "intro",
+  "night": {
+    "from": "2026-12-24 13:00",
+    "stamp": "Б0-03, WS-03. 24–28 декабря 2026 года.",
+    "beats": [
+      { "at": "2026-12-24 23:00", "scene": "night_turned", "when": { "tokha_turned": true } },
+      { "at": "2026-12-24 23:00", "scene": "night_reported", "when": { "tokha_turned": false } },
+      { "at": "2026-12-25 03:12:00", "click": "full", "cron": true },
+      { "at": "2026-12-25 10:00", "scene": "night", "line": 1 },
+      { "montage": { "from": "2026-12-26", "to": "2026-12-27" } },
+      { "at": "2026-12-28 03:12:00", "click": "short", "login": true },
+      {
+        "at": "2026-12-28 05:02:58",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-28 05:02:58'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o9_1",

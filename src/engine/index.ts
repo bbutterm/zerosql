@@ -52,8 +52,9 @@ export type {
   NightMontageBeat,
   NightFeedRow,
   NightCheck,
+  NightSfx,
 } from "@/types/case";
-export { SOURCE_CLASS_LABELS } from "@/types/case";
+export { NIGHT_SFX, SOURCE_CLASS_LABELS } from "@/types/case";
 export type {
   CharacterDef,
   Scene,

@@ -79,6 +79,11 @@ function shift(ts: string, seconds: number): string {
   return fmtTs(parseTs(ts) + seconds * 1000);
 }
 
+/** 'YYYY-MM-DD HH:MM[:SS]' → 'YYYY-MM-DD HH:MM:SS' (сравнение строкой с часами базы) */
+function normalizeAt(ts: string): string {
+  return fmtTs(parseTs(ts));
+}
+
 /** Последний момент 03:12:00 строго раньше часов */
 export function lastCronLogin(clock: string): string {
   const t = parseTs(clock);
@@ -220,11 +225,14 @@ export const STORY_PATCHES: Readonly<Record<string, StoryPatchDef>> = Object.fro
         const job = F.CRON_JOBS.find((j) => j.id === ctx.jobId);
         if (!job) throw new Error(`cron.fire: нет задания ${ctx.jobId}`);
         if (scalar(db, "SELECT fired_at FROM main.cron_jobs WHERE id = ?", [job.id]) !== null) return 0;
-        const at = ctx.at ?? lastCronLogin(shift(ctx.clock, 60));
+        // Ночь после Д10 наступает уже после часов интерлюдии: в её базе задание ещё не сработало
+        if (ctx.at && normalizeAt(ctx.at) > ctx.clock) return 0;
+        const at = ctx.at ? normalizeAt(ctx.at) : lastCronLogin(shift(ctx.clock, 60));
         const sql = job.id === 1 ? F.CRON_JOB1_VARIANTS[ctx.variant ?? "c"] : job.sql;
         let n = insertQueryLog(db, { loggedAt: at, login: F.LOGIN.zero, terminal: F.WORKSTATION.cron, text: sql, rows: countRows(db, sql) });
         n += run(db, "UPDATE main.cron_jobs SET fired_at = ? WHERE id = ?", [at, job.id]);
-        n += run(db, "UPDATE main.logins SET last_login_at = ? WHERE login = ?", [at, F.LOGIN.zero]);
+        // Вход zero — каждую ночь (case.logins ставит последнюю): задание прошлых ночей его не откатывает
+        n += run(db, "UPDATE main.logins SET last_login_at = ? WHERE login = ? AND (last_login_at IS NULL OR last_login_at < ?)", [at, F.LOGIN.zero, at]);
         return n;
       },
     },

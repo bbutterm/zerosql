@@ -81,6 +81,52 @@
   "briefing": "11 января 2027 года, 11:30. В 13:00 в ГУ пресс-церемония «Сияния»: завершение миграции «Сокол → ПБД» и финализация. Ответственный по migration_jobs — nol. Staging-таблицы с диском Нины удаляются по расписанию: 12:20 — реестр, 12:40 — объяснения, 13:00 — карточки. Каждый запрос — три минуты. Задача отдела: вернуть в ПБД то, что стёрли, собрать пакет, где на каждый узел два независимых источника, и отправить его до финализации. Гранин приезжает к 12:30 как кандидат. Солнце встаёт в 12:58.",
   "starterSql": "SELECT id, run_at, action, target, status\nFROM migration_jobs\nWHERE status = 'запланировано'\nORDER BY run_at;",
   "introScene": "intro",
+  "night": {
+    "from": "2027-01-01 00:30",
+    "stamp": "Б0-03, WS-03. 1–11 января 2027 года.",
+    "beats": [
+      { "scene": "night", "line": 1 },
+      { "at": "2027-01-01 03:12:00", "click": "short", "cron": true },
+      { "montage": { "from": "2027-01-02", "to": "2027-01-09" } },
+      { "at": "2027-01-09 21:00", "scene": "night_warned", "when": { "valentina_warned": true } },
+      { "at": "2027-01-09 21:00", "scene": "night_quiet", "when": { "valentina_warned": false } },
+      {
+        "at": "2027-01-10 01:58:00",
+        "row": { "table": "plate_reads", "text": "камера 2  О114РБ  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2027-01-10 01:58:00'",
+          "expect": [[2, "О114РБ", "въезд"]]
+        }
+      },
+      {
+        "at": "2027-01-10 02:09:00",
+        "row": { "table": "door_access", "text": "Серверная  вход  аварийное открытие  без пропуска" },
+        "check": {
+          "sql": "SELECT door, direction, badge_id, note LIKE 'аварийное открытие%' FROM door_access WHERE ts = '2027-01-10 02:09:00'",
+          "expect": [["Серверная", "вход", null, 1]]
+        }
+      },
+      { "at": "2027-01-10 02:12:00", "sessions": 2, "until": "2027-01-10 02:14:00" },
+      {
+        "at": "2027-01-10 02:31:00",
+        "row": { "table": "plate_reads", "text": "камера 2  О114РБ  выезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2027-01-10 02:31:00'",
+          "expect": [[2, "О114РБ", "выезд"]]
+        }
+      },
+      { "at": "2027-01-10 03:12:00", "click": "short" },
+      { "at": "2027-01-11 03:12:00", "click": "full", "login": true },
+      {
+        "at": "2027-01-11 05:09:13",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2027-01-11 05:09:13'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o11_1",

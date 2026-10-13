@@ -139,6 +139,25 @@ describe("поздние таблицы и сюжетные патчи", () => {
     db.close();
   });
 
+  it("cron.fire ночью после прошлого дела не откатывает вход zero; задание после часов базы ещё не сработало", async () => {
+    // Д6: задание 3 сработало 16.12, а zero входил и 17.12 — last_login_at остаётся за последней ночью
+    const d6 = await openCaseDatabase(bytes, { clock: CASE_START.c06, patches: [{ id: "cron.fire", params: { jobId: 3, at: "2026-12-16 03:12:00" } }] });
+    expect(one(d6, "SELECT last_login_at FROM logins WHERE login = 'zero'")).toBe("2026-12-17 03:12:00");
+    expect(one(d6, "SELECT fired_at FROM cron_jobs WHERE id = 3")).toBe("2026-12-16 03:12:00");
+    d6.close();
+    // Интерлюдия: задание после Д10 сработает 01.01 в 03:12 — в базе 31.12 его ещё нет
+    const d11 = await openCaseDatabase(bytes, { clock: CASE_START.c11, patches: [{ id: "cron.fire", params: { jobId: 2, at: "2027-01-01 03:12:00" } }] });
+    expect(one(d11, "SELECT fired_at FROM cron_jobs WHERE id = 2")).toBeNull();
+    expect(one(d11, "SELECT COUNT(*) FROM main.query_log WHERE login = 'zero' AND logged_at > '2026-12-31 23:59:59'")).toBe(0);
+    expect(one(d11, "SELECT last_login_at FROM logins WHERE login = 'zero'")).toBe("2026-12-31 03:12:00");
+    d11.close();
+    // Финал: то же задание уже в журнале
+    const d12 = await openCaseDatabase(bytes, { clock: CASE_START.c12, patches: [{ id: "cron.fire", params: { jobId: 2, at: "2027-01-01 03:12:00" } }] });
+    expect(one(d12, "SELECT fired_at FROM cron_jobs WHERE id = 2")).toBe("2027-01-01 03:12:00");
+    expect(one(d12, "SELECT last_login_at FROM logins WHERE login = 'zero'")).toBe("2027-01-11 03:12:00");
+    d12.close();
+  });
+
   it("ws07.agent срабатывает по часам; c10.purge чистит ЗЕРКАЛО, но не bank_statements", async () => {
     const d6 = await openCaseDatabase(bytes, { clock: CASE_START.c06 });
     expect(one(d6, "SELECT note FROM workstations WHERE id = 'WS-07'")).not.toContain("агент");

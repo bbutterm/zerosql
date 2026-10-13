@@ -390,7 +390,13 @@ interface NightBeatBase {
   at?: string;
   /** Такт только при этих флагах ранних дел (отсутствующий флаг — false и null) */
   when?: FlagCondition;
+  /** Звук в начале такта поверх гула (далёкий салют в паузе Д10→И) */
+  sfx?: NightSfx;
 }
+
+/** Звуки тактов ночи (public/sfx/<имя>.mp3; нет файла — тишина) */
+export const NIGHT_SFX = ["amb.newyear"] as const;
+export type NightSfx = (typeof NIGHT_SFX)[number];
 
 /** Реплика рассказчика из сцены script.json (night, night_<вариант>) */
 export interface NightSceneBeat extends NightBeatBase {
@@ -423,7 +429,7 @@ export interface NightSessionsBeat extends NightBeatBase {
 /**
  * Щелчок 03:12:00. full — часы встают на 03:11, гул обрывается, 1,2 с тишины,
  * щелчок; short — щелчок без тишины. cron — очереди клавиш по заданиям zero,
- * сработавшим ночью после прошлого дела (после Д8 — и строки с их текстом);
+ * сработавшим в эту паузу (после Д8 — и строки с их текстом);
  * без cron очереди встают на щелчок в ночь срабатывания или на первый полный.
  * login — строка входа zero в ленте (только если logins входит в tables дела).
  */

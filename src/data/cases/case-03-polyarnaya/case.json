@@ -43,6 +43,24 @@
   "briefing": "18.11.2026 в 23:10 у дома 17 по Полярной улице сбита женщина. Водитель скрылся. В ту же ночь директор ЧОП «Щит» заявил об угоне служебной «Тайги». Материал приостановлен: «угон, виновный не установлен».\n\nМать погибшей звонит в отдел в сорок первый раз.\n\nДопуск расширен: участники происшествий (incident_persons), реестр жителей ПБД (persons), морг Горздрава (morgue_records), реестр юрлиц (companies). Таблицы склеиваются по общим полям: incidents.vehicle_id → vehicles.id, incident_persons.person_id → persons.id, companies.director_person_id → persons.id, morgue_records.kusp_no → incidents.kusp_no.",
   "starterSql": "SELECT * FROM incidents WHERE kusp_no IN (4515, 4518);",
   "introScene": "intro",
+  "night": {
+    "from": "2026-12-07 16:00",
+    "stamp": "Б0-03, WS-03. 7–9 декабря 2026 года.",
+    "beats": [
+      { "at": "2026-12-07 19:00", "scene": "night", "line": 1 },
+      { "at": "2026-12-08 08:30", "scene": "night", "line": 2 },
+      { "at": "2026-12-08 13:00", "scene": "night", "line": 3 },
+      { "at": "2026-12-09 03:12:00", "click": "full" },
+      {
+        "at": "2026-12-09 05:09:31",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-09 05:09:31'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o3_1",

@@ -121,6 +121,11 @@ describe("ночь между делами: проверка контента", 
     expectProblem(withNight(beats({ montage: { from: "13.12", to: "2026-12-13" } } as NightBeat)), "montage — даты");
   });
 
+  it("звук такта — только из списка звуков ночи", () => {
+    expect(problemsOf(withNight(beats({ at: "2026-12-12 10:00", status: "Салют", sfx: "amb.newyear" })))).toEqual([]);
+    expectProblem(withNight(beats({ at: "2026-12-12 10:00", status: "Гром", sfx: "amb.thunder" } as unknown as NightBeat)), "звук «amb.thunder»");
+  });
+
   it("условие when не пустое; у проверки сообщения нужны sql и expect", () => {
     expectProblem(withNight(beats({ scene: "night", when: {} })), "пустое условие на флаги");
     expectProblem(withNight(beats({ at: "2026-12-12 10:00", status: "Синхронизация", check: { sql: "", expect: 1 } })), "у проверки сообщения");

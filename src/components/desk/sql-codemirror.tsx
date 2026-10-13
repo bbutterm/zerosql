@@ -6,7 +6,7 @@ import { keywordCompletionSource, schemaCompletionSource, SQLDialect, SQLite } f
 import { drawSelection, EditorView, keymap } from "@codemirror/view";
 import { EditorState, Prec } from "@codemirror/state";
 import { HighlightStyle, LanguageSupport, syntaxHighlighting } from "@codemirror/language";
-import { autocompletion, type Completion, type CompletionContext } from "@codemirror/autocomplete";
+import { autocompletion, closeCompletion, completionStatus, type Completion, type CompletionContext } from "@codemirror/autocomplete";
 import { diagnosticCount, setDiagnostics, setDiagnosticsEffect } from "@codemirror/lint";
 import { tags as t } from "@lezer/highlight";
 import type { TableInfo } from "@/types/database";
@@ -217,12 +217,26 @@ const runKeymap = Prec.highest(
     ["Mod-Enter"].map((key) => ({
       key,
       run: (view: EditorView) => {
+        closeCompletion(view);
         view.dom.dispatchEvent(new CustomEvent(RUN_EVENT, { bubbles: true }));
         return true;
       },
     }))
   )
 );
+
+/**
+ * Подсказка не висит без фокуса. Источник дополнения отвечает через ~100 мс после
+ * ввода: если за это время фокус ушёл (Ctrl+Enter открыл сцену, клик по «Выполнить»),
+ * список открывается у редактора без фокуса и остаётся поверх сцены или допроса.
+ */
+const closeCompletionWithoutFocus = EditorView.updateListener.of((update) => {
+  if (update.view.hasFocus || completionStatus(update.state) === null) return;
+  const view = update.view;
+  window.setTimeout(() => {
+    if (view.dom.isConnected && !view.hasFocus && completionStatus(view.state) !== null) closeCompletion(view);
+  }, 0);
+});
 
 const BASIC_SETUP = {
   lineNumbers: true,
@@ -332,6 +346,7 @@ export default function SqlCodeMirror({
       // Каретка: 2 px натрия, мигание 530 мс включена / 530 мс выключена
       drawSelection({ cursorBlinkRate: 1060 }),
       autocompletion({ icons: false }),
+      closeCompletionWithoutFocus,
       new LanguageSupport(SQLite.language, [
         data.of({ autocomplete: schemaCompletionSource({ dialect: SQLite, schema: schemaObj }) }),
         data.of({ autocomplete: keywordCompletionSource(teaching, true) }),

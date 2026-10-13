@@ -1,4 +1,5 @@
 import type { CaseDef, EventTrigger, FlagCondition, NightBeat, NightDef } from "@/types/case";
+import { NIGHT_SFX } from "@/types/case";
 import {
   EMOTIONS,
   NARRATOR,
@@ -533,6 +534,9 @@ export function validateCaseContent(
       }
       checkFlags(`${at}, when`, beat.when);
       if (beat.at !== undefined) inPause(`${at}, at`, beat.at, true);
+      if (beat.sfx !== undefined && !(NIGHT_SFX as readonly string[]).includes(beat.sfx)) {
+        add(`${at}: звук «${beat.sfx}» — бывает ${NIGHT_SFX.join(", ")}`);
+      }
       switch (kind) {
         case "scene": {
           const b = beat as Extract<NightBeat, { scene: string }>;

@@ -430,7 +430,16 @@ async function main() {
     } else {
       await page.getByTestId("scene-skip").click();
     }
-    await waitState((x) => JSON.stringify(x.session?.stage ?? null) !== key || x.session?.phase === "debrief", `сцена ${scene.id} дальше`, 15_000);
+    const after = await waitState((x) => JSON.stringify(x.session?.stage ?? null) !== key || x.session?.phase === "debrief", `сцена ${scene.id} дальше`, 15_000);
+    // События «после сцены» идут через ядро: следующая сцена может начаться чуть позже — не лезть к столу раньше неё
+    if (!after.session?.stage && after.session?.phase !== "debrief") {
+      const until = Date.now() + 500;
+      while (Date.now() < until) {
+        const x = await session();
+        if (x?.stage || x?.phase === "debrief") break;
+        await sleep(50);
+      }
+    }
   }
 
   function offerFor(st, s, present) {

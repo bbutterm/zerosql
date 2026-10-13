@@ -85,6 +85,35 @@
   "briefing": "31.12, 09:00. Приказ и. о. начальника ОЦР: аналитик по договору отстранён до выяснения. 28.12 под логином nol в ПБД правили улики: удалена карточка из описи, сдвинут документ 3313, отозвано показание. Терминал оставлен «для объяснений». «Сияние» объявило плановое обслуживание. У Нины Фёдоровны на столе жестяная коробка из-под печенья, и открывать её она не хочет.",
   "starterSql": "-- 28.12: что правили под моим логином\nSELECT id, ts, workstation, action, table_name, row_id, field\nFROM audit_log\nWHERE login = 'nol' AND date(ts) = '2026-12-28'\nORDER BY ts;",
   "introScene": "cold_open",
+  "night": {
+    "from": "2026-12-28 15:00",
+    "stamp": "Б0-03, WS-03. 28–31 декабря 2026 года.",
+    "beats": [
+      { "scene": "night", "line": 1 },
+      {
+        "at": "2026-12-29 02:10:00",
+        "when": { "watcher_tripped": true },
+        "row": { "table": "plate_reads", "text": "камера 31  О114РБ  в центр" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-29 02:10:00'",
+          "expect": [[31, "О114РБ", "в центр"]],
+          "patches": ["c09.watcher"]
+        }
+      },
+      { "at": "2026-12-29 03:12:00", "click": "full", "cron": true },
+      { "montage": { "from": "2026-12-30", "to": "2026-12-30" } },
+      { "at": "2026-12-30 15:00", "scene": "night", "line": 2 },
+      { "at": "2026-12-31 03:12:00", "click": "short", "login": true },
+      {
+        "at": "2026-12-31 05:05:11",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-31 05:05:11'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o10_1",

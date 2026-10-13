@@ -33,7 +33,8 @@ export type SfxName =
   | "ui.key_click"
   | "ui.key_burst"
   | "amb.bay"
-  | "amb.basement";
+  | "amb.basement"
+  | "amb.newyear";
 
 /** Множители категорий к общей громкости эффектов */
 export const SFX_MIX: Record<SfxCategory, number> = { amb: 0.35, ui: 0.45, paper: 0.7, notify: 0.6, voice: 1 };

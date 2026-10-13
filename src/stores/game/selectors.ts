@@ -35,6 +35,7 @@ import {
   type TestimonyPoint,
   type Emotion,
   type NightBeat,
+  type NightSfx,
 } from "@/engine";
 import { cases as seasonCases } from "@/data";
 import { plural } from "@/lib/plural";
@@ -409,7 +410,7 @@ export interface NightRowView {
   wrap: boolean;
 }
 
-export type NightStep =
+export type NightStep = (
   | { kind: "line"; at: string | null; lineId: string; text: string; ms: number }
   | { kind: "row"; at: string; row: NightRowView; ms: number }
   | { kind: "status"; at: string | null; text: string; ms: number }
@@ -426,7 +427,11 @@ export type NightStep =
       cronRows: NightRowView[];
       ms: number;
     }
-  | { kind: "montage"; dates: string[]; ms: number };
+  | { kind: "montage"; dates: string[]; ms: number }
+) & {
+  /** Звук в начале такта поверх гула (amb.newyear — далёкий салют) */
+  sfx?: NightSfx;
+};
 
 export interface NightCardView {
   /** Только на смене акта: «Часть вторая. Дыры во льду» */
@@ -553,8 +558,8 @@ const lineMs = (text: string) => NIGHT_TIMING.lineIn + NIGHT_TIMING.lineBase + N
 
 /**
  * Таймлайн ночи перед делом def: такты по флагам ранних дел (when), реплики
- * из сцен, строки ленты с масками, очереди клавиш по заданиям zero прошлого
- * дела (после Д8 — и их строки), карточка. null — у дела нет ночи.
+ * из сцен, строки ленты с масками, очереди клавиш по заданиям zero, сработавшим
+ * в эту паузу (после Д8 — и их строки), карточка. null — у дела нет ночи.
  */
 export function buildNightView(def: CaseDef, ctx: NightContext): NightView | null {
   const night = def.night;
@@ -562,8 +567,16 @@ export function buildNightView(def: CaseDef, ctx: NightContext): NightView | nul
   const cases = ctx.cases ?? seasonCases;
   const flags: Flags = { ...flagsBefore(def, cases, ctx.season.caseFlags), ...(ctx.flags ?? {}) };
   const solvedOrders = new Set(cases.filter((c) => ctx.season.solved[c.id]).map((c) => c.order));
-  const prev = [...cases].filter((c) => c.order < def.order).sort((a, b) => b.order - a.order)[0];
-  const cronJobs = prev ? nightCronJobs(ctx.season.casePatches[prev.id] ?? []) : [];
+  const earlier = cases.filter((c) => c.order < def.order).sort((a, b) => a.order - b.order);
+  const prev = earlier[earlier.length - 1];
+  // Задания zero, сработавшие в эту паузу. Патч лежит у дела, после которого задание
+  // перепроверяли: ночь после Д10 наступает уже после интерлюдии, поэтому окно — по времени
+  const pauseFrom = toGameTime(night.from);
+  const pauseTo = toGameTime(def.date);
+  const cronJobs = nightCronJobs(earlier.flatMap((c) => ctx.season.casePatches[c.id] ?? [])).filter((j) => {
+    const at = toGameTime(j.at);
+    return at > pauseFrom && at <= pauseTo;
+  });
   const withRows = def.order >= 9;
   let seq = 0;
   const row = (at: string, table: string, text: string, wrap = false): NightRowView => ({
@@ -586,6 +599,7 @@ export function buildNightView(def: CaseDef, ctx: NightContext): NightView | nul
   const steps: NightStep[] = [];
   for (const beat of beats) {
     const at = beat.at ? toGameTime(beat.at) : null;
+    const first = steps.length;
     switch (nightBeatKind(beat)) {
       case "scene": {
         const b = beat as Extract<NightBeat, { scene: string }>;
@@ -633,6 +647,7 @@ export function buildNightView(def: CaseDef, ctx: NightContext): NightView | nul
         break;
       }
     }
+    if (beat.sfx && steps[first]) steps[first] = { ...steps[first], sfx: beat.sfx };
   }
 
   const stamp = night.stamp;

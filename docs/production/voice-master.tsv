@@ -47,6 +47,9 @@ c00.close.006	ratnikov	dry	100
 c00.close.008	ratnikov	dry	600
 c00.close.009	nina	dry	100
 c00.close.010	ratnikov	dry	100
+c01.night.001	narrator	dry	300
+c01.night.002	narrator	dry	300
+c01.night.003	narrator	dry	300
 c01.intro.001	narrator	dry	300
 c01.intro.002	ratnikov	dry	100
 c01.intro.003	ratnikov	radio	100
@@ -121,6 +124,9 @@ c01.outro.007	dasha	dry	100
 c01.outro.008	narrator	dry	300
 c01.star.001	tokha	dry	100
 c01.star.002	tokha	dry	100
+c02.night.001	narrator	dry	300
+c02.night.002	narrator	dry	300
+c02.night.003	narrator	dry	300
 c02.intro.001	narrator	dry	300
 c02.intro.002	narrator	dry	300
 c02.intro.003	granin	broadcast_radio	100
@@ -195,6 +201,9 @@ c02.outro.004	nina	dry	100
 c02.outro.005	narrator	dry	300
 c02.outro.006	granin	broadcast_radio	100
 c02.outro.007	narrator	dry	300
+c03.night.001	narrator	dry	300
+c03.night.002	narrator	dry	300
+c03.night.003	narrator	dry	300
 c03.intro.001	narrator	dry	300
 c03.intro.002	narrator	dry	300
 c03.intro.003	dasha	dry	100
@@ -320,6 +329,10 @@ c04.outro.008	narrator	dry	300
 c04.outro.009	nina	dry	100
 c04.outro.010	nina	dry	100
 c04.outro.011	narrator	dry	300
+c05.night.001	narrator	dry	300
+c05.night.002	narrator	dry	300
+c05.night_soft.001	narrator	dry	300
+c05.night_hard.001	narrator	dry	300
 c05.intro.001	narrator	dry	300
 c05.intro.002	narrator	dry	300
 c05.intro.003	nina	dry	100
@@ -371,6 +384,8 @@ c05.morning.004	tokha	dry	600
 c05.morning.005	dasha	dry	100
 c05.morning.006	tokha	dry	100
 c05.morning.007	dasha	dry	100
+c06.night.001	narrator	dry	300
+c06.night.002	narrator	dry	300
 c06.intro.001	narrator	dry	300
 c06.intro.002	narrator	dry	300
 c06.intro.003	granin	broadcast_tv	100
@@ -450,6 +465,9 @@ c06.outro.001	mira	dry	100
 c06.outro.002	narrator	dry	300
 c06.outro.003	nina	phone	100
 c06.outro.004	narrator	dry	300
+c07.night.001	narrator	dry	300
+c07.night_note.001	narrator	dry	300
+c07.night_gum.001	narrator	dry	300
 c07.intro.001	narrator	dry	300
 c07.intro.002	narrator	broadcast_radio	300
 c07.intro.003	nina	dry	100
@@ -558,6 +576,9 @@ c07.outro.003	nina	dry	100
 c07.outro.004	dasha	radio	100
 c07.outro.005	narrator	dry	300
 c07.outro.006	narrator	dry	300
+c08.night.001	narrator	dry	300
+c08.night_record.001	narrator	dry	300
+c08.night_kept.001	narrator	dry	300
 c08.cold_open.001	narrator	dry	300
 c08.cold_open.002	melnik	dry	100
 c08.cold_open.003	melnik	dry	100
@@ -722,6 +743,9 @@ c08.outro.002	dasha	dry	100
 c08.outro.003	nina	dry	100
 c08.outro.004	ratnikov	phone	100
 c08.outro.005	narrator	dry	300
+c09.night_turned.001	narrator	dry	300
+c09.night_reported.001	narrator	dry	300
+c09.night.001	narrator	dry	300
 c09.intro.001	narrator	dry	300
 c09.intro.002	narrator	dry	300
 c09.intro.003	melnik	dry	100
@@ -786,6 +810,8 @@ c09.bastion.003	burtsev	dry	100
 c09.outro.001	narrator	dry	300
 c09.outro.002	narrator	dry	300
 c09.outro.003	narrator	dry	300
+c10.night.001	narrator	dry	300
+c10.night.002	narrator	dry	300
 c10.cold_open.001	narrator	dry	300
 c10.cold_open.002	melnik	dry	100
 c10.cold_open.003	melnik	dry	100
@@ -888,6 +914,9 @@ c10.outro.005	dasha	dry	100
 c10.outro.006	nina	dry	100
 c10.outro.007	nina	dry	100
 c10.outro.008	narrator	dry	300
+c11.night.001	narrator	dry	300
+c11.night.002	narrator	dry	300
+c11.night.003	narrator	dry	300
 c11.intro.001	narrator	dry	300
 c11.intro.002	narrator	dry	300
 c11.intro.003	nina	dry	100
@@ -968,6 +997,9 @@ c11.outro.003	dasha	dry	100
 c11.outro.004	nina	dry	100
 c11.outro.005	dasha	dry	100
 c11.outro.006	narrator	dry	300
+c12.night.001	narrator	dry	300
+c12.night_warned.001	narrator	dry	300
+c12.night_quiet.001	narrator	dry	300
 c12.intro.001	narrator	dry	300
 c12.intro.002	mira	dry	100
 c12.intro.003	nina	dry	100

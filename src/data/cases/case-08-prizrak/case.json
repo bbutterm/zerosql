@@ -68,6 +68,43 @@
   "briefing": "24 декабря, 09:00. Ратников в кардиологии. Обязанности начальника ОЦР исполняет майор Мельник, и первое, что он делает, — обвиняет аналитика: в ночь на 22.12 под логином nol выгружено дело 15-0219 целиком, 63 строки. Срок объясниться — до 13:00. Из больницы одно СМС: «Ищи, кто ходит под её логином. Не я». Открыт допуск к СКУД «Сияние.Ключ» (door_access), платежам «Сияние.Pay» (purchases), метаданным связи (messenger_events, phones). Где-то в подвале по-прежнему кто-то работает под логином i.valts.",
   "starterSql": "-- СКУД «Сияние.Ключ»: кто, когда и в какую дверь\nSELECT ts, badge_id, door, direction\nFROM door_access\nORDER BY ts DESC\nLIMIT 10;",
   "introScene": "cold_open",
+  "night": {
+    "from": "2026-12-21 23:41",
+    "stamp": "Б0-03, WS-03. 21–24 декабря 2026 года.",
+    "beats": [
+      {
+        "at": "2026-12-21 23:41:00",
+        "row": { "table": "door_access", "text": "КПП-1  B-9000  выход" },
+        "check": {
+          "sql": "SELECT door, badge_id, direction FROM door_access WHERE ts = '2026-12-21 23:41:00'",
+          "expect": [["КПП-1", "B-9000", "выход"]]
+        }
+      },
+      { "scene": "night_record", "when": { "ratnikov_full": true } },
+      { "scene": "night_kept", "when": { "ratnikov_full": false } },
+      { "at": "2026-12-22 02:47:19", "sessions": 2, "until": "2026-12-22 02:51:00" },
+      { "at": "2026-12-22 03:12:00", "click": "full", "cron": true },
+      { "scene": "night", "line": 1 },
+      { "montage": { "from": "2026-12-23", "to": "2026-12-23" } },
+      { "at": "2026-12-24 03:12:00", "click": "short", "login": true },
+      {
+        "at": "2026-12-24 05:01:23",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-24 05:01:23'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      },
+      {
+        "at": "2026-12-24 08:00",
+        "status": "СКУД: нарушений пропускного режима не выявлено",
+        "check": {
+          "sql": "SELECT COUNT(*) FROM door_access WHERE ts BETWEEN '2026-12-21 23:41:00' AND '2026-12-24 08:00:00' AND badge_id NOT LIKE 'G-%' AND badge_id NOT IN (SELECT badge_id FROM staff WHERE badge_id IS NOT NULL)",
+          "expect": 0
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o8_0",

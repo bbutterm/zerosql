@@ -60,6 +60,26 @@
   "briefing": "Записка на мониторе, почерк Ратникова: «Ноль. Ночью ИТ заливает в ПБД журнал регистрации «Сокола» за I квартал 2015 года. Проверь, что нумерация не рвётся, — пока «Сокол» не погасили. Р.»\n\nЗаливка — через staging-контур миграции, 14.12 с 01:30. В журнале около 65 документов в день, номера сквозные с 1 января.\n\nДопуск на ночь: журнал регистрации (doc_registry), дела (cases), объяснения (statements). Только чтение.",
   "starterSql": "SELECT * FROM doc_registry WHERE year = 2015 ORDER BY reg_no LIMIT 20;",
   "introScene": "intro",
+  "night": {
+    "from": "2026-12-11 22:30",
+    "stamp": "Б0-03, WS-03. 11–15 декабря 2026 года.",
+    "beats": [
+      { "scene": "night", "line": 1 },
+      { "montage": { "from": "2026-12-12", "to": "2026-12-13" } },
+      { "at": "2026-12-14 01:40", "scene": "night", "line": 2 },
+      { "at": "2026-12-14 03:12:00", "click": "full", "login": true },
+      {
+        "at": "2026-12-14 05:04:09",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-14 05:04:09'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      },
+      { "at": "2026-12-14 18:30", "scene": "night_soft", "when": { "ratnikov_trust": 1 } },
+      { "at": "2026-12-14 18:30", "scene": "night_hard", "when": { "ratnikov_trust": [-1, null] } }
+    ]
+  },
   "objectives": [
     {
       "id": "o5_1",

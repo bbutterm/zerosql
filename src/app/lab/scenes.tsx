@@ -67,7 +67,9 @@ function NightLab({ params }: { params: NightParams }) {
   const earlier = cases.filter((c) => c.order < def.order);
   const prev = earlier.sort((a, b) => b.order - a.order)[0];
   const jobs = (params.cron ?? "").split(",").map(Number).filter((n) => Number.isInteger(n) && n > 0);
-  const at = def.night.beats.find((b) => "click" in b && b.cron)?.at ?? `${def.date.slice(0, 10)} 03:12:00`;
+  // Задания срабатывают у щелчка с cron, иначе в первую ночь паузы
+  const clicks = def.night.beats.filter((b) => "click" in b);
+  const at = (clicks.find((b) => "click" in b && b.cron) ?? clicks[0])?.at ?? `${def.date.slice(0, 10)} 03:12:00`;
   const season: Pick<Season, "solved" | "caseFlags" | "casePatches"> = {
     solved: Object.fromEntries(earlier.map((c) => [c.id, {} as Season["solved"][string]])),
     caseFlags: {},

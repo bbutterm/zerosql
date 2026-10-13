@@ -25,6 +25,7 @@ import {
 import type { Settings } from "@/stores/game/types";
 import { StatusBar } from "@/components/desk/status-bar";
 import { Redaction, ScreenButton } from "@/components/kit/screen";
+import { typo } from "@/components/kit/typo";
 import { isMediaMissing, markMediaMissing, useMediaCacheVersion } from "@/components/story/media-cache";
 import { useLineAudio } from "@/components/story/line-audio";
 
@@ -189,6 +190,8 @@ function frameAt(night: NightView, pos: Pos, voicePlaying: boolean): Frame {
 function stepSounds(step: NightStep, from: number, to: number): Array<SfxName | "cut" | "resume"> {
   const out: Array<SfxName | "cut" | "resume"> = [];
   const hit = (x: number | null) => x !== null && from <= x && x < to;
+  // Звук такта поверх гула: далёкий салют в паузе перед интерлюдией
+  if (step.sfx && hit(0)) out.push(step.sfx);
   switch (step.kind) {
     case "sessions":
       if (hit(0)) out.push("notify.session");
@@ -431,9 +434,13 @@ export function NightScreen({
   const onCard = pos.stage === "card" && (reduced || pos.t >= T.cardFade);
   const leaving = pos.stage === "card" && !onCard;
   const card = night.card;
-  const dateTyped = reduced ? card.date.length : Math.max(0, Math.floor((pos.t - T.cardFade) / T.stampChar));
+  // «До солнца» не разрывается: «До» не висит в конце строки на телефоне
+  const cardDate = typo(card.date).replace(/До /, "До\u00A0");
+  const dateTyped = reduced ? cardDate.length : Math.max(0, Math.floor((pos.t - T.cardFade) / T.stampChar));
   const showStart = onCard && pos.t >= T.startDelay;
   const rows = frame.rows.slice(-WINDOW_ROWS);
+  // На картине текст держит тёмный ореол: светлые места кадра (монитор, лампа) не съедают ink-2 и ink-3
+  const halo = showBg ? "[text-shadow:0_1px_2px_rgb(0_0_0/0.9),0_0_12px_rgb(0_0_0/0.7)]" : undefined;
   const fade = (ms: number, curve: "in" | "out") => (reduced ? undefined : `opacity ${ms}ms var(--ease-${curve})`);
 
   return (
@@ -489,7 +496,7 @@ export function NightScreen({
       </div>
 
       {/* A: штамп и блокировка */}
-      <div className="shrink-0 px-4 lg:absolute lg:top-12 lg:left-16 lg:px-0">
+      <div className={cn("shrink-0 px-4 lg:absolute lg:top-12 lg:left-16 lg:px-0", halo)}>
         <p className="mono-13 text-ink-2" aria-label={night.stamp}>
           <span aria-hidden>{night.stamp.slice(0, stampTyped)}</span>
           <span aria-hidden className="invisible">
@@ -509,7 +516,7 @@ export function NightScreen({
         )}
       >
         {!onCard ? (
-          <div style={{ opacity: leaving ? 0 : 1, transition: fade(T.cardFade, "in") }}>
+          <div className={halo} style={{ opacity: leaving ? 0 : 1, transition: fade(T.cardFade, "in") }}>
             <p
               aria-live="polite"
               className="h-[84px] doc-22 text-[19px] leading-7 text-ink-1 [text-wrap:pretty] lg:h-24 lg:text-[22px] lg:leading-8"
@@ -518,7 +525,7 @@ export function NightScreen({
                 transition: frame.line?.shown ? fade(T.lineIn, "out") : fade(T.lineOut, "in"),
               }}
             >
-              {frame.line?.text ?? ""}
+              {frame.line ? typo(frame.line.text) : ""}
             </p>
             <ol role="log" aria-live="polite" aria-label="Приём данных" className="mt-8">
               {rows.length === 0 && !hasRows(night) && pos.stage !== "stamp" && (
@@ -531,16 +538,18 @@ export function NightScreen({
           </div>
         ) : (
           <div className="flex flex-col">
-            {card.part && <p className="mono-13 text-ink-3">{card.part}</p>}
-            <p className="mono-13 text-ink-3">{card.code}</p>
-            <h2 className="mt-1 doc-22 text-[19px] leading-7 text-ink-1 lg:text-[22px] lg:leading-8">{card.title}</h2>
-            <p className="doc-15 text-ink-2">{card.subtitle}</p>
-            <p className="mt-3 mono-13 text-ink-2" aria-label={card.date}>
-              <span aria-hidden>{card.date.slice(0, dateTyped)}</span>
-              <span aria-hidden className="invisible">
-                {card.date.slice(dateTyped)}
-              </span>
-            </p>
+            <div className={halo}>
+              {card.part && <p className="mono-13 text-ink-3">{card.part}</p>}
+              <p className="mono-13 text-ink-3">{card.code}</p>
+              <h2 className="mt-1 doc-22 text-[19px] leading-7 text-ink-1 lg:text-[22px] lg:leading-8">{typo(card.title)}</h2>
+              <p className="doc-15 text-ink-2">{typo(card.subtitle)}</p>
+              <p className="mt-3 mono-13 text-ink-2" aria-label={card.date}>
+                <span aria-hidden>{cardDate.slice(0, dateTyped)}</span>
+                <span aria-hidden className="invisible">
+                  {cardDate.slice(dateTyped)}
+                </span>
+              </p>
+            </div>
             <div className="mt-6 min-h-11 max-lg:fixed max-lg:inset-x-4 max-lg:bottom-8 lg:min-h-6">
               {showStart &&
                 (ready ? (

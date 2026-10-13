@@ -22,6 +22,7 @@ import {
 } from "@/stores/game/selectors";
 import type { Season, SolvedCase } from "@/stores/game/types";
 
+const C00 = getCase("case-00-nulevoy-etazh")!;
 const C04 = getCase("case-04-mertvaya-dusha")!;
 const C05 = getCase("case-05-nomer-3312")!;
 const C09 = getCase("case-09-matryoshka")!;
@@ -50,7 +51,10 @@ const solvedUpTo = (order: number): Record<string, SolvedCase> =>
 
 const season = (patch: Partial<Season> = {}): Season => ({ ...emptySeason(), ...patch });
 
-/** Ночь дела с другим набором тактов (Д5 и Д9 своих ночей пока не имеют) */
+/**
+ * Ночь дела с другим набором тактов: селектор проверяется на своих тактах, а не на
+ * контенте. Сцены ночи теста идут первыми — getScene находит их раньше настоящих.
+ */
 const withNight = (def: CaseDef, night: NightDef, scenes = def.scenes): CaseDef => ({ ...def, night, scenes });
 
 const NARRATOR_SCENES = [
@@ -96,7 +100,7 @@ describe("nightView: таймлайн ночи", () => {
   });
 
   it("варианты по флагам ранних дел: отсутствующий флаг — false и null", () => {
-    const def = withNight(C05, C05_NIGHT, [...C05.scenes, ...NARRATOR_SCENES]);
+    const def = withNight(C05, C05_NIGHT, [...NARRATOR_SCENES, ...C05.scenes]);
     const soft = buildNightView(def, { season: season({ solved: solvedUpTo(4), caseFlags: { [C04.id]: { ratnikov_trust: 1 } } }) })!;
     expect(lineIds(soft.steps)).toEqual(["c05.night.001", "c05.night_soft.001"]);
     const hard = buildNightView(def, { season: season({ solved: solvedUpTo(4), caseFlags: { [C04.id]: { ratnikov_trust: -1 } } }) })!;
@@ -108,7 +112,7 @@ describe("nightView: таймлайн ночи", () => {
   });
 
   it("смена акта — строка части на карточке; zero после Д4 без маски", () => {
-    const def = withNight(C05, C05_NIGHT, [...C05.scenes, ...NARRATOR_SCENES]);
+    const def = withNight(C05, C05_NIGHT, [...NARRATOR_SCENES, ...C05.scenes]);
     const view = buildNightView(def, { season: season({ solved: solvedUpTo(4) }) })!;
     expect(view.card.part).toBe("Часть вторая. Дыры во льду");
     expect(view.card.date).toBe("15 декабря 2026 года, вторник, 02:40. До солнца 27 дней.");
@@ -117,7 +121,7 @@ describe("nightView: таймлайн ночи", () => {
   });
 
   it("очереди клавиш — по заданиям zero, сработавшим ночью после прошлого дела; живое задание не считается", () => {
-    const def = withNight(C05, C05_NIGHT, [...C05.scenes, ...NARRATOR_SCENES]);
+    const def = withNight(C05, C05_NIGHT, [...NARRATOR_SCENES, ...C05.scenes]);
     const patches = {
       [C04.id]: [
         { id: "cron.fire", params: { jobId: 1, flags: {}, variant: "a" as const, clock: "2026-12-15 03:00:00" } },
@@ -165,6 +169,23 @@ describe("nightView: таймлайн ночи", () => {
     expect(view.card.part).toBe("Часть третья. Первое солнце");
   });
 
+  it("задание после Д10 срабатывает 01.01 — после интерлюдии: его очередь в ночи перед Д11, а не в ночи интерлюдии", () => {
+    const C10 = getCase("case-10-kopirka")!;
+    const C11 = getCase("case-11-chernovik")!;
+    const C12 = getCase("case-12-pervoe-solntse")!;
+    const casePatches = { [C10.id]: [{ id: "cron.fire", params: { jobId: 2, at: "2027-01-01 03:12:00" } }] };
+    const interlude = buildNightView(C11, { season: season({ solved: solvedUpTo(10), casePatches }) })!;
+    expect(interlude.steps.some((s) => s.kind === "click")).toBe(false);
+    // Под последнюю реплику интерлюдии — далёкий салют
+    expect(interlude.steps.filter((s) => s.sfx).map((s) => [s.kind, s.sfx])).toEqual([["line", "amb.newyear"]]);
+    const final = buildNightView(C12, { season: season({ solved: solvedUpTo(11), casePatches }) })!;
+    const clicks = final.steps.filter((s): s is Extract<NightStep, { kind: "click" }> => s.kind === "click");
+    const jan1 = clicks.find((s) => s.at === "2027-01-01 03:12:00")!;
+    expect(jan1.bursts).toBe(1);
+    expect(jan1.cronRows).toHaveLength(1);
+    expect(clicks.filter((s) => s !== jan1).every((s) => s.bursts === 0 && s.cronRows.length === 0)).toBe(true);
+  });
+
   it("расписание такта 03:12: 03:11, обрыв гула, тишина, щелчок, строка входа, очереди, возврат гула", () => {
     const t = NIGHT_TIMING;
     const full = clickSchedule({ full: true, bursts: 2, login: {}, cronRows: [] });
@@ -204,7 +225,8 @@ describe("nightView: таймлайн ночи", () => {
   });
 
   it("без ночи в деле или не на фазе night — null", () => {
-    expect(buildNightView(C05, { season: season() })).toBeNull();
+    // Ночи нет только у пролога: перед ним сезона ещё нет
+    expect(buildNightView(C00, { season: season() })).toBeNull();
     const state = { profile: {} as never, settings: DEFAULT_SETTINGS, season: season(), session: null, last: null };
     expect(nightView(state)).toBeNull();
   });
@@ -218,7 +240,7 @@ describe("показ ночи: настройка и отметка night_seen",
     expect(nightWanted(C04, { nightScreens: "new" }, season({ solved: solvedUpTo(4) }))).toBe(false);
     expect(nightWanted(C04, { nightScreens: "always" }, season({ solved: solvedUpTo(4), events: [nightSeenEvent(C04.id)] }))).toBe(true);
     expect(nightWanted(C04, { nightScreens: "off" }, fresh)).toBe(false);
-    expect(nightWanted(C05, { nightScreens: "always" }, fresh)).toBe(false);
+    expect(nightWanted(C00, { nightScreens: "always" }, fresh)).toBe(false);
     // «Продолжить» на ночи: только пока она не досмотрена
     expect(nightResumes(C04, { nightScreens: "always" }, { events: [] })).toBe(true);
     expect(nightResumes(C04, { nightScreens: "always" }, { events: [nightSeenEvent(C04.id)] })).toBe(false);

@@ -41,7 +41,7 @@ beforeAll(async () => {
 }, 120_000);
 
 /** База дела на старте часов: таблицы дела, игрок и патчи ветки сезона из check.patches */
-const openFor = (def: CaseDef, patches: string[] = []): Promise<Database> =>
+const openFor = (def: CaseDef, patches: Array<string | { id: string; params: { jobId: number; at: string } }> = []): Promise<Database> =>
   openCaseDatabase(bytes, {
     clock: def.date,
     tables: def.tables,
@@ -69,6 +69,12 @@ function flagCombos(def: CaseDef): Array<Record<string, FlagValue>> {
   }
   return combos.slice(0, 64);
 }
+
+/** Первый щелчок 03:12 паузы (ночь срабатывания заданий zero) */
+const firstClick = (def: CaseDef): string | null => {
+  const clicks = (def.night?.beats ?? []).filter((b): b is NightBeat & { at: string } => "click" in b && Boolean(b.at)).map((b) => b.at);
+  return clicks.length ? clicks.reduce((a, b) => (compareClock(b, a) < 0 ? b : a)) : null;
+};
 
 /** Сезон «как по порядку»: ранние дела раскрыты */
 const seasonBefore = (def: CaseDef, patch: Partial<Season> = {}): Season => ({
@@ -101,8 +107,9 @@ const FORBIDDEN: Array<{ re: RegExp; before: number; where: "lines" | "all" }> =
 ];
 
 describe.skipIf(NIGHT_CASES.length === 0)("ночи между делами", () => {
-  it("ночи есть у дел (первая — перед Д4)", () => {
-    expect(NIGHT_CASES.map((c) => c.id)).toContain("case-04-mertvaya-dusha");
+  it("ночь есть перед каждым делом, кроме пролога", () => {
+    expect(cases.filter((c) => c.order >= 1 && !c.night).map((c) => c.id)).toEqual([]);
+    expect(NIGHT_CASES).toHaveLength(cases.length - 1);
   });
 
   for (const def of NIGHT_CASES) {
@@ -152,7 +159,9 @@ describe.skipIf(NIGHT_CASES.length === 0)("ночи между делами", ()
         const logins = night.beats.filter((b) => "click" in b && b.login) as Array<NightBeat & { at: string }>;
         if (logins.length === 0) return;
         const last = logins.reduce((a, b) => (compareClock(b.at, a.at) > 0 ? b : a));
-        const db = await openFor(def);
+        // Задание zero, сработавшее в первую ночь паузы, вход последней ночи не откатывает
+        const first = firstClick(def)!;
+        const db = await openFor(def, [{ id: "cron.fire", params: { jobId: 3, at: first } }]);
         const r = executeSQL(db, "SELECT last_login_at FROM logins WHERE login = 'zero'", def.tables);
         expect(r.error ?? null).toBeNull();
         expect(r.rows[0]?.[0]).toBe(last.at.length === 16 ? `${last.at}:00` : last.at);
@@ -177,12 +186,15 @@ describe.skipIf(NIGHT_CASES.length === 0)("ночи между делами", ()
           if (def.order >= f.before) continue;
           for (const text of f.where === "lines" ? lines : [...lines, ...data]) expect(f.re.test(text), `${def.id}: «${text}»`).toBe(false);
         }
+        const first = firstClick(def);
+        if (!first) return;
         const prev = [...cases].filter((c) => c.order < def.order).sort((a, b) => b.order - a.order)[0];
-        const fired = { [prev.id]: [2, 3].map((jobId) => ({ id: "cron.fire", params: { jobId, at: `${def.date.slice(0, 10)} 03:12:00` } })) };
+        const fired = { [prev.id]: [2, 3].map((jobId) => ({ id: "cron.fire", params: { jobId, at: first } })) };
         const view = buildNightView(def, { season: seasonBefore(def, { casePatches: fired }) })!;
-        for (const s of view.steps) {
-          if (s.kind === "click" && def.order < 9) expect(s.cronRows, def.id).toEqual([]);
-        }
+        const clicks = view.steps.filter((s): s is Extract<NightStep, { kind: "click" }> => s.kind === "click");
+        // Очереди клавиш — у одного щелчка, по одной на задание; строки заданий — только после коды Д8
+        expect(clicks.map((s) => s.bursts).sort(), def.id).toEqual([...Array(clicks.length - 1).fill(0), 2]);
+        for (const s of clicks) expect(s.cronRows, def.id).toHaveLength(def.order >= 9 ? s.bursts : 0);
       });
     });
   }

@@ -48,6 +48,32 @@
   "briefing": "17.12.2026, 08:40. С 14.12 зал Б ЦОД «Глубина» работает по замкнутому контуру: тёплую воду в бухту больше не сбрасывают. Полынья у Старого причала замёрзла впервые за 11 лет — чёрный лёд, 22 см. При −38 °C на залив вышли дети с коньками. Ст. лейтенант Ким Д. С. проверяет лёд, бодикамера ведёт запись.\n\nДопуск расширен: температура сброса гидропоста «Створ» (outfall_temp), проектные документы «Глубина-Строя» (construction_docs), паспортный учёт (registrations, addresses), рапорты водолазов (diver_reports), архив АТС «Глубина-Строя» 2015 года (gs_comms_2015, gs_phonebook). Время в архиве АТС — unix-секунды по UTC.",
   "starterSql": "SELECT ts, temp_c, station FROM outfall_temp ORDER BY ts DESC LIMIT 24;",
   "introScene": "intro",
+  "night": {
+    "from": "2026-12-15 09:00",
+    "stamp": "Б0-03, WS-03. 15–17 декабря 2026 года.",
+    "beats": [
+      { "scene": "night", "line": 1 },
+      {
+        "at": "2026-12-16 02:00:00",
+        "row": { "table": "outfall_temp", "text": "Створ  0,2 °C" },
+        "check": {
+          "sql": "SELECT station, temp_c FROM outfall_temp WHERE ts = '2026-12-16 02:00:00'",
+          "expect": [["Створ", 0.2]]
+        }
+      },
+      { "at": "2026-12-16 03:12:00", "click": "full", "cron": true },
+      { "scene": "night", "line": 2 },
+      { "at": "2026-12-17 03:12:00", "click": "short", "login": true },
+      {
+        "at": "2026-12-17 05:02:55",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-17 05:02:55'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o6_1",
