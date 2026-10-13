@@ -1,23 +1,458 @@
 {
   "scenes": [
     {
-      "id": "intro",
+      "id": "cold_open",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
       "lines": [
-        {
-          "id": "c08.intro.001",
-          "speaker": "narrator",
-          "text": "Двадцать четвёртое декабря, утро. В отделе пахнет чужим парфюмом."
-        }
+        { "id": "c08.cold_open.001", "speaker": "narrator", "text": "Двадцать четвёртое декабря, девять утра. В подвале пахнет чужим парфюмом.", "direction": "ровно, без нажима; за кадром гул серверной" },
+        { "id": "c08.cold_open.002", "speaker": "melnik", "emotion": "smug", "text": "Ваш логин в два сорок семь ночи выгрузил дело Сазонова целиком. Объяснитесь.", "direction": "с порога, не здороваясь; чётко, чуть в нос" },
+        { "id": "c08.cold_open.003", "speaker": "melnik", "emotion": "neutral", "text": "Коллеги, синхронизируемся. Лев Борисович в кардиологии. Обязанности начальника ОЦР с сегодняшнего утра — мои.", "direction": "корпоративно, как на планёрке" },
+        { "id": "c08.cold_open.004", "speaker": "melnik", "emotion": "angry", "text": "Шестьдесят три строки. Закрытое дело. Под логином подрядчика, которого месяц назад тут не было.", "direction": "раздражение на коротком поводке" },
+        { "id": "c08.cold_open.005", "speaker": "dasha", "emotion": "angry", "text": "Так. Стоп. Это ж в ту ночь, когда Льва Борисыча на скорой увезли. Вы серьёзно сейчас?", "direction": "быстро, сквозь зубы" },
+        { "id": "c08.cold_open.006", "speaker": "melnik", "emotion": "smug", "text": "Абсолютно, Дарья Сергеевна. Журнал не врёт. Дедлайн — тринадцать ноль-ноль. Потом рапорт.", "direction": "с удовольствием от слова «дедлайн»" },
+        { "id": "c08.cold_open.007", "speaker": "narrator", "text": "Телефон на столе вздрагивает. Номер кардиологии. Одно сообщение, без подписи.", "direction": "тише; пауза перед «без подписи»" },
+        { "id": "c08.cold_open.008", "speaker": "ratnikov", "emotion": "tired", "text": "«Ищи, кто ходит под её логином. Не я».", "direction": "текст СМС его голосом: тихо, слабо, вдох посреди фразы; обработка «телефон», под фоном писк кардиомонитора" },
+        { "id": "c08.cold_open.009", "speaker": "dasha", "emotion": "determined", "text": "Он из реанимации пишет. Значит, важно. Открывай журнал — свой, за ту ночь. Я рядом.", "direction": "отрывисто, уже спокойнее" }
+      ]
+    },
+    {
+      "id": "alien_row",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.alien_row.001", "speaker": "dasha", "emotion": "smug", "text": "Ноль седьмая станция. Это не твой стол. Твой — ноль третий, вон он.", "direction": "тычет пальцем в экран, потом в стол" },
+        { "id": "c08.alien_row.002", "speaker": "melnik", "emotion": "neutral", "text": "Ноль седьмая — серверная. Туда ходит ИТ. И любой, у кого есть ваш пароль.", "direction": "снисходительно" },
+        { "id": "c08.alien_row.003", "speaker": "dasha", "emotion": "smug", "text": "Пароль — это пальцы. А ноги пишет СКУД." },
+        { "id": "c08.alien_row.004", "speaker": "melnik", "emotion": "smug", "text": "Тогда проверьте ноги. Допуск к СКУД я вам открыл. Под мою ответственность, коллеги.", "direction": "как одолжение" },
+        { "id": "c08.alien_row.005", "speaker": "tokha", "emotion": "uneasy", "text": "Хе. Доброе утро. Я за кофе. Не мешаю, не мешаю.", "direction": "из-за двери, проходя мимо; слишком быстро, лишнее «хе»" },
+        { "id": "c08.alien_row.006", "speaker": "dasha", "emotion": "neutral", "text": "Пропуск твой — девять тысяч. Глянь, где он был в два сорок семь.", "direction": "вполголоса, только игроку" }
+      ]
+    },
+    {
+      "id": "alibi",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.alibi.001", "speaker": "dasha", "emotion": "smug", "text": "Двадцать три сорок одна — выход через первый КПП. И до утра ни одного прохода. Клюёт.", "direction": "довольно, на выдохе" },
+        { "id": "c08.alibi.002", "speaker": "melnik", "emotion": "neutral", "text": "Пропуск можно отдать. Логин можно отдать. Всё можно отдать, коллеги.", "direction": "отступает, но не сдаётся" },
+        { "id": "c08.alibi.003", "speaker": "dasha", "emotion": "angry", "text": "А серверную без пропуска не откроешь. Чьим её открывали — вот вопрос." },
+        { "id": "c08.alibi.004", "speaker": "melnik", "emotion": "angry", "text": "Хорошо. Синхронизируемся: до тринадцати ноль-ноль — имя. Нет имени — рапорт на подрядчика.", "direction": "сухо, уже из коридора" },
+        { "id": "c08.alibi.005", "speaker": "narrator", "text": "Мельник уходит. Парфюм остаётся." },
+        { "id": "c08.alibi.006", "speaker": "dasha", "emotion": "determined", "text": "Лев Борисыч сказал: под её логином. Логин Ирины живой после смерти — это мы ещё одиннадцатого видели." },
+        { "id": "c08.alibi.007", "speaker": "dasha", "emotion": "neutral", "text": "Считай всё, что под ним делали после двадцати трёх десяти восемнадцатого. По порядку. По времени." }
+      ]
+    },
+    {
+      "id": "ghost_count",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.ghost_count.001", "speaker": "dasha", "emotion": "angry", "text": "Двести тридцать один раз. Под мёртвой. Ночами, как вор по чужой квартире.", "direction": "тихо и зло" },
+        { "id": "c08.ghost_count.002", "speaker": "tokha", "emotion": "uneasy", "text": "Короч, это может скрипт какой. Автоматика. Хе. Бывает.", "direction": "из коридора, скороговоркой; лишнее «хе» — примета лжи" },
+        { "id": "c08.ghost_count.003", "speaker": "dasha", "emotion": "smug", "text": "Скрипт не спит по графику. Найди, где у него начинается каждая ночь." }
+      ]
+    },
+    {
+      "id": "sessions",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.sessions.001", "speaker": "dasha", "emotion": "neutral", "text": "Семь ночей. Каждый раз около двух. Как по будильнику." },
+        { "id": "c08.sessions.002", "speaker": "nina", "emotion": "thinking", "text": "Голубчик, в подвал ночью без пропуска не попасть. СКУД всех считает. И меня, грешную, тоже.", "direction": "постукивает пальцем по столу" },
+        { "id": "c08.sessions.003", "speaker": "dasha", "emotion": "determined", "text": "Вот. Кто был в цоколе в начале каждого сеанса — тот и сидел за ноль седьмой." }
+      ]
+    },
+    {
+      "id": "glass",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.glass.001", "speaker": "narrator", "text": "Допросная. Даша за стеклом жуёт жвачку. На планшете — проходы цокольного КПП.", "direction": "ровно; слышно, как жуёт" },
+        { "id": "c08.glass.002", "speaker": "dasha", "emotion": "neutral", "text": "Так. Стоп. Он с двадцать второго не выходил?", "direction": "перестаёт жевать; медленно, каждое слово отдельно" },
+        { "id": "c08.glass.003", "speaker": "dasha", "emotion": "determined", "text": "Вход в два ноль восемь — и всё, блин. Ни одного выхода. Третьи сутки в подвале живёт." },
+        { "id": "c08.glass.004", "speaker": "nina", "emotion": "neutral", "text": "Тоша-то? Он там и ночует, голубчик. Говорит, в общаге батареи холодные.", "direction": "буднично, не понимая, что говорит" },
+        { "id": "c08.glass.005", "speaker": "dasha", "emotion": "angry", "text": "Шесть из семи — у вас, Нина Фёдоровна. И у Льва Борисыча. Пять — у Мельника. Семь — у одного." },
+        { "id": "c08.glass.006", "speaker": "nina", "emotion": "scared", "text": "Я архив оцифровываю, голубчик. Ночью тише. Это всё не по описи, но я не прячусь.", "direction": "обиженно, с оглядкой" },
+        { "id": "c08.glass.007", "speaker": "dasha", "emotion": "determined", "text": "Проходы он объяснит: сервера, обновления. Нужно, что он делал до. Чем себя выдал." }
+      ]
+    },
+    {
+      "id": "two_cups",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.two_cups.001", "speaker": "dasha", "emotion": "neutral", "text": "Две чашки. Каждый раз две. Кому вторая — серверу?" },
+        { "id": "c08.two_cups.002", "speaker": "nina", "emotion": "sad", "text": "Ирочка по пятницам тоже две брала. Чабрец. Одну себе, вторую — в серверную.", "direction": "тихо, глядя не на экран, а на кружку «Лучший аналитик»" },
+        { "id": "c08.two_cups.003", "speaker": "nina", "emotion": "sad", "text": "Говорила: мальчишка ничего не ест, так хоть чаю ему." },
+        { "id": "c08.two_cups.004", "speaker": "dasha", "emotion": "hurt", "text": "Её нет с восемнадцатого. А он до сих пор берёт на двоих.", "direction": "на полтона ниже, без жвачки" },
+        { "id": "c08.two_cups.005", "speaker": "dasha", "emotion": "determined", "text": "Ну. Кого берём? Называй. И две карточки на стол — где есть его пропуск, логин или номер." }
+      ]
+    },
+    {
+      "id": "accuse_melnik",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.accuse_melnik.001", "speaker": "melnik", "emotion": "smug", "text": "Я в областном центре был, коллеги. Вот посадочный.", "direction": "достаёт телефон, показывает экран; наслаждается" },
+        { "id": "c08.accuse_melnik.002", "speaker": "melnik", "emotion": "smug", "text": "Третьего декабря — рейс в шесть сорок. Девятого — больничный, справка в кадрах. Пять из семи — не семь." },
+        { "id": "c08.accuse_melnik.003", "speaker": "dasha", "emotion": "hurt", "text": "Пять — не семь. Я ж вслух читала.", "direction": "в сторону, устало" },
+        { "id": "c08.accuse_melnik.004", "speaker": "dasha", "emotion": "angry", "text": "Ещё раз так — и за стекло сяду без тебя." }
+      ]
+    },
+    {
+      "id": "accuse_nina",
+      "location": "archive_nina",
+      "lines": [
+        { "id": "c08.accuse_nina.001", "speaker": "nina", "emotion": "sad", "text": "Меня, голубчик? Шесть ночей над описью сидела. А двадцать седьмого с давлением дома лежала.", "direction": "не обиженно — горько" },
+        { "id": "c08.accuse_nina.002", "speaker": "dasha", "emotion": "angry", "text": "Шесть. Не семь. Перечитай карточку." }
+      ]
+    },
+    {
+      "id": "accuse_ratnikov",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.accuse_ratnikov.001", "speaker": "dasha", "emotion": "angry", "text": "Лев Борисыч двадцать второго под капельницей лежал. С проводами на груди.", "direction": "резко, почти крик" },
+        { "id": "c08.accuse_ratnikov.002", "speaker": "dasha", "emotion": "hurt", "text": "Мало тебе, что его на скорой увезли?", "direction": "тише, голос садится" }
+      ]
+    },
+    {
+      "id": "accuse_wrong",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.accuse_wrong.001", "speaker": "mira", "emotion": "neutral", "text": "Обвинение не подтверждено. Совпадений по ключам не найдено.", "direction": "ровно, дружелюбно, одной интонацией" },
+        { "id": "c08.accuse_wrong.002", "speaker": "dasha", "emotion": "angry", "text": "Мимо. В ночи сеансов его в подвале не было. Смотри на семь из семи." }
+      ]
+    },
+    {
+      "id": "int_tokha",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "interrogation": {
+        "suspect": "tokha",
+        "interrogator": "dasha",
+        "mode": "standard",
+        "patience": 3,
+        "breakSteps": ["neutral", "uneasy", "scared", "broken"],
+        "lieTell": "перед ложью «короч» скороговоркой и лишнее «хе»",
+        "liveQuery": true,
+        "points": [
+          {
+            "line": "c08.int_tokha.003",
+            "press": "int_tokha_p1",
+            "present": {
+              "prompt": "Он спит дома по ночам?",
+              "correct": ["ev.c08.seven_of_seven"],
+              "cards": [
+                { "all": [{ "column": "badge_id", "eq": "B-4210" }, { "column": ["ts", "t_in"], "prefix": "2026-12-22 02:08" }] },
+                { "all": [{ "eq": "Лыков А. С." }, { "eq": 7 }] }
+              ],
+              "success": "int_tokha_b1",
+              "failure": "int_tokha_miss"
+            }
+          },
+          {
+            "line": "c08.int_tokha.007",
+            "press": "int_tokha_p2",
+            "present": {
+              "prompt": "В серверную заходит кто угодно?",
+              "correct": ["ev.c08.two_cups"],
+              "cards": [
+                {
+                  "all": [{ "column": "item", "contains": "чабрец" }, { "column": "qty", "eq": 2 }],
+                  "any": [{ "column": "payer_person_id", "eq": 4210 }, { "column": "payer_name", "eq": "Лыков А. С." }]
+                }
+              ],
+              "success": "int_tokha_b2",
+              "failure": "int_tokha_miss"
+            }
+          },
+          {
+            "line": "c08.int_tokha.011",
+            "press": "int_tokha_p3",
+            "present": {
+              "prompt": "Они почти не общались?",
+              "correct": [],
+              "cards": [
+                {
+                  "all": [{ "column": "item", "contains": "чабрец" }],
+                  "any": [{ "column": "payer_person_id", "eq": 4127 }, { "column": "payer_name", "eq": "Вальц И. П." }]
+                },
+                { "all": [{ "column": "badge_id", "eq": "B-4127" }, { "column": "door", "eq": "Серверная" }] }
+              ],
+              "success": "int_tokha_fridays",
+              "failure": "int_tokha_miss"
+            }
+          },
+          {
+            "line": "c08.int_tokha.015",
+            "press": "int_tokha_p4",
+            "present": {
+              "prompt": "Ему ничего не нужно было от «Щита»?",
+              "correct": [],
+              "cards": [
+                { "all": [{ "column": "purpose", "contains": "за Лыкова" }] },
+                { "all": [{ "column": "amount", "in": [-380000, 380000] }, { "column": "counterparty", "contains": "Деньги Сразу" }] }
+              ],
+              "success": "int_tokha_loan",
+              "failure": "int_tokha_miss"
+            }
+          }
+        ],
+        "closedScene": "int_tokha_closed",
+        "doneScene": "int_tokha_done"
+      },
+      "lines": [
+        { "id": "c08.int_tokha.001", "speaker": "narrator", "text": "Допросная. Тоха садится боком. Худи с подогревом мигает по швам.", "direction": "ровно; гудят лампы" },
+        { "id": "c08.int_tokha.002", "speaker": "dasha", "emotion": "neutral", "text": "Антон Сергеевич. Пара вопросов. Про ночи.", "direction": "голос «за стеклом» не нужен — она в комнате; спокойно, почти дружелюбно" },
+        { "id": "c08.int_tokha.003", "speaker": "tokha", "text": "Короч, я по ночам дома сплю. Как все нормальные люди, хе.", "lie": true, "direction": "скороговоркой, лишнее «хе» — примета лжи" },
+        { "id": "c08.int_tokha.004", "speaker": "dasha", "emotion": "neutral", "text": "Дома. Хорошо. А в серверной кто сидит?" },
+        { "id": "c08.int_tokha.005", "speaker": "tokha", "text": "Железо сидит. Хе. Ему спать не надо, оно имба.", "direction": "шутит, чтобы не молчать" },
+        { "id": "c08.int_tokha.006", "speaker": "dasha", "emotion": "neutral", "text": "А люди?" },
+        { "id": "c08.int_tokha.007", "speaker": "tokha", "text": "Короч, в серверную кто угодно заходит. Мельник, подрядчики, уборщица.", "lie": true, "direction": "скороговоркой, загибает пальцы" },
+        { "id": "c08.int_tokha.008", "speaker": "dasha", "emotion": "neutral", "text": "Ирину Вальц знал?" },
+        { "id": "c08.int_tokha.009", "speaker": "tokha", "text": "Ну… знал. Все знали. Она тут работала.", "direction": "пауза перед ответом; без «хе»" },
+        { "id": "c08.int_tokha.010", "speaker": "dasha", "emotion": "neutral", "text": "Близко?" },
+        { "id": "c08.int_tokha.011", "speaker": "tokha", "text": "Короч, мы с ней почти не общались. Здрасьте — до свидания.", "lie": true, "direction": "быстро, глядя в стол" },
+        { "id": "c08.int_tokha.012", "speaker": "dasha", "emotion": "neutral", "text": "Долги есть? Займы?" },
+        { "id": "c08.int_tokha.013", "speaker": "tokha", "text": "Какие займы, хе. Я сисадмин. У меня зарплата и сервера.", "direction": "прячет телефон экраном вниз" },
+        { "id": "c08.int_tokha.014", "speaker": "dasha", "emotion": "neutral", "text": "С «Щитом» знаком?" },
+        { "id": "c08.int_tokha.015", "speaker": "tokha", "text": "Короч, мне от них ничего не надо было. Я их и не знаю даже.", "lie": true, "direction": "слишком быстро, голос вверх" },
+        { "id": "c08.int_tokha.016", "speaker": "dasha", "emotion": "smug", "text": "Записываю. Всё, что сказано.", "direction": "в наушник игроку, тихо: можно предъявлять" }
+      ]
+    },
+    {
+      "id": "int_tokha_p1",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_p1.001", "speaker": "dasha", "emotion": "neutral", "text": "Дома — это где? Общага на Мира?" },
+        { "id": "c08.int_tokha_p1.002", "speaker": "tokha", "text": "Ну… да. Иногда тут остаюсь, когда обновления. Редко.", "direction": "сбивается, тише" },
+        { "id": "c08.int_tokha_p1.003", "speaker": "dasha", "emotion": "determined", "text": "Редко. Глянь, сколько раз это «редко» совпало с её логином.", "direction": "в наушник игроку" }
+      ]
+    },
+    {
+      "id": "int_tokha_p2",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_p2.001", "speaker": "dasha", "emotion": "neutral", "text": "Кто угодно — это кто? По пропускам?" },
+        { "id": "c08.int_tokha_p2.002", "speaker": "tokha", "text": "Хе. Мне откуда знать? Я не СКУД." },
+        { "id": "c08.int_tokha_p2.003", "speaker": "dasha", "emotion": "determined", "text": "Про пропуска он подготовился. Дай то, чего пропуск не покажет.", "direction": "в наушник игроку" }
+      ]
+    },
+    {
+      "id": "int_tokha_p3",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_p3.001", "speaker": "dasha", "emotion": "neutral", "text": "Совсем не общались? Ни разу чаю не попили?" },
+        { "id": "c08.int_tokha_p3.002", "speaker": "tokha", "text": "Чаю?.. Почему чаю? Нет. Ну… может, раз.", "direction": "дёргается на слове «чаю»" },
+        { "id": "c08.int_tokha_p3.003", "speaker": "dasha", "emotion": "determined", "text": "Дёрнулся на чай. По пятницам она к нему в серверную ходила. Проверь, с чем.", "direction": "в наушник игроку" }
+      ]
+    },
+    {
+      "id": "int_tokha_p4",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_p4.001", "speaker": "dasha", "emotion": "neutral", "text": "А «Деньги Сразу»? Тоже не знаешь?" },
+        { "id": "c08.int_tokha_p4.002", "speaker": "tokha", "text": "Это реклама. Она всем приходит, хе.", "direction": "смешок не получается" },
+        { "id": "c08.int_tokha_p4.003", "speaker": "dasha", "emotion": "determined", "text": "Займы. Глянь, кто за него платил. Прямо сейчас, я подожду.", "direction": "в наушник игроку" }
+      ]
+    },
+    {
+      "id": "int_tokha_miss",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_miss.001", "speaker": "tokha", "text": "Это чё, улика? Хе. Это строчка.", "direction": "с облегчением" },
+        { "id": "c08.int_tokha_miss.002", "speaker": "dasha", "emotion": "angry", "text": "Не то. Он улыбается. Дай мне то, от чего он перестанет.", "direction": "в наушник игроку, сквозь зубы" }
+      ]
+    },
+    {
+      "id": "int_tokha_b1",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_b1.001", "speaker": "dasha", "emotion": "determined", "text": "Семь ночей из семи. Каждую ночь, когда кто-то сидел под её логином, твой пропуск входил в подвал." },
+        { "id": "c08.int_tokha_b1.002", "speaker": "tokha", "text": "Я… работаю тут. Сервера. Обновления по ночам.", "direction": "тише, без «хе»" },
+        { "id": "c08.int_tokha_b1.003", "speaker": "dasha", "emotion": "angry", "text": "В два часа ночи. Семь раз. А двадцать второго вошёл — и больше не выходил." }
+      ]
+    },
+    {
+      "id": "int_tokha_b2",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_b2.001", "speaker": "dasha", "emotion": "determined", "text": "Две чашки чабреца. За пятнадцать минут до каждого сеанса. Кому вторая, Антон?" },
+        { "id": "c08.int_tokha_b2.002", "speaker": "tokha", "text": "Я… много пью. Хе. Холодно же.", "direction": "«хе» срывается" },
+        { "id": "c08.int_tokha_b2.003", "speaker": "dasha", "emotion": "hurt", "text": "В серверной на столе две чашки. Одна полная. Остывшая.", "direction": "тихо, без нажима" }
+      ]
+    },
+    {
+      "id": "int_tokha_fridays",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_fridays.001", "speaker": "dasha", "emotion": "neutral", "text": "По пятницам она брала две чашки. И через минуту шла к тебе в серверную. Одиннадцать пятниц." },
+        { "id": "c08.int_tokha_fridays.002", "speaker": "tokha", "text": "Она мне чай носила. По пятницам.", "direction": "медленно, впервые без сленга и без «хе»; долгая пауза после" },
+        { "id": "c08.int_tokha_fridays.003", "speaker": "tokha", "text": "Я до сих пор беру два. Рука сама.", "direction": "почти шёпотом" },
+        { "id": "c08.int_tokha_fridays.004", "speaker": "dasha", "emotion": "hurt", "text": "Говори дальше. Я слушаю." }
+      ]
+    },
+    {
+      "id": "int_tokha_loan",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.int_tokha_loan.001", "speaker": "dasha", "emotion": "determined", "text": "Двенадцатое ноября. «Щит» гасит твой займ. Триста восемьдесят тысяч." },
+        { "id": "c08.int_tokha_loan.002", "speaker": "tokha", "text": "Ставки. Я в минус ушёл, в полную жопу. А они пришли и сказали: закроем. Только скажи, когда она домой уходит.", "direction": "быстро, захлёбываясь, как будто давно хотел сказать" },
+        { "id": "c08.int_tokha_loan.003", "speaker": "tokha", "text": "Я сказал им, во сколько она уходит. Думал — напугают.", "direction": "медленно, без сленга; голос пропадает на последнем слове" },
+        { "id": "c08.int_tokha_loan.004", "speaker": "tokha", "text": "И токен админский отдал. А утром её не было." },
+        { "id": "c08.int_tokha_loan.005", "speaker": "dasha", "emotion": "angry", "text": "А через три часа ты, сука, сел за её логин.", "direction": "очень тихо; мат — не крик, а приговор" }
+      ]
+    },
+    {
+      "id": "int_tokha_done",
+      "location": "interrogation_glass",
+      "next": "turn_choice",
+      "lines": [
+        { "id": "c08.int_tokha_done.001", "speaker": "tokha", "text": "Они сказали — подчистить. Я подчищал. Её запросы, приметы, время в КУСП. Каждую ночь думал — последний раз.", "direction": "ровно, пусто" },
+        { "id": "c08.int_tokha_done.002", "speaker": "tokha", "text": "Я не знал, что они её… Я правда думал — напугают." },
+        { "id": "c08.int_tokha_done.003", "speaker": "dasha", "emotion": "hurt", "text": "Её сбили на Полярной в двадцать три десять. В час пятьдесят ты уже сидел под её логином." },
+        { "id": "c08.int_tokha_done.004", "speaker": "tokha", "text": "Знаю. Каждую ночь знаю.", "direction": "шёпот" },
+        { "id": "c08.int_tokha_done.005", "speaker": "dasha", "emotion": "neutral", "text": "Он твой. Решай, что с ним.", "direction": "в наушник игроку, устало" }
+      ]
+    },
+    {
+      "id": "int_tokha_closed",
+      "location": "interrogation_glass",
+      "next": "turn_choice",
+      "lines": [
+        { "id": "c08.int_tokha_closed.001", "speaker": "tokha", "text": "Всё. Без адвоката больше ни слова. Короч, всё.", "direction": "капюшон на голову, отворачивается" },
+        { "id": "c08.int_tokha_closed.002", "speaker": "dasha", "emotion": "angry", "text": "Закрылся. Ладно. Проходы и чашки у нас и так есть. Без признания дольше, но доведём." },
+        { "id": "c08.int_tokha_closed.003", "speaker": "dasha", "emotion": "neutral", "text": "Решай, что с ним. В камеру — или как?" }
+      ]
+    },
+    {
+      "id": "turn_choice",
+      "location": "interrogation_glass",
+      "lines": [
+        { "id": "c08.turn_choice.001", "speaker": "dasha", "emotion": "neutral", "text": "Можно по закону: протокол, Мельник, прокуратура. У «Щита» адвокаты — к Новому году отпустят за недоказанностью." },
+        { "id": "c08.turn_choice.002", "speaker": "dasha", "emotion": "determined", "text": "А можно оставить. Тихо. Пусть «Щит» думает, что он ещё их. Будут у нас глаза в серверной." },
+        { "id": "c08.turn_choice.003", "speaker": "tokha", "text": "Я сделаю, что скажете. Только не к ним обратно.", "direction": "глухо, глядя в пол" }
+      ],
+      "choices": [
+        { "id": "report", "text": "Оформляй официально. Пусть отвечает по закону.", "goto": "coda_reported" },
+        { "id": "turn", "text": "Не оформляй. Здесь от него больше толку — и пусть об этом никто не знает.", "flag": "tokha_turned", "goto": "coda_turned" }
+      ]
+    },
+    {
+      "id": "coda_reported",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.coda_reported.001", "speaker": "dasha", "emotion": "neutral", "text": "Звоню Мельнику. Он у нас и. о., пусть забирает." },
+        { "id": "c08.coda_reported.002", "speaker": "melnik", "emotion": "smug", "text": "Вот это я понимаю — синхронизация, коллеги. Конвой через полчаса.", "direction": "по телефону, довольный" },
+        { "id": "c08.coda_reported.003", "speaker": "tokha", "text": "Серверную я вам не открою. Не могу. Там… одна штука.", "direction": "в наручниках, тихо" },
+        { "id": "c08.coda_reported.004", "speaker": "nina", "emotion": "sad", "text": "Ключ от серверной у меня есть, голубчик. Ирочка оставила. «На всякий случай», говорила." }
+      ],
+      "choices": [
+        { "id": "schedule", "text": "Нина Фёдоровна, откройте. Посмотрим, что там творится по ночам.", "flag": "c08_coda", "goto": "coda_open" }
+      ]
+    },
+    {
+      "id": "coda_turned",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.coda_turned.001", "speaker": "dasha", "emotion": "neutral", "text": "Ладно. Для всех — допросили и отпустили. Мельнику ни слова." },
+        { "id": "c08.coda_turned.002", "speaker": "tokha", "text": "Спасибо. Я… короч, не подведу. Хе. Это нервное.", "direction": "впервые за день по-настоящему смеётся, коротко" },
+        { "id": "c08.coda_turned.003", "speaker": "tokha", "text": "Есть одна штука в серверной. Я её боялся трогать. Пойдём, покажу." }
+      ],
+      "choices": [
+        { "id": "schedule", "text": "Показывай.", "flag": "c08_coda", "goto": "coda_open" }
+      ]
+    },
+    {
+      "id": "coda_open",
+      "location": "server_room_b0_11",
+      "lines": [
+        { "id": "c08.coda_open.001", "speaker": "narrator", "text": "Серверная Б0-11. Гудят стойки. На столе у ноль седьмой — две чашки.", "direction": "тише обычного" },
+        { "id": "c08.coda_open.002", "speaker": "tokha", "text": "Каждую ночь кто-то входит под zero. Служебная учётка, ещё с «Сокола». Я её не трогал." },
+        { "id": "c08.coda_open.003", "speaker": "dasha", "emotion": "scared", "text": "Так. Стоп. Кто входит?", "direction": "впервые за дело — с испугом" },
+        { "id": "c08.coda_open.004", "speaker": "tokha", "text": "Вот и глянь. Журнал запросов, логин zero: во сколько и откуда. И расписание — cron_jobs." }
+      ]
+    },
+    {
+      "id": "coda",
+      "location": "server_room_b0_11",
+      "music": "theme_polynya",
+      "next": "outro",
+      "lines": [
+        { "id": "c08.coda.001", "speaker": "mira", "emotion": "neutral", "text": "Терминал CRON-01. Время входа — три часа двенадцать минут ноль секунд. Других записей нет.", "direction": "ровно, одной интонацией" },
+        { "id": "c08.coda.002", "speaker": "dasha", "emotion": "neutral", "text": "Станция, которой нет. Виртуальная. Каждую ночь минута в минуту." },
+        { "id": "c08.coda.003", "speaker": "tokha", "text": "CRON — это расписание. Не человек. Часы, которые сами жмут на кнопку." },
+        { "id": "c08.coda.004", "speaker": "dasha", "emotion": "neutral", "text": "Чьё расписание?" },
+        { "id": "c08.coda.005", "speaker": "tokha", "text": "Девять заданий. Созданы шестнадцатого ноября, с двадцати двух сорока одной до двадцати двух пятидесяти восьми." },
+        { "id": "c08.coda.006", "speaker": "nina", "emotion": "scared", "text": "Шестнадцатого? Это ж за два дня до…", "direction": "обрывает сама себя" },
+        { "id": "c08.coda.007", "speaker": "tokha", "text": "Создатель — i.valts. С ноль третьей. С того стола, за которым ты сейчас сидишь." },
+        { "id": "c08.coda.008", "speaker": "dasha", "emotion": "hurt", "text": "Она сама. За двое суток до смерти." },
+        { "id": "c08.coda.009", "speaker": "nina", "emotion": "sad", "text": "Сторожа оставила. Ирочка всегда на два шага вперёд ходила." },
+        { "id": "c08.coda.010", "speaker": "tokha", "text": "Условия смотрят, что видит ноль третья. Твой стол. Твой журнал." },
+        { "id": "c08.coda.011", "speaker": "dasha", "emotion": "neutral", "text": "Ночные строки в журнале. «Северная, четырнадцать». «Спроси, кому платит фонд». Это всё она?" },
+        { "id": "c08.coda.012", "speaker": "tokha", "text": "Её задания. Срабатывают ночью после дела, если условие выполнено." },
+        { "id": "c08.coda.013", "speaker": "nina", "emotion": "thinking", "text": "А я-то думала, голубчик, это ты себе по ночам подсказки пишешь." },
+        { "id": "c08.coda.014", "speaker": "dasha", "emotion": "neutral", "text": "Все — про пятнадцатый год. Ни одной — про ноябрь." },
+        { "id": "c08.coda.015", "speaker": "tokha", "text": "Про ноябрь она не знала. Не успела. Её подсказки кончаются там, где кончилась она." },
+        { "id": "c08.coda.016", "speaker": "dasha", "emotion": "determined", "text": "Седьмое задание сработает этой ночью. «Седьмое декабря пятнадцатого»." },
+        { "id": "c08.coda.017", "speaker": "tokha", "text": "После этого дела. В три двенадцать. Как всегда." },
+        { "id": "c08.coda.018", "speaker": "dasha", "emotion": "determined", "text": "Значит, завтра начинаем с этого." },
+        { "id": "c08.coda.019", "speaker": "nina", "emotion": "sad", "text": "Лев Борисович её «ноликом» звал. Она смеялась." },
+        { "id": "c08.coda.020", "speaker": "dasha", "emotion": "neutral", "text": "Ноликом. А тебя — Нолём.", "direction": "тихо, игроку" },
+        { "id": "c08.coda.021", "speaker": "nina", "emotion": "neutral", "text": "Неспроста, голубчик. Может, он и сам не понял, зачем так назвал." },
+        { "id": "c08.coda.022", "speaker": "tokha", "text": "Я когда первый раз увидел вход в три двенадцать — чуть не помер. Думал, сбой." },
+        { "id": "c08.coda.023", "speaker": "dasha", "emotion": "neutral", "text": "А потом?" },
+        { "id": "c08.coda.024", "speaker": "tokha", "text": "Потом каждую ночь. Ровно. Сижу под её логином — и смотрю, как она входит под чужим.", "direction": "медленно, без сленга" },
+        { "id": "c08.coda.025", "speaker": "dasha", "emotion": "angry", "text": "И не выключил." },
+        { "id": "c08.coda.026", "speaker": "tokha", "text": "Не смог. Рука не поднялась. Как с чаем." },
+        { "id": "c08.coda.027", "speaker": "nina", "emotion": "sad", "text": "Стёр-то ты всё, а сторожа оставил." },
+        { "id": "c08.coda.028", "speaker": "tokha", "text": "Я не знал, что это сторож. Я думал…" },
+        { "id": "c08.coda.029", "speaker": "dasha", "emotion": "neutral", "text": "Что ты думал?" },
+        { "id": "c08.coda.030", "speaker": "tokha", "text": "Каждую ночь в три двенадцать. Я думал — это она.", "direction": "медленно, без «хе»; пауза перед «это она»" },
+        { "id": "c08.coda.031", "speaker": "tokha", "text": "Понимаю, что так не бывает. А всё равно.", "direction": "почти шёпотом" },
+        { "id": "c08.coda.032", "speaker": "dasha", "emotion": "hurt", "text": "Так и есть. Она. Только на шаг раньше нас." },
+        { "id": "c08.coda.033", "speaker": "nina", "emotion": "sad", "text": "Пошли, голубчик. Чай остыл, а ночь длинная.", "direction": "мягко, как укрывают пледом" }
+      ]
+    },
+    {
+      "id": "future_row",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.future_row.001", "speaker": "tokha", "emotion": "uneasy", "text": "Отложенная отправка. Я видел. Не стал трогать.", "direction": "через плечо, тихо; сказал больше, чем хотел" },
+        { "id": "c08.future_row.002", "speaker": "dasha", "emotion": "neutral", "text": "Голосовое. Матери. На одиннадцатое января, двенадцать пятьдесят восемь." },
+        { "id": "c08.future_row.003", "speaker": "dasha", "emotion": "hurt", "text": "Это ж первое солнце. Ровно эта минута." },
+        { "id": "c08.future_row.004", "speaker": "nina", "emotion": "sad", "text": "Записано восемнадцатого, в двадцать три ноль пять. Она уже на улице была, голубчик. Сота — Полярная." },
+        { "id": "c08.future_row.005", "speaker": "dasha", "emotion": "hurt", "text": "Не отменит до солнца — значит, всё. Она знала, куда идёт." },
+        { "id": "c08.future_row.006", "speaker": "dasha", "emotion": "neutral", "text": "Валентине Сергеевне сказать? Или пусть придёт как придёт?" }
+      ],
+      "choices": [
+        { "id": "call", "text": "Позвонить Валентине Сергеевне. Пусть знает.", "flag": "valentina_warned", "goto": "call_valentina" },
+        { "id": "wait", "text": "Не звонить. Пусть дойдёт так, как Ирина хотела.", "goto": "no_call" }
+      ]
+    },
+    {
+      "id": "call_valentina",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.call_valentina.001", "speaker": "valentina", "emotion": "neutral", "text": "Вальц. Слушаю.", "direction": "по телефону; каждое окончание договорено" },
+        { "id": "c08.call_valentina.002", "speaker": "dasha", "emotion": "neutral", "text": "Валентина Сергеевна, это ОЦР. Тут от Ирины голосовое. Оно придёт одиннадцатого, в двенадцать…", "direction": "сбивается на числе" },
+        { "id": "c08.call_valentina.003", "speaker": "valentina", "emotion": "hurt", "text": "…пятьдесят восемь. Первое солнце. Она всегда говорила: дождусь солнца.", "direction": "договаривает за Дашу; голос не дрожит, это хуже" },
+        { "id": "c08.call_valentina.004", "speaker": "valentina", "emotion": "determined", "text": "Я буду на мостках. Там, где Петя рыбачил. Пусть придёт туда." },
+        { "id": "c08.call_valentina.005", "speaker": "valentina", "emotion": "sad", "text": "Спасибо, что сказали. Не все говорят." }
+      ]
+    },
+    {
+      "id": "no_call",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        { "id": "c08.no_call.001", "speaker": "dasha", "emotion": "neutral", "text": "Может, и правильно. Пусть будет, как она хотела." },
+        { "id": "c08.no_call.002", "speaker": "nina", "emotion": "sad", "text": "Как хотела — уже не будет, голубчик. Будет как будет." }
       ]
     },
     {
       "id": "outro",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
       "lines": [
-        {
-          "id": "c08.outro.001",
-          "speaker": "narrator",
-          "text": "Серверная пуста. На столе две чашки, обе ещё тёплые."
-        }
+        { "id": "c08.outro.001", "speaker": "narrator", "text": "К обеду Мельник проходит мимо и ничего не говорит. Рапорта на подрядчика не будет.", "direction": "ровно" },
+        { "id": "c08.outro.002", "speaker": "dasha", "emotion": "neutral", "text": "Призрак — свой. Сисадмин с двумя чашками. А подсказки по ночам шлёт мёртвая.", "direction": "устало, без жвачки" },
+        { "id": "c08.outro.003", "speaker": "nina", "emotion": "sad", "text": "Это всё не по описи, голубчик. Но правда." },
+        { "id": "c08.outro.004", "speaker": "ratnikov", "emotion": "tired", "text": "«Есть? Не по телефону. Береги себя, коллега».", "direction": "текст СМС его голосом; слабо, пауза на вдох, обработка «телефон»" },
+        { "id": "c08.outro.005", "speaker": "narrator", "text": "Серверная пуста. На столе две чашки, обе ещё тёплые.", "direction": "медленно; последняя фраза акта" }
       ]
     }
   ]
