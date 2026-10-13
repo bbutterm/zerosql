@@ -2,22 +2,267 @@
   "scenes": [
     {
       "id": "intro",
+      "location": "gu_hall_ceremony",
+      "music": "ceremony",
       "lines": [
-        {
-          "id": "c09.intro.001",
-          "speaker": "narrator",
-          "text": "Двадцать восьмое декабря, холл Главного управления. Ленточка, камеры, коробки с серверами."
-        }
+        { "id": "c09.intro.001", "speaker": "narrator", "text": "Двадцать восьмое декабря, холл Главного управления. Ленточка, камеры, коробки с серверами.", "direction": "ровно, с лёгкой иронией" },
+        { "id": "c09.intro.002", "speaker": "narrator", "text": "На коробках — логотип «Сияния». Рядом — пакеты с мандаринами и маленьким тёплым берегом на боку." },
+        { "id": "c09.intro.003", "speaker": "melnik", "emotion": "smug", "text": "Коллеги, синхронизируемся: сначала фото, потом серверная. Улыбаемся, это для пресс-службы.", "direction": "чётко, чуть в нос, вполголоса строю" },
+        { "id": "c09.intro.004", "speaker": "granin", "emotion": "happy", "text": "Понимаешь, город — это люди. А люди — это память. Вот, привёз вам памяти. Терабайты!", "direction": "раскатистый бас на публику, пауза «на аплодисменты» после «памяти»" },
+        { "id": "c09.intro.005", "speaker": "narrator", "text": "Гранин идёт вдоль строя и жмёт руки. Доходит до тебя. Ладонь тёплая, сухая, тяжёлая." },
+        { "id": "c09.intro.006", "speaker": "granin", "emotion": "neutral", "text": "А, это ты у нас с миграцией. Наслышан, понимаешь. Наслышан.", "direction": "тише, только для игрока, по-отечески; камеры не слышат" },
+        { "id": "c09.intro.007", "speaker": "granin", "emotion": "smug", "text": "Компьютеры — это память. Память беречь надо, правда?", "direction": "не отпуская руку; «правда» — с нажимом и улыбкой" },
+        { "id": "c09.intro.008", "speaker": "narrator", "text": "Он держит руку на полсекунды дольше, чем нужно. Вспышка камеры." },
+        { "id": "c09.intro.009", "speaker": "granin", "emotion": "happy", "text": "По-человечески — с наступающим! Фонд позаботился: мандарины всем, до последнего сержанта.", "direction": "снова громко, на весь холл" },
+        { "id": "c09.intro.010", "speaker": "melnik", "emotion": "neutral", "text": "Эдуард Витальевич, серверная на минус первом. Прошу. Коллеги, все свободны.", "direction": "суетливо, услужливо" },
+        { "id": "c09.intro.011", "speaker": "narrator", "text": "Они уходят к лифту. Внизу, на станции в серверной, на секунду мигает индикатор сети. Никто не смотрит.", "direction": "медленнее, вполголоса" }
+      ],
+      "next": "call_case"
+    },
+    {
+      "id": "call_case",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.call_case.001", "speaker": "narrator", "text": "Звонит телефон. На фоне — ровный писк монитора." },
+        { "id": "c09.call_case.002", "speaker": "ratnikov", "emotion": "tired", "text": "Ну-с, коллега. Видел его? Руку жал?", "direction": "хрипло, медленно, из кардиологии; на фоне писк кардиомонитора" },
+        { "id": "c09.call_case.003", "speaker": "ratnikov", "emotion": "uneasy", "text": "«Щит» гасил займ Лыкова. «Щит» катал «Тайгу» по Полярной. Пора узнать, чей он." },
+        { "id": "c09.call_case.004", "speaker": "ratnikov", "emotion": "neutral", "text": "Реестр владельцев тебе открыли. Иди от «Щита» вверх. Этаж за этажом, как в подъезде." },
+        { "id": "c09.call_case.005", "speaker": "ratnikov", "emotion": "uneasy", "text": "И ещё. Фамилий в запросах не пиши. Пусть фамилию назовут данные, а не ты.", "direction": "пауза перед репликой, тише" },
+        { "id": "c09.call_case.006", "speaker": "ratnikov", "emotion": "tired", "text": "Всё, сестра идёт. Сейчас отругает. Работай, коллега.", "direction": "с усмешкой, торопливо" }
+      ]
+    },
+    {
+      "id": "top",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.top.001", "speaker": "narrator", "text": "Наверху матрёшки — два человека. Семьдесят процентов и тридцать." },
+        { "id": "c09.top.002", "speaker": "ratnikov", "emotion": "uneasy", "text": "Эдуард Витальевич. «Тепло, которое не кончается». Ну конечно.", "direction": "долгий выдох перед репликой" },
+        { "id": "c09.top.003", "speaker": "ratnikov", "emotion": "neutral", "text": "Елисеев — мебель, коллега. Номинал. Тридцать процентов, чтобы в бумагах не стояло одно имя." },
+        { "id": "c09.top.004", "speaker": "ratnikov", "emotion": "tired", "text": "До тринадцатого года Kordon целиком числился на мебели. Хозяин пришёл, когда стало что делить." },
+        { "id": "c09.top.005", "speaker": "ratnikov", "emotion": "uneasy", "text": "Теперь — за что он платит. Деньги, коллега, всегда честнее людей." }
+      ]
+    },
+    {
+      "id": "money",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.money.001", "speaker": "narrator", "text": "Двадцатое ноября, четырнадцать ноль пять. Триста тысяч. «Доп. соглашение номер семь»." },
+        { "id": "c09.money.002", "speaker": "ratnikov", "emotion": "hurt", "text": "Ирину сбили восемнадцатого. Через два дня «Щиту» доплатили.", "direction": "очень тихо; писк монитора на фоне учащается" },
+        { "id": "c09.money.003", "speaker": "ratnikov", "emotion": "uneasy", "text": "Охрана — сто восемьдесят, каждый месяц. А триста сверху — это уже не охрана. Это работа." },
+        { "id": "c09.money.004", "speaker": "ratnikov", "emotion": "neutral", "text": "Банк пишет то же самое, копейка в копейку. Бумагу банка так просто не потрёшь." },
+        { "id": "c09.money.005", "speaker": "ratnikov", "emotion": "tired", "text": "Теперь вниз, коллега. Посмотрим, что у этой семейки по карманам." }
+      ]
+    },
+    {
+      "id": "twist",
+      "location": "basement_b0_03_day",
+      "music": "twist",
+      "lines": [
+        { "id": "c09.twist.001", "speaker": "narrator", "text": "Одна строка. Фонд «Тёплый берег». В графе исполнителя — твоё имя.", "direction": "медленно, с паузой перед «твоё имя»" },
+        { "id": "c09.twist.002", "speaker": "narrator", "text": "Двадцать пятое ноября. «Грант на ставку аналитика ОЦР на период миграции»." },
+        { "id": "c09.twist.003", "speaker": "mira", "emotion": "neutral", "text": "Пункт четыре-два. Исполнитель несёт персональную ответственность за полноту переноса архивных данных.", "direction": "ровно и дружелюбно, как прогноз погоды" },
+        { "id": "c09.twist.004", "speaker": "mira", "emotion": "neutral", "text": "Пункт четыре-три. Фонд погашает образовательный кредит Исполнителя после подписания акта финализации.", "direction": "та же интонация" },
+        { "id": "c09.twist.005", "speaker": "narrator", "text": "Логотип фонда был на экране загрузки в первый же вечер. Номер договора — в твоей карточке сотрудника." },
+        { "id": "c09.twist.006", "speaker": "narrator", "text": "Никто ничего не прятал. Просто никто не смотрел." },
+        { "id": "c09.twist.007", "speaker": "narrator", "text": "Тебя наняли не искать. Тебя наняли расписаться." },
+        { "id": "c09.twist.008", "speaker": "mira", "emotion": "neutral", "text": "Найдено строк: одна.", "direction": "фирменная реплика, без паузы" }
+      ]
+    },
+    {
+      "id": "request",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.request.001", "speaker": "narrator", "text": "Двадцатое ноября, десять пятнадцать. «Требуется кандидат без опыта работы в органах»." },
+        { "id": "c09.request.002", "speaker": "narrator", "text": "Заявитель — Ратников Лев Борисович. В четырнадцать ноль пять того же дня «Щит» получит свои триста тысяч." },
+        { "id": "c09.request.003", "speaker": "narrator", "text": "Без опыта. Без связей. Без вопросов. Так тебя и выбрали." }
+      ]
+    },
+    {
+      "id": "alla_offer",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.alla_offer.001", "speaker": "narrator", "text": "Сообщение с незнакомого номера. На аватарке — рыба подо льдом. «Подлёдный лов»." },
+        { "id": "c09.alla_offer.002", "speaker": "alla", "emotion": "neutral", "text": "Слышала, ты копаешь фонд. Кафе у маяка, через час. Без диктофонов.", "direction": "голосовое; быстро, прокуренно, затяжка электронной сигаретой в паузе" },
+        { "id": "c09.alla_offer.003", "speaker": "alla", "emotion": "smug", "text": "Не придёшь — тоже ответ. Без комментариев — тоже комментарий." }
+      ],
+      "choices": [
+        { "id": "meet", "text": "Еду. Кафе у маяка.", "goto": "alla_cafe" },
+        { "id": "skip", "text": "Не сейчас. Сначала дело.", "goto": "alla_skip" }
+      ]
+    },
+    {
+      "id": "alla_skip",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.alla_skip.001", "speaker": "narrator", "text": "Через минуту сообщение исчезает. «Удалено отправителем»." }
+      ]
+    },
+    {
+      "id": "alla_cafe",
+      "location": "cafe_stvor",
+      "lines": [
+        { "id": "c09.alla_cafe.001", "speaker": "narrator", "text": "Кафе у маяка. Пустой зал, запотевшее окно, за окном лёд до самого горизонта." },
+        { "id": "c09.alla_cafe.002", "speaker": "alla", "emotion": "tired", "text": "Ну. Что у тебя есть? Только про фонд не начинай. Фонд я и сама знаю.", "direction": "устало, крутит кольцо на пальце" },
+        { "id": "c09.alla_cafe.003", "speaker": "alla", "emotion": "smug", "text": "Покажи то, чего у меня нет. Тогда поговорим." }
+      ],
+      "present": {
+        "prompt": "Что положить перед Аллой? Её квартиру из жилфонда или то, куда на самом деле ушли деньги «беглеца».",
+        "correct": ["ev.c09.deal_0147"],
+        "cards": [
+          { "table": "properties", "all": [{ "contains": "Северная, 16" }] },
+          { "table": "properties", "all": [{ "column": ["owner_person_id", "owner", "владелец"], "eq": 1530 }] }
+        ],
+        "success": "alla_confess",
+        "failure": "alla_fail"
+      }
+    },
+    {
+      "id": "alla_fail",
+      "location": "cafe_stvor",
+      "lines": [
+        { "id": "c09.alla_fail.001", "speaker": "alla", "emotion": "smug", "text": "Это всё? Мне такое подписчики в личку пачками шлют." },
+        { "id": "c09.alla_fail.002", "speaker": "alla", "emotion": "neutral", "text": "Без комментариев — тоже комментарий. Ещё попытка." }
+      ]
+    },
+    {
+      "id": "alla_confess",
+      "location": "cafe_stvor",
+      "lines": [
+        { "id": "c09.alla_confess.001", "speaker": "narrator", "text": "Она долго смотрит на распечатку. Электронная сигарета гаснет у неё в пальцах." },
+        { "id": "c09.alla_confess.002", "speaker": "alla", "emotion": "ashamed", "text": "Я знала, что он не сбежал. Мне было тридцать восемь, и я жила с мамой в коммуналке.", "direction": "медленнее обычного, без колкости, в стол" },
+        { "id": "c09.alla_confess.003", "speaker": "alla", "emotion": "ashamed", "text": "«Бухгалтер-беглец». Мне принесли готовый текст. Я поправила запятые и получила ключи." },
+        { "id": "c09.alla_confess.004", "speaker": "alla", "emotion": "tired", "text": "Двадцать четыре платежа от фонда. Ни одного не вернула. Я не Ратников, у меня совести на возвраты не хватило." },
+        { "id": "c09.alla_confess.005", "speaker": "alla", "emotion": "neutral", "text": "Соберёшь пакет — неси мне. Тридцать восемь тысяч подписчиков. Удалить всё разом они не успеют.", "direction": "собравшись, снова быстро" }
+      ],
+      "choices": [
+        { "id": "deal", "text": "Договорились. Пакет будет.", "flag": "alla_met", "goto": "alla_end" },
+        { "id": "maybe", "text": "Посмотрим, кому я его понесу.", "flag": "alla_met", "goto": "alla_end" }
+      ]
+    },
+    {
+      "id": "alla_end",
+      "location": "cafe_stvor",
+      "lines": [
+        { "id": "c09.alla_end.001", "speaker": "alla", "emotion": "smug", "text": "Иди уже. И номер мой сотри. Шучу. Не стирай.", "direction": "с кривой усмешкой, вслед" }
+      ]
+    },
+    {
+      "id": "schedule",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.schedule.001", "speaker": "narrator", "text": "В шапке стола появляется новая строка. Убрать её нельзя." },
+        { "id": "c09.schedule.002", "speaker": "mira", "emotion": "neutral", "text": "Финализация: одиннадцатое января, тринадцать ноль-ноль. Ответственный: nol.", "direction": "ровно, «nol» читается как «ноль»" },
+        { "id": "c09.schedule.003", "speaker": "narrator", "text": "Три таблицы «Сокола» исчезнут в обед одиннадцатого. Подпись под этим — твоя." }
+      ]
+    },
+    {
+      "id": "melnik",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.melnik.001", "speaker": "narrator", "text": "Мельник заходит без стука. Смарт-часы, парфюм, улыбка для пресс-службы ещё не сошла." },
+        { "id": "c09.melnik.002", "speaker": "melnik", "emotion": "smug", "text": "Коллеги, синхронизируемся. Что за выборки по «Возврату»? У меня KPI по нагрузке на кластер." },
+        { "id": "c09.melnik.003", "speaker": "narrator", "text": "На экране — шестьдесят тысяч в месяц на «ИП Мельник». Он видит экран." },
+        { "id": "c09.melnik.004", "speaker": "melnik", "emotion": "scared", "text": "Это консалтинг. Жена консультирует. Всё законно, всё в налоговой есть.", "direction": "в нос, быстрее обычного, сглатывает" },
+        { "id": "c09.melnik.005", "speaker": "melnik", "emotion": "angry", "text": "Это вообще не по делу, понятно? Это не «Щит». Это моя семья." }
+      ],
+      "choices": [
+        { "id": "blackmail", "text": "Понимаю. Будешь помогать — никто не узнает.", "flag": "melnik=blackmail", "goto": "melnik_blackmail" },
+        { "id": "report", "text": "Это уйдёт рапортом в собственную безопасность.", "flag": "melnik=reported", "goto": "melnik_reported" },
+        { "id": "silence", "text": "Мне сейчас не до тебя. Иди.", "goto": "melnik_silent" }
+      ]
+    },
+    {
+      "id": "melnik_blackmail",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.melnik_blackmail.001", "speaker": "melnik", "emotion": "scared", "text": "Помогать — это как? Я… хорошо. Хорошо. Только без бумажек." },
+        { "id": "c09.melnik_blackmail.002", "speaker": "melnik", "emotion": "neutral", "text": "Одиннадцатого могу сдвинуть удаления. Минут на двенадцать. Больше не дадут.", "direction": "собравшись, тише, оглядываясь на дверь" },
+        { "id": "c09.melnik_blackmail.003", "speaker": "narrator", "text": "Он выходит, не закрыв дверь. Союзник, которого держат за горло." }
+      ]
+    },
+    {
+      "id": "melnik_reported",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.melnik_reported.001", "speaker": "melnik", "emotion": "angry", "text": "Рапорт? На меня? Да ты здесь без году неделя!" },
+        { "id": "c09.melnik_reported.002", "speaker": "melnik", "emotion": "scared", "text": "Ладно. Пиши. Только одиннадцатого тебе тут никто не поможет.", "direction": "сорвавшись на высокую ноту, потом глухо" },
+        { "id": "c09.melnik_reported.003", "speaker": "narrator", "text": "Рапорт уходит в собственную безопасность. К вечеру Мельника отстраняют до конца проверки." }
+      ]
+    },
+    {
+      "id": "melnik_silent",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.melnik_silent.001", "speaker": "melnik", "emotion": "neutral", "text": "Вот и правильно. Каждый работает на своём участке. Синхронизировались.", "direction": "облегчённо, снова деловито" },
+        { "id": "c09.melnik_silent.002", "speaker": "narrator", "text": "Он уходит. Выборка остаётся на экране, Мельник — на своём месте." }
+      ]
+    },
+    {
+      "id": "call_rat",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.call_rat.001", "speaker": "ratnikov", "emotion": "uneasy", "text": "Коллега. Не запускай.", "direction": "звонок из кардиологии; писк монитора; быстро для него, без «ну-с»" },
+        { "id": "c09.call_rat.002", "speaker": "ratnikov", "emotion": "uneasy", "text": "Они читают журнал. Ловят по фамилии и по номеру." },
+        { "id": "c09.call_rat.003", "speaker": "ratnikov", "emotion": "hurt", "text": "Нажмёшь — к утру он будет знать, что ты знаешь.", "direction": "почти шёпотом" }
+      ]
+    },
+    {
+      "id": "call_tokha",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.call_tokha.001", "speaker": "tokha", "emotion": "scared", "text": "Слышь, не запускай. Короч, агент на седьмой станции живой. Хе. Не смешно.", "direction": "быстрым шёпотом из серверной, гул вентиляторов" },
+        { "id": "c09.call_tokha.002", "speaker": "tokha", "emotion": "uneasy", "text": "Журнал уходит Бурому. Фамилию и номер они ловят. Нажмёшь — к утру всё будут знать." }
+      ]
+    },
+    {
+      "id": "watcher",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.watcher.001", "speaker": "narrator", "text": "Через минуту в журнале запросов появляется чужая строка. Логин — твой. Станция — в серверной." },
+        { "id": "c09.watcher.002", "speaker": "narrator", "text": "Запрос ищет адрес твоей прописки. В конце — комментарий: «Не надо»." },
+        { "id": "c09.watcher.003", "speaker": "shpala", "emotion": "scared", "text": "Слышь, аналитик. Бурого люди про тебя спрашивали. Где живёшь, когда спишь.", "direction": "гнусаво, скороговоркой, на ветру; оглядывается" },
+        { "id": "c09.watcher.004", "speaker": "shpala", "emotion": "neutral", "text": "Я ничего не говорил, ага? Век воли не видать. Дверь на ночь подопри чем-нибудь." }
+      ]
+    },
+    {
+      "id": "finale",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.finale.001", "speaker": "mira", "emotion": "neutral", "text": "Сверено. Протокол закрыт.", "direction": "ровно; штамп «СВЕРЕНО»" },
+        { "id": "c09.finale.002", "speaker": "narrator", "text": "Пять строк протокола. Его фамилия — в первой. Твой логин — в четвёртой." },
+        { "id": "c09.finale.003", "speaker": "narrator", "text": "В три часа дня за окном уже сумерки. У служебного входа грузят пустые коробки из-под серверов." }
+      ],
+      "next": "final_call"
+    },
+    {
+      "id": "final_call",
+      "location": "basement_b0_03_day",
+      "lines": [
+        { "id": "c09.final_call.001", "speaker": "narrator", "text": "Звонит Ратников. Монитор у него на фоне пищит реже." },
+        { "id": "c09.final_call.002", "speaker": "ratnikov", "emotion": "ashamed", "text": "Договор видел? Видел. И заявку мою, наверное, тоже.", "direction": "медленно, без «ну-с», долгие паузы" },
+        { "id": "c09.final_call.003", "speaker": "ratnikov", "emotion": "ashamed", "text": "Мне дали троих на выбор. За тобой не было ничего. Ни опыта, ни связей." },
+        { "id": "c09.final_call.004", "speaker": "ratnikov", "emotion": "hurt", "text": "Думал, ничего не найдёшь. А потом понял — хочу, чтобы нашлось.", "direction": "почти шёпотом, на выдохе" },
+        { "id": "c09.final_call.005", "speaker": "ratnikov", "emotion": "tired", "text": "Подпись под финализацией — твоя. Значит, и решать тебе. Не мне. Я своё нарешал." },
+        { "id": "c09.final_call.006", "speaker": "ratnikov", "emotion": "neutral", "text": "С наступающим, коллега. Мандарины их не ешь. Шучу. Ешь, витамины.", "direction": "чуть теплее, с усталой иронией" }
+      ],
+      "next": "outro"
+    },
+    {
+      "id": "bastion",
+      "lines": [
+        { "id": "c09.bastion.001", "speaker": "narrator", "text": "Ночь на двадцать девятое. Общежитие на Строителей. Камера тридцать один, два часа десять минут.", "direction": "тихо, ночная тишина, далёкий гул котельной" },
+        { "id": "c09.bastion.002", "speaker": "narrator", "text": "Под окнами стоит «Бастион» с номером «Щита». Фары выключены. Мотор работает." },
+        { "id": "c09.bastion.003", "speaker": "burtsev", "emotion": "cold", "text": "Не надо.", "direction": "почти шёпот, из темноты машины, очень медленно; слышно, как ломается спичка" },
+        { "id": "c09.bastion.004", "speaker": "narrator", "text": "Утром это будет строкой в базе. Сейчас — только звук мотора за стеклом." }
       ]
     },
     {
       "id": "outro",
+      "location": "gu_hall_ceremony",
       "lines": [
-        {
-          "id": "c09.outro.001",
-          "speaker": "narrator",
-          "text": "Холл опустел. На стойке дежурного остался пакет с мандаринами и логотипом фонда."
-        }
+        { "id": "c09.outro.001", "speaker": "narrator", "text": "Холл опустел. На стойке дежурного остался пакет с мандаринами и логотипом фонда." },
+        { "id": "c09.outro.002", "speaker": "narrator", "text": "До финализации — четырнадцать дней. До выборов — двадцать." },
+        { "id": "c09.outro.003", "speaker": "narrator", "text": "В серверной снова мигает индикатор сети. Ровно через полминуты после твоего последнего запроса.", "direction": "медленно, последняя фраза — с паузой" }
       ]
     }
   ]

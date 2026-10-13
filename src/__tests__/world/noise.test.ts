@@ -188,9 +188,10 @@ describe("резервы посадок: шум их не повторяет", (
 
   it("деньги группы и фонда — только посадки", () => {
     expect(one(db, "SELECT COUNT(*) FROM transactions WHERE counterparty LIKE '%Тёплый берег%' AND account_id <> 'ACC-30518'")).toBe(0);
-    expect(one(db, "SELECT COUNT(*) FROM transactions WHERE counterparty LIKE '%Ладога%' OR counterparty LIKE '%Щит%'")).toBe(1);
+    // 300 000 «доп. соглашение № 7» (core) + 36 × 180 000 «абонентская охрана» 2024-01 … 2026-12 (c09)
+    expect(one(db, "SELECT COUNT(*) FROM transactions WHERE counterparty LIKE '%Ладога%' OR counterparty LIKE '%Щит%'")).toBe(37);
     expect(one(db, "SELECT COUNT(*) FROM contracts c WHERE c.company_id IN (1,2,3,4,12,13,14,15,16,17,18) AND c.person_id IS NOT NULL")).toBe(0);
-    expect(one(db, "SELECT COUNT(*) FROM company_owners WHERE company_id IN (1,2,3,4,12,13,14,15,16,17,18) OR (owner_type = 'company' AND owner_id IN (1,2,3,4,12,13,14,15,16,17,18))")).toBe(0);
+    expect(one(db, "SELECT COUNT(*) FROM company_owners WHERE company_id IN (1,2,3,4,12,13,14,15,16,17,18) OR (owner_type = 'company' AND owner_id IN (1,2,3,4,12,13,14,15,16,17,18))")).toBe(16); // только посадка c09
   });
 });
 
@@ -249,8 +250,9 @@ describe("реализм и грязные данные (разд. 8.3)", () => 
   it("владения компаний: доли текущих владельцев — ровно 100, циклов в шуме нет", () => {
     expect(one(db, "SELECT COUNT(*) FROM (SELECT company_id, SUM(share) s FROM company_owners WHERE until IS NULL GROUP BY company_id HAVING ABS(s - 100) > 0.001)")).toBe(0);
     const deep = one(db, `WITH RECURSIVE up(company_id, owner_id, depth) AS (
-        SELECT company_id, owner_id, 1 FROM company_owners WHERE owner_type = 'company'
-        UNION ALL SELECT o.company_id, o.owner_id, up.depth + 1 FROM up JOIN company_owners o ON o.company_id = up.owner_id AND o.owner_type = 'company' WHERE up.depth < 50)
+        SELECT company_id, owner_id, 1 FROM company_owners WHERE owner_type = 'company' AND company_id NOT IN (15, 16)
+        UNION ALL SELECT o.company_id, o.owner_id, up.depth + 1 FROM up JOIN company_owners o ON o.company_id = up.owner_id AND o.owner_type = 'company'
+          AND o.company_id NOT IN (15, 16) WHERE up.depth < 50)
       SELECT MAX(depth) FROM up`);
     expect(Number(deep ?? 0)).toBeLessThan(20);
   });

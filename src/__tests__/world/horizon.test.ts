@@ -152,7 +152,7 @@ describe("поздние таблицы и сюжетные патчи", () => {
     const res = applyStoryPatch(db, "c10.purge");
     expect(res.changes).toBe(7 + 13 + 2);
     expect(one(db, "SELECT COUNT(*) FROM purchases WHERE payer_person_id = 4210")).toBe(0);
-    expect(one(db, "SELECT COUNT(*) FROM main.transactions WHERE account_id = 'ACC-10017'")).toBe(0);
+    expect(one(db, "SELECT COUNT(*) FROM main.transactions WHERE account_id = 'ACC-10017' AND purpose <> 'абонентская охрана'")).toBe(0);
     applyStoryPatch(db, "ws07.removed", { flags: { tokha_turned: true } });
     expect(one(db, "SELECT note FROM workstations WHERE id = 'WS-07'")).toBe("агент удалён 31.12.2026");
     db.close();
