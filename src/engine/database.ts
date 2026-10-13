@@ -11,10 +11,28 @@ export const MAX_RESULT_ROWS = 5000;
 
 let sqlPromise: Promise<SqlJsStatic> | null = null;
 
-function loadSqlJs(): Promise<SqlJsStatic> {
+/** Адрес wasm в браузере: лежит в /public (scripts/sync-wasm.mjs) */
+let wasmUrl = "/sql-wasm.wasm";
+
+/**
+ * Переопределяет адрес sql-wasm.wasm (например, воркер с другим basePath).
+ * Действует до первой загрузки sql.js.
+ */
+export function setSqlWasmUrl(url: string): void {
+  wasmUrl = url;
+}
+
+/** Браузер: вкладка или Web Worker (в воркере window нет, а wasm всё равно лежит в /public) */
+function inBrowser(): boolean {
+  return typeof window !== "undefined" || typeof (globalThis as { WorkerGlobalScope?: unknown }).WorkerGlobalScope !== "undefined";
+}
+
+/** Загружает sql.js один раз на поток */
+export function loadSqlJs(): Promise<SqlJsStatic> {
   if (!sqlPromise) {
     // В браузере wasm лежит в /public, в Node (тесты, скрипты) sql.js находит его сам
-    const options = typeof window === "undefined" ? undefined : { locateFile: () => "/sql-wasm.wasm" };
+    const url = wasmUrl;
+    const options = inBrowser() ? { locateFile: () => url } : undefined;
     sqlPromise = initSqlJs(options).catch((e) => {
       sqlPromise = null;
       throw e;

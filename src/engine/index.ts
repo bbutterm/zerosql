@@ -4,11 +4,9 @@
  */
 
 import type { Database } from "sql.js";
-import { createDatabase, executeQuery, getTableSchema, getForeignKeys as _getForeignKeys } from "./database";
+import { createDatabase, getTableSchema, getForeignKeys as _getForeignKeys } from "./database";
 import { SCHEMA_SQL } from "./schema";
 import { SEED_SQL } from "./seed";
-import { checkSqlPolicy, describePolicyViolation } from "./table-guard";
-import { explainSqlError } from "./sql-errors";
 import { checkObjectives, isMissionComplete as _isMissionComplete } from "./mission-runner";
 
 import type { QueryResult, TableInfo, ForeignKey } from "@/types/database";
@@ -212,6 +210,29 @@ export { WORLD_LATE_TABLES, WORLD_TABLES } from "./world/schema";
 export type { TableDef as WorldTableDef } from "./world/schema";
 // --- /World v2 ---
 
+// --- Runtime (разд. 6.14, п. 1–2) ---
+/**
+ * Ядро для стора: Web Worker с таймаутом 3 с и восстановлением по журналу
+ * (или тот же поток без Worker/IndexedDB). Наружу — только фабрика и типы.
+ */
+export { createEngineClient } from "./runtime/client";
+export type {
+  EngineClient,
+  EngineClientOptions,
+  EngineStatus,
+  EngineProgress,
+  EngineProgressStage,
+  WorldInfo,
+  CaseSaveState,
+  CaseOpened,
+  RunContext,
+  Evaluation,
+  JournalEntry,
+  PatchApplied,
+  WorkerLike,
+} from "./runtime/types";
+// --- /Runtime ---
+
 // --- Facade functions ---
 
 /** Создаёт БД, накатывает schema + seed, возвращает всё что нужно стору */
@@ -229,56 +250,9 @@ export async function initEngine(): Promise<{
   return { db, schema, foreignKeys };
 }
 
-export interface ExecuteOptions {
-  /**
-   * Белый список записи (CaseDef.writableTables): INSERT/UPDATE/DELETE/REPLACE
-   * только в эти таблицы, плюс BEGIN/COMMIT/ROLLBACK. Пуст — только чтение.
-   */
-  writableTables?: readonly string[];
-  /** CREATE VIEW / DROP VIEW своих представлений (CaseDef.allowViews) */
-  allowViews?: boolean;
-  /** Представления, созданные игроком (viewChanges): их можно читать и удалять */
-  playerViews?: readonly string[];
-  /**
-   * v1: разрешить любую запись и DDL. Запреты ATTACH, PRAGMA и main./temp. действуют всегда.
-   * @deprecated v2 передаёт writableTables / allowViews.
-   */
-  allowWrites?: boolean;
-  /** Схема для подсказок в ошибках (только доступные игроку таблицы) */
-  schema?: TableInfo[];
-}
-
 /** Проверка доступа + выполнение SQL в одном вызове. Ошибки — в QueryResult, не исключения */
-export function executeSQL(
-  db: Database,
-  sql: string,
-  unlockedTables: string[] | null,
-  options: ExecuteOptions = {}
-): QueryResult {
-  const policy = {
-    unlockedTables,
-    allowWrites: options.allowWrites,
-    writableTables: options.writableTables,
-    allowViews: options.allowViews,
-    playerViews: options.playerViews,
-  };
-  const access = checkSqlPolicy(sql, policy);
-  if (!access.allowed) {
-    return { columns: [], rows: [], rowCount: 0, executionTimeMs: 0, ...describePolicyViolation(access, policy) };
-  }
-
-  const result = executeQuery(db, sql);
-  if (result.error) {
-    const visible = (options.schema ?? []).filter(
-      (t) => unlockedTables === null || unlockedTables.includes(t.name)
-    );
-    result.errorHelp = explainSqlError(result.error, {
-      tables: visible.map((t) => t.name),
-      columns: visible.flatMap((t) => t.columns.map((c) => c.name)),
-    });
-  }
-  return result;
-}
+export { executeSQL } from "./execute";
+export type { ExecuteOptions } from "./execute";
 
 /** Проверка целей миссии — прокси к mission-runner */
 export function checkMissionProgress(
