@@ -181,6 +181,20 @@
     { "group": "SQL", "match": "strftime", "say": "эс-тэ-эр-эф-та́йм", "mode": "word" },
     { "group": "SQL", "match": "datetime", "say": "дэйт-та́йм", "mode": "word" },
     { "group": "SQL", "match": "julianday", "say": "джу́лиан-дэй", "mode": "word" },
-    { "group": "SQL", "match": "id", "say": "а́йди", "mode": "word", "ci": true }
+    { "group": "SQL", "match": "id", "say": "а́йди", "mode": "word", "ci": true },
+    { "group": "Коды и имена таблиц", "match": "WS-07", "say": "вэ-э́с ноль се́мь", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "Б0", "say": "бэ-но́ль", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "B-9000", "say": "бэ́ девять ты́сяч", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "КПП-1", "say": "кэ-пэ-пэ́ оди́н", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "4-го пальца", "say": "четвёртого па́льца", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "02:22", "say": "ноль два́ два́дцать два́", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "ПД-117", "say": "пэ-дэ́ сто семна́дцать", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "CRON-01", "say": "кро́н ноль оди́н", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "arch16_statements", "say": "арх-шестна́дцать сте́йтментс", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "arch16_registry", "say": "арх-шестна́дцать ре́джистри", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "sokol_stage_registry", "say": "со́кол сте́йдж ре́джистри", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "sokol_stage_statements", "say": "со́кол сте́йдж сте́йтментс", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "migration_jobs", "say": "майгре́йшн джо́бс", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "staging", "say": "сте́йджинг", "mode": "phrase" }
   ]
 }
