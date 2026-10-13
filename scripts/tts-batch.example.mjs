@@ -243,9 +243,16 @@ for (const l of allLines) {
   byScene.set(sceneKey(l), list);
 }
 
+// speakers.<id>.voiced_scenes — озвучиваются только эти сцены (рассказчик: открытие и закрытие дел)
+const sceneVoiced = (l) => {
+  const scenes = config.speakers?.[l.speaker]?.voiced_scenes;
+  return !scenes || scenes.includes(l.scene);
+};
+
 let queue = allLines.filter(
   (l) =>
     !skipSpeakers.has(l.speaker) &&
+    sceneVoiced(l) &&
     (!only || only.has(l.speaker)) &&
     (!ids || ids.has(l.id)) &&
     (!opt.case || l.case === opt.case)
