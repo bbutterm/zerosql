@@ -105,6 +105,17 @@ describe("контент дела", () => {
     }
   });
 
+  it("SQL в подсказках (кроме шаблонов с пропусками) выполняется на таблицах дела", () => {
+    for (const o of caseDef.objectives) {
+      for (const h of o.hints) {
+        const at = h.text.indexOf("SELECT");
+        if (at < 0 || /__|…/.test(h.text)) continue;
+        const sql = h.text.slice(at);
+        expect(run(sql).error, `${o.id}: ${sql}`).toBeNull();
+      }
+    }
+  });
+
   it("справочник: статьи на все понятия дела, примеры выполняются на таблицах дела", () => {
     const entries = handbookByCase.c01;
     expect(entries.map((e) => e.id).sort()).toEqual([...caseDef.concepts].sort());
@@ -406,7 +417,7 @@ describe("посаженные факты Д1", () => {
       [1697, 4717, "2026-12-02 08:15:00", "кража", "Промзона", C01.theftText],
     ]);
     // ровно три кражи кабеля с 16.11: шум их не повторяет
-    expect(one(world, "SELECT COUNT(*) FROM incidents WHERE kind = 'кража' AND description LIKE '%кабел%' AND reported_at >= '2026-11-16'")).toBe(3);
+    expect(one(db, "SELECT COUNT(*) FROM incidents WHERE kind = 'кража' AND description LIKE '%кабел%' AND reported_at >= '2026-11-16'")).toBe(3);
     expect(one(world, "SELECT COUNT(*) FROM incidents WHERE kusp_no IN (4688, 4703, 4717)")).toBe(3);
   });
 
@@ -415,7 +426,7 @@ describe("посаженные факты Д1", () => {
   });
 
   it("ровно одна машина: синий «Сайгак», не снятый с учёта, — К372ОК Шпакова (2307)", () => {
-    expect(rows(world, "SELECT plate FROM vehicles WHERE make LIKE '%сайгак%' AND color = 'синий' AND deregistered_at IS NULL")).toEqual([["К372ОК"]]);
+    expect(rows(db, "SELECT plate FROM vehicles WHERE make LIKE '%сайгак%' AND color = 'синий' AND deregistered_at IS NULL")).toEqual([["К372ОК"]]);
     expect(rows(world, "SELECT make, color, owner_person_id, owner_name, sold_at, deregistered_at FROM vehicles WHERE plate = 'К372ОК'")).toEqual([
       ["САЙГАК", "синий", 2307, "Шпаков Георгий Ильич", null, null],
     ]);
@@ -426,13 +437,13 @@ describe("посаженные факты Д1", () => {
     expect(one(world, "SELECT COUNT(*) FROM vehicles WHERE plate = 'K372OK'")).toBe(0);
     expect(rows(world, "SELECT make, color, deregistered_at FROM vehicles WHERE plate = 'М537ТН'")).toEqual([["Сайгак", "синий", "2024-04-11"]]);
     expect(rows(world, "SELECT make, model, color FROM vehicles WHERE plate = 'Е372ВХ'")).toEqual([["Вега", "Гранд", "белый"]]);
-    expect(rows(world, "SELECT plate FROM vehicles WHERE plate LIKE '%372%' ORDER BY plate")).toEqual([["Е372ВХ"], ["К372ОК"]]);
+    expect(rows(db, "SELECT plate FROM vehicles WHERE plate LIKE '%372%' ORDER BY plate")).toEqual([["Е372ВХ"], ["К372ОК"]]);
   });
 
   it("«Сайгаков» 14, записаны четырьмя способами, 'Сайгак' — только 5", () => {
-    expect(one(world, "SELECT COUNT(*) FROM vehicles WHERE make LIKE '%сайгак%'")).toBe(C01.saigakTotal);
+    expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE make LIKE '%сайгак%'")).toBe(C01.saigakTotal);
     expect(one(world, "SELECT COUNT(*) FROM vehicles WHERE make = 'Сайгак'")).toBe(C01.saigakExact);
-    expect(rows(world, "SELECT DISTINCT make FROM vehicles WHERE make LIKE '%сайгак%' ORDER BY make").map((r) => r[0]).sort()).toEqual(
+    expect(rows(db, "SELECT DISTINCT make FROM vehicles WHERE make LIKE '%сайгак%' ORDER BY make").map((r) => r[0]).sort()).toEqual(
       ["САЙГАК", "Сайгак", "СайгаК", "Сайгак Next"].sort()
     );
     // хлебовоз Р037АА — тоже «Сайгак» (белый «Сайгак Next»)
@@ -448,7 +459,7 @@ describe("посаженные факты Д1", () => {
       ["2026-12-02 02:52:00", "К372ОК"],
     ]);
     // номеров с «372» в «Дорсети» — только посаженные
-    expect(one(world, "SELECT COUNT(*) FROM plate_reads WHERE plate LIKE '%372%'")).toBe(11);
+    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate LIKE '%372%'")).toBe(11);
   });
 
   it("хлебовоз Р037АА — каждую ночь через камеру 12 в 05:00–05:10, и только там", () => {
@@ -460,7 +471,7 @@ describe("посаженные факты Д1", () => {
       expect(t > "05:00:00" && t < "05:10:00", String(at)).toBe(true);
     }
     // на камере 12 в ночи 29.11–03.12 других номеров с «37» нет
-    expect(one(world, "SELECT COUNT(*) FROM plate_reads WHERE camera_id = 12 AND plate LIKE '%37%' AND plate NOT LIKE '%372%' AND plate <> 'Р037АА' AND read_at BETWEEN '2026-11-29 00:00:00' AND '2026-12-04 00:00:00' AND substr(read_at, 12) < '06:00:00'")).toBe(0);
+    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE camera_id = 12 AND plate LIKE '%37%' AND plate NOT LIKE '%372%' AND plate <> 'Р037АА' AND read_at BETWEEN '2026-11-29 00:00:00' AND '2026-12-04 00:00:00' AND substr(read_at, 12) < '06:00:00'")).toBe(0);
   });
 
   it("ни одна посаженная дата не лежит на границе окон задач", () => {

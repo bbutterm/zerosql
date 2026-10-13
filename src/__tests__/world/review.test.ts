@@ -85,7 +85,7 @@ function invariants(db: Database): void {
   // Д9: доли текущих владельцев — ровно 100
   expect(one(db, "SELECT COUNT(*) FROM (SELECT company_id FROM company_owners WHERE until IS NULL GROUP BY company_id HAVING ABS(SUM(share) - 100) > 0.001)")).toBe(0);
   // Д10 ★: 16 гомоглифов шума до старта Д10 (+ K372OK из c01 = 17)
-  expect(at(db, F.CASE_START.c10, "SELECT COUNT(*) FROM plate_reads WHERE plate GLOB '*[A-Z]*'")).toEqual([[OCR_LATIN_READS.beforeC10]]);
+  expect(at(db, F.CASE_START.c10, "SELECT COUNT(*) FROM plate_reads WHERE plate GLOB '*[A-Z]*'")).toEqual([[OCR_LATIN_READS.beforeC10 + 1]]);
   // Гости КПП-1 — только к сотрудникам в штате
   const castHosts = ["Вальц И. П.", "Ратников Л. Б.", "Ким Д. С.", "Лыков А. С.", "Шустова Н. Ф.", "Мельник К. И."].map((c) => `%(к ${c})`);
   expect(one(db, `SELECT COUNT(*) FROM door_access WHERE badge_id LIKE 'G-%' AND (${castHosts.map(() => "note LIKE ?").join(" OR ")})`, castHosts)).toBe(0);
@@ -217,8 +217,8 @@ describe("ревью: СКУД, журналы, номера", () => {
     expect(open[2]).toBeLessThan(508);
   });
 
-  it("гомоглифы OCR: 16 до старта Д10, ни одного в день Д10, ещё 4 после Нового года", () => {
-    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate GLOB '*[A-Z]*' AND read_at < ?", [F.CASE_START.c10])).toBe(OCR_LATIN_READS.beforeC10);
+  it("гомоглифы OCR: 16 шума + K372OK из c01 до старта Д10, ни одного в день Д10, ещё 4 после Нового года", () => {
+    expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate GLOB '*[A-Z]*' AND read_at < ?", [F.CASE_START.c10])).toBe(OCR_LATIN_READS.beforeC10 + 1); // + K372OK из c01 (★ Д10: 17 строк)
     expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate GLOB '*[A-Z]*' AND read_at BETWEEN ? AND '2026-12-31 23:59:59'", [F.CASE_START.c10])).toBe(0);
     expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate GLOB '*[A-Z]*' AND read_at >= '2027-01-01'")).toBe(OCR_LATIN_READS.afterNewYear);
   });
