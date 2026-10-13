@@ -5,18 +5,12 @@
 
 import type { Database } from "sql.js";
 import { createDatabase, getTableSchema, getForeignKeys as _getForeignKeys } from "./database";
-import { SCHEMA_SQL } from "./schema";
-import { SEED_SQL } from "./seed";
-import { checkObjectives, isMissionComplete as _isMissionComplete } from "./mission-runner";
 
-import type { QueryResult, TableInfo, ForeignKey } from "@/types/database";
-import type { Mission } from "@/types/mission";
-import type { ObjectiveResult } from "./mission-runner";
+import type { TableInfo, ForeignKey } from "@/types/database";
 
 // --- Re-export types for external consumers ---
 export type { QueryResult, TableInfo, ForeignKey, SqlErrorHelp, QueryErrorKind } from "@/types/database";
-export type { Mission, ValidationOutcome, ValidationRule, CellValue } from "@/types/mission";
-export type { ObjectiveResult } from "./mission-runner";
+export type { ValidationOutcome, ValidationRule, CellValue } from "@/types/mission";
 
 // --- v2: контент дела и сюжета ---
 export type {
@@ -235,42 +229,14 @@ export type {
 
 // --- Facade functions ---
 
-/** Создаёт БД, накатывает schema + seed, возвращает всё что нужно стору */
-export async function initEngine(): Promise<{
-  db: Database;
-  schema: TableInfo[];
-  foreignKeys: ForeignKey[];
-}> {
-  const db = await createDatabase();
-  db.run(SCHEMA_SQL);
-  db.run(SEED_SQL);
-
-  const schema = getTableSchema(db);
-  const foreignKeys = _getForeignKeys(db);
-  return { db, schema, foreignKeys };
+/** Пустая база SQLite (sql.js) — для лаборатории и инструментов; мир дела открывает ядро */
+export async function createEmptyDatabase(): Promise<Database> {
+  return createDatabase();
 }
 
 /** Проверка доступа + выполнение SQL в одном вызове. Ошибки — в QueryResult, не исключения */
 export { executeSQL } from "./execute";
 export type { ExecuteOptions } from "./execute";
-
-/** Проверка целей миссии — прокси к mission-runner */
-export function checkMissionProgress(
-  mission: Mission,
-  result: QueryResult,
-  db: Database,
-  completedObjectives: Set<string>
-): ObjectiveResult[] {
-  return checkObjectives(mission, result, db, completedObjectives);
-}
-
-/** Завершена ли миссия — прокси к mission-runner */
-export function isMissionComplete(
-  mission: Mission,
-  completedObjectives: Set<string>
-): boolean {
-  return _isMissionComplete(mission, completedObjectives);
-}
 
 /** Схема таблиц для UI */
 export function getSchema(db: Database): TableInfo[] {

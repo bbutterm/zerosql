@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Redaction, ScreenButton } from "@/components/kit/screen";
 import { typo } from "@/components/kit/typo";
@@ -17,6 +17,8 @@ export interface CaseJournalEntry {
   /** Когда дело открыто: «14.12.2026» */
   opened?: string;
   state: CaseJournalState;
+  /** Своя подпись состояния вместо стандартной: «заключение принято, ясно» */
+  stateText?: string;
 }
 
 const STATE_TEXT: Record<Exclude<CaseJournalState, "locked">, string> = {
@@ -35,10 +37,19 @@ export function CaseJournal({
   defaultSelected,
   onOpen,
   onClose,
+  status,
+  aside,
+  footerStart,
   className,
 }: {
   cases: CaseJournalEntry[];
   defaultSelected?: string;
+  /** Правый край строки окна вместо «дел: N» */
+  status?: ReactNode;
+  /** Полоса под строкой окна: звание, счётчик до солнца */
+  aside?: ReactNode;
+  /** Левый край подвала: текстовые кнопки разделов */
+  footerStart?: ReactNode;
   onOpen: (id: string) => void;
   /** «Закрыть» и Esc; без колбэка кнопки нет */
   onClose?: () => void;
@@ -85,8 +96,9 @@ export function CaseJournal({
       <header className="flex h-7 shrink-0 items-center border-b border-line bg-scr-chrome px-4">
         <h1 className="ui-13 font-semibold text-ink-1">Зеркало</h1>
         <span className="ml-3 ui-13 text-ink-2">Журнал дел</span>
-        <span className="ml-auto mono-12 text-ink-3">дел: {cases.length}</span>
+        <span className="ml-auto mono-12 text-ink-3">{status ?? `дел: ${cases.length}`}</span>
       </header>
+      {aside}
 
       <div className="min-h-0 flex-1 overflow-auto">
         <table className="w-full table-fixed border-separate border-spacing-0">
@@ -134,7 +146,7 @@ export function CaseJournal({
                         {c.note && <p className="truncate ui-13 text-ink-2">{typo(c.note)}</p>}
                         {/* Узко: состояние строкой ниже, а не отдельным столбцом */}
                         <p className={cn("ui-12 lg:hidden", c.state === "active" ? "text-ink-1" : "text-ink-3")}>
-                          {STATE_TEXT[c.state as Exclude<CaseJournalState, "locked">]}
+                          {c.stateText ?? STATE_TEXT[c.state as Exclude<CaseJournalState, "locked">]}
                         </p>
                       </>
                     )}
@@ -148,7 +160,7 @@ export function CaseJournal({
                       c.state === "active" ? "text-ink-1" : c.state === "done" ? "text-ink-3" : "text-ink-2"
                     )}
                   >
-                    {c.state === "locked" ? <span className="mono-11 text-ink-3">нет допуска</span> : STATE_TEXT[c.state]}
+                    {c.state === "locked" ? <span className="mono-11 text-ink-3">нет допуска</span> : (c.stateText ?? STATE_TEXT[c.state])}
                   </td>
                 </tr>
               );
@@ -157,7 +169,8 @@ export function CaseJournal({
         </table>
       </div>
 
-      <footer className="flex shrink-0 items-center justify-end gap-3 border-t border-line bg-scr-chrome px-4 py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
+      <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-line bg-scr-chrome px-4 py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
+        {footerStart && <div className="mr-auto flex flex-wrap items-center gap-x-4 gap-y-1">{footerStart}</div>}
         {onClose && (
           <ScreenButton variant="secondary" onClick={onClose}>
             Закрыть

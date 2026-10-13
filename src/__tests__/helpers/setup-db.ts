@@ -1,6 +1,6 @@
 import initSqlJs, { type Database } from "sql.js";
-import { SCHEMA_SQL } from "@/engine/schema";
-import { SEED_SQL } from "@/engine/seed";
+import { SCHEMA_SQL } from "./v1-schema";
+import { SEED_SQL } from "./v1-seed";
 
 /**
  * Creates a fresh in-memory SQLite database with schema and seed data.

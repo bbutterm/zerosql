@@ -1,29 +1,6 @@
 import type { QueryResult } from "./database";
 import type { BlankKind, CardPredicate, DatetimePrecision } from "./case";
 
-export interface Mission {
-  id: string;
-  title: string;
-  subtitle: string;
-  briefing: string;
-  objectives: Objective[];
-  hints: string[];
-  unlockCondition?: string;
-  narrativeOnComplete: string;
-  difficulty: "tutorial" | "easy" | "medium" | "hard";
-  sqlConcepts: string[];
-  unlockedTables?: string[]; // if set, only these tables are shown unlocked; null/undefined = all
-}
-
-export interface Objective {
-  id: string;
-  description: string;
-  hint?: string;
-  validation: ValidationRule;
-  storyReward?: string;
-  order: number;
-}
-
 export type CellValue = string | number | null;
 
 export type ValidationRule =

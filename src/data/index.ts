@@ -5,13 +5,14 @@
  *   characters    CharacterDef[]  — src/data/characters.json
  *   handbook      HandbookEntry[] — src/data/handbook/cNN.json
  *   achievements  AchievementDef[] — src/data/achievements.json
- *   secrets       SecretDef[]     — src/data/secrets.json (пока нет)
+ *   secrets       SecretDef[]     — src/data/secrets.json (тайники, EASTER_EGGS.md)
  */
 import type { AchievementDef, SecretDef } from "@/types/case";
 import type { CharacterDef } from "@/types/story";
 
 import charactersJson from "./characters.json";
 import achievementsJson from "./achievements.json";
+import secretsJson from "./secrets.json";
 
 export { cases, getCase } from "./cases";
 export { handbook, handbookById, handbookByCase } from "./handbook";
@@ -58,6 +59,5 @@ export const achievements: AchievementDef[] = records("achievements.json", achie
   "kind",
 ]) as unknown as AchievementDef[];
 
-// TODO: src/data/secrets.json (SecretDef[]) пишут агенты документации; когда файл
-// появится — импортировать его здесь так же, как achievements.json.
-export const secrets: SecretDef[] = [];
+/** Тайники. Приведение типа: trigger в JSON — ValidationRule без литеральных типов; правила проверяет тест */
+export const secrets: SecretDef[] = records("secrets.json", secretsJson, ["id", "title", "text"]) as unknown as SecretDef[];

@@ -11,9 +11,10 @@
  * boot() вызывать один раз из корневого клиентского компонента (useEffect):
  * он поднимает сохранение из localStorage (без рассинхрона SSR) и ядро.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useStore } from "zustand";
-import { createGameStore, type GameState } from "./store";
+import { createGameStore, type GameState, type GameStore } from "./store";
+import { watchSfx } from "./sfx";
 
 export const gameStore = createGameStore({ skipHydration: true });
 
@@ -32,6 +33,29 @@ export function useGameView<T>(view: (state: GameState) => T): T {
   return useMemo(() => view(gameStore.getState()), [view, session, season, profile, settings, last]);
 }
 
+/** Сохранение поднято из localStorage (до этого стор держит значения по умолчанию) */
+export function useHydrated(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const persist = gameStore.persist as GameStore["persist"] & { onFinishHydration?: (fn: () => void) => () => void };
+      const offState = gameStore.subscribe(cb);
+      const offHydration = persist.onFinishHydration?.(cb);
+      return () => {
+        offState();
+        offHydration?.();
+      };
+    },
+    () => gameStore.persist.hasHydrated(),
+    () => false
+  );
+}
+
+/** Звуковая шина стола: подключить один раз в корневом клиентском компоненте */
+export function useSfxBus(): void {
+  useEffect(() => watchSfx(gameStore), []);
+}
+
+export { playSfx, SFX_MIX, type SfxName, type SfxCategory } from "./sfx";
 export { createGameStore, seasonPoints, isCaseUnlocked, casePlayable } from "./store";
 export type { GameState, GameActions, GameStore, GameStoreOptions, OfferInput } from "./store";
 export * from "./selectors";

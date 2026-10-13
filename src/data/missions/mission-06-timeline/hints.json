@@ -1,7 +1,0 @@
-[
-  "ORDER BY date_committed ASC сортирует от ранних дат к поздним.",
-  "BETWEEN работает с датами: WHERE date_committed BETWEEN '2024-01-01' AND '2024-02-28'.",
-  "Алиасы задаются через AS: SELECT type AS тип — переименовывают столбец в результате.",
-  "Для вычисления разницы дат в SQLite: julianday(date_reported) - julianday(date_committed).",
-  "Убийство — дата 2024-03-01. Ищите сообщения в communications за несколько дней до этой даты."
-]

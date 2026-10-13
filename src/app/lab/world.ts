@@ -2,7 +2,7 @@
  * Мир лаборатории (/lab): одна ночь 13–14 декабря 2026 года в ЦОД «Северный узел».
  *
  * Всё, что лаборатория показывает в таблице результата, — настоящий вывод SQLite через фасад
- * движка (initEngine + executeSQL): тот же table-guard, те же ошибки, те же подсказки.
+ * движка (createEmptyDatabase + executeSQL): тот же table-guard, те же ошибки, те же подсказки.
  * Состав один на всё: имя ↔ пропуск ↔ должность ↔ смена — один к одному (тест
  * src/__tests__/lab/world.test.ts). Распечатки улик в mock.ts — это вывод их же запросов.
  *
@@ -17,7 +17,7 @@
  */
 
 import type { Database } from "sql.js";
-import { executeSQL, getForeignKeys, getSchema, initEngine } from "@/engine";
+import { createEmptyDatabase, executeSQL, getForeignKeys, getSchema } from "@/engine";
 import type { ForeignKey, QueryResult, TableInfo } from "@/engine";
 
 /* ---------- Состав ---------- */
@@ -286,14 +286,10 @@ export interface LabWorld {
 }
 
 /**
- * Движок создаёт свою БД (initEngine), а лаборатория заменяет в ней мир:
- * старые таблицы удаляются, ночь в ЦОД накатывается. Дальше — только фасад.
+ * Движок даёт пустую базу, лаборатория накатывает в неё ночь в ЦОД. Дальше — только фасад.
  */
 export async function createLabWorld(): Promise<LabWorld> {
-  const { db } = await initEngine();
-  const old = db.exec("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'");
-  db.run("PRAGMA foreign_keys = OFF;");
-  for (const [name] of old[0]?.values ?? []) db.run(`DROP TABLE IF EXISTS "${String(name)}";`);
+  const db = await createEmptyDatabase();
   db.run(worldSql());
   const schema = getSchema(db);
   const foreignKeys = getForeignKeys(db);
