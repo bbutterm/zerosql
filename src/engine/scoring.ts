@@ -217,6 +217,12 @@ export interface AchievementState {
   seasonComplete: boolean;
   /** Уже полученные — повторно не выдаются */
   earned?: ReadonlySet<string>;
+  /** Сюжетные флаги сезона (для вида "flag") */
+  flags?: Readonly<Record<string, unknown>>;
+  /** Счётчики сезона (для вида "counter") */
+  counters?: Readonly<Record<string, number>>;
+  /** Случившиеся события (для вида "event") */
+  events?: ReadonlySet<string>;
 }
 
 /**
@@ -270,6 +276,23 @@ function isEarned(def: AchievementDef, state: AchievementState): boolean {
       return matchCases(parseParam(def.param), optionalComplete(state));
     case "season_complete":
       return state.seasonComplete;
+    case "flag": {
+      const name = typeof def.param === "string" ? def.param.trim() : "";
+      if (!name) return false;
+      const value = state.flags?.[name];
+      return value !== undefined && value !== null && value !== false && value !== 0 && value !== "";
+    }
+    case "counter": {
+      // «имя:порог»; без порога — хотя бы 1
+      const [name, threshold] = String(def.param ?? "").split(":");
+      if (!name?.trim()) return false;
+      const needed = threshold !== undefined && /^\d+$/.test(threshold.trim()) ? Number(threshold) : 1;
+      return count(state.counters?.[name.trim()]) >= Math.max(1, needed);
+    }
+    case "event": {
+      const id = typeof def.param === "string" ? def.param.trim() : "";
+      return id !== "" && (state.events?.has(id) ?? false);
+    }
     default:
       // Неизвестный вид из JSON — не выдаём
       return false;

@@ -343,3 +343,46 @@ describe("checkAchievements", () => {
     expect(checkAchievements([bogus], state({ solved: [record("a")], seasonComplete: true }))).toEqual([]);
   });
 });
+
+describe("checkAchievements: флаги, счётчики, события", () => {
+  const base = { solved: [], secretsFound: 0, seasonComplete: false };
+  const make = (kind: AchievementDef["kind"], param?: string | number): AchievementDef => ({
+    id: `a.${kind}`,
+    title: kind,
+    description: kind,
+    kind,
+    param,
+  });
+
+  it("flag: выдаётся, только когда флаг поднят", () => {
+    const def = make("flag", "tokha_turned");
+    expect(checkAchievements([def], base)).toEqual([]);
+    expect(checkAchievements([def], { ...base, flags: { tokha_turned: false } })).toEqual([]);
+    expect(checkAchievements([def], { ...base, flags: { tokha_turned: true } })).toEqual(["a.flag"]);
+    expect(checkAchievements([def], { ...base, flags: { tokha_turned: "yes" } })).toEqual(["a.flag"]);
+  });
+
+  it("counter: порог из параметра «имя:порог»", () => {
+    const def = make("counter", "ficus_pets:10");
+    expect(checkAchievements([def], { ...base, counters: { ficus_pets: 9 } })).toEqual([]);
+    expect(checkAchievements([def], { ...base, counters: { ficus_pets: 10 } })).toEqual(["a.counter"]);
+    expect(checkAchievements([make("counter", "notes_heard")], { ...base, counters: { notes_heard: 1 } })).toEqual([
+      "a.counter",
+    ]);
+  });
+
+  it("event: по id события, включая события задач", () => {
+    const def = make("event", "objective_first_try:case-03-polyarnaya/o3_2");
+    expect(checkAchievements([def], { ...base, events: new Set(["first_query"]) })).toEqual([]);
+    expect(
+      checkAchievements([def], { ...base, events: new Set(["objective_first_try:case-03-polyarnaya/o3_2"]) })
+    ).toEqual(["a.event"]);
+  });
+
+  it("пустой параметр не выдаёт ничего", () => {
+    const defs = [make("flag"), make("counter"), make("event")];
+    expect(
+      checkAchievements(defs, { ...base, flags: { "": true }, counters: { "": 5 }, events: new Set([""]) })
+    ).toEqual([]);
+  });
+});

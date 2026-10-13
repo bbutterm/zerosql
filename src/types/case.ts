@@ -447,14 +447,25 @@ export type AchievementKind =
   | "protocol_first_try"
   | "secrets_found"
   | "all_optional"
-  | "season_complete";
+  | "season_complete"
+  /** Сюжетный флаг поднят: param — имя флага (tokha_turned, ending_first_sun…) */
+  | "flag"
+  /** Счётчик дошёл до порога: param — «имя:порог» (notes_heard:10, endings_seen:5, ficus_pets:10) */
+  | "counter"
+  /**
+   * Событие случилось хотя бы раз: param — id события. Стор порождает общие события:
+   * first_query, query_timeout, solved_after_midnight, future_concept,
+   * objective_done:<caseId>/<objectiveId>, objective_first_try:<caseId>/<objectiveId>,
+   * objective_no_hint:<caseId>/<objectiveId>, а также сюжетные события дел.
+   */
+  | "event";
 
 export interface AchievementDef {
   id: string;
   title: string;
   description: string;
   kind: AchievementKind;
-  /** Параметр условия: id дела или нужное количество */
+  /** Параметр условия: id дела, нужное количество, имя флага/счётчика или id события (см. AchievementKind) */
   param?: string | number;
   /** Скрыто до получения */
   hidden?: boolean;
