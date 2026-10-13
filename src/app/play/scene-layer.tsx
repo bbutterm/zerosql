@@ -61,6 +61,7 @@ export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string)
         startAt={stage.awaiting ? "end" : stage.lineIndex}
         defaultMuted={settings.voiceVolume === 0}
         defaultAutoAdvance={settings.autoAdvance}
+        voiceVolume={settings.voiceVolume}
         charsPerSecond={settings.typewriter ? SPEED[settings.textSpeed] : SPEED.instant}
         onFinish={() => void st().skipScene()}
         onChoice={(choice) => void ensureEnd().then(() => st().choose(choice.id))}

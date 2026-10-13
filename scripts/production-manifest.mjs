@@ -33,11 +33,13 @@ const EMOTIONS = new Set([
 const NO_PORTRAIT = new Set(["mira", "narrator", "player"]);
 const NOT_VOICED = new Set(["player"]);
 /**
- * Рассказчик озвучен только в открытии и закрытии дел; титры и ремарки внутри сцен остаются текстом
- * (VOICE_BIBLE §2.14). Тот же список — `speakers.narrator.voiced_scenes` в tts-voices.json.
+ * Рассказчик озвучен в открытии и закрытии дел и в ночах между делами — сценах, на которые
+ * ссылаются такты `night` в case.json (night, night_<вариант>); титры и ремарки внутри сцен
+ * остаются текстом (VOICE_BIBLE §2.14). Сцена дела с похожим именем (night_0312 в Д5) ночью
+ * между делами не считается. Тот же список — `speakers.narrator.voiced_scenes` в tts-voices.json.
  */
 const NARRATOR_VOICED_SCENES = new Set(["intro", "outro", "cold_open"]);
-const isVoiced = (l) => !NOT_VOICED.has(l.speaker) && (l.speaker !== "narrator" || NARRATOR_VOICED_SCENES.has(l.sceneId));
+const isVoiced = (l) => !NOT_VOICED.has(l.speaker) && (l.speaker !== "narrator" || NARRATOR_VOICED_SCENES.has(l.sceneId) || l.nightScene === true);
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const csvCell = (value) => {
@@ -114,6 +116,8 @@ for (const caseDir of caseDirs) {
   const casePath = join(casesDir, caseDir, "case.json");
   const meta = existsSync(casePath) ? readJson(casePath) : { id: caseDir, title: caseDir };
   const script = readJson(scriptPath);
+  // Сцены ночи перед делом: на них ссылаются такты night.beats
+  const nightScenes = new Set((meta.night?.beats ?? []).flatMap((b) => (typeof b.scene === "string" ? [b.scene] : [])));
   for (const scene of script.scenes ?? []) {
     if (scene.location) {
       if (/^[a-z0-9_]+$/.test(scene.location)) {
@@ -123,7 +127,7 @@ for (const caseDir of caseDirs) {
       }
     }
     for (const line of scene.lines ?? []) {
-      lines.push({ caseId: meta.id, caseTitle: meta.title, sceneId: scene.id, ...line });
+      lines.push({ caseId: meta.id, caseTitle: meta.title, sceneId: scene.id, nightScene: nightScenes.has(scene.id), ...line });
       if (byId.has(line.speaker) || canonById.has(line.speaker)) {
         markUsed(line.speaker, line.emotion ?? baseEmotion(line.speaker), Boolean(scene.outdoor), line.id);
       }
@@ -186,7 +190,7 @@ md += `Всего реплик: **${lines.length}**, к озвучке: **${voic
 md += "| Персонаж | Реплик | Символов |\n|---|---:|---:|\n";
 for (const id of speakerOrder) {
   const list = bySpeaker.get(id);
-  const mark = NOT_VOICED.has(id) ? " — не озвучивается" : id === "narrator" ? " — озвучены только открытие и закрытие дел" : "";
+  const mark = NOT_VOICED.has(id) ? " — не озвучивается" : id === "narrator" ? " — озвучены открытие и закрытие дел и ночи между делами" : "";
   md += `| ${speakerName(id)} (\`${id}\`)${mark} | ${list.length} | ${list.reduce((s, l) => s + l.text.length, 0)} |\n`;
 }
 for (const id of speakerOrder) {

@@ -50,7 +50,12 @@ export interface Settings {
   typewriter: boolean;
   /** Подсветка лжи на допросе (в «Новичке» включена) */
   lieHighlight: boolean;
+  /** «Ночь между делами»: только новые / всегда / не показывать */
+  nightScreens: NightScreens;
 }
+
+/** Показ ночи перед делом (docs/design/NIGHTS.md, «Показ») */
+export type NightScreens = "new" | "always" | "off";
 
 export interface Profile {
   /** Имя или ник (патч p0.player) */
@@ -146,11 +151,17 @@ export interface Season {
   /** Последняя концовка и все увиденные */
   ending: EndingResult | null;
   endingsSeen: EndingId[];
+  /**
+   * Ключи условий заданий zero (cronSeenKeys), увиденные в каждом деле
+   * (последнее прохождение): not_seen проверяется по всему сезону.
+   */
+  cronSeen: Record<string, string[]>;
 }
 
 // --- Активное дело ---
 
-export type CasePhase = "intro" | "desk" | "debrief";
+/** night — экран «Ночь 03:12» перед вступлением (пока собирается база дела) */
+export type CasePhase = "night" | "intro" | "desk" | "debrief";
 
 /** Сцена на сцене: реплика line, ожидание выбора или предъявления после последней реплики */
 export interface StageSlot {
@@ -332,6 +343,8 @@ export interface LastRun {
 export interface Transient {
   /** Загрузка ядра и мира (экран загрузки) */
   loading: BootState;
+  /** База активного дела собрана в ядре (ночь показывает «К делу» только после этого) */
+  caseReady: boolean;
   busy: boolean;
   schema: TableInfo[];
   foreignKeys: ForeignKey[];

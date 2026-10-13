@@ -236,7 +236,9 @@
       "voiced_scenes": [
         "intro",
         "outro",
-        "cold_open"
+        "cold_open",
+        "night",
+        "night_*"
       ],
       "voice_settings": {
         "stability": 0.62,

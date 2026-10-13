@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { PlayMode, Profile, Settings, TextSpeed } from "@/stores/game/types";
+import type { NightScreens, PlayMode, Profile, Settings, TextSpeed } from "@/stores/game/types";
 import { ScreenButton, ScreenField } from "@/components/kit/screen";
 import { FieldRow, MirrorWindow, SELECT_CLASS, WindowHeading } from "./mirror-window";
 
@@ -137,6 +137,13 @@ export function OnboardingDialog({
 
 /* ---------- Параметры ---------- */
 
+/** «Ночь между делами» (docs/design/NIGHTS.md, «Показ») */
+const NIGHTS: Array<[NightScreens, string]> = [
+  ["new", "только новые"],
+  ["always", "всегда"],
+  ["off", "не показывать"],
+];
+
 const SPEEDS: Array<[TextSpeed, string]> = [
   ["slow", "медленно"],
   ["normal", "обычно"],
@@ -235,6 +242,20 @@ export function SettingsPanel({
         <FieldRow label="">
           <Check id="st-type" checked={settings.typewriter} onChange={(v) => onSettings({ typewriter: v })} label="Печатать реплики" />
           <Check id="st-auto" checked={settings.autoAdvance} onChange={(v) => onSettings({ autoAdvance: v })} label="Листать реплики после озвучки" />
+        </FieldRow>
+        <FieldRow label="Ночь между делами:" htmlFor="st-night" note="Ночь показывается перед делом один раз; при переигровке — только с «всегда».">
+          <select
+            id="st-night"
+            className={SELECT_CLASS}
+            value={settings.nightScreens ?? "new"}
+            onChange={(e) => onSettings({ nightScreens: e.target.value as NightScreens })}
+          >
+            {NIGHTS.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
         </FieldRow>
 
         <WindowHeading>Звук</WindowHeading>

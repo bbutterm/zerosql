@@ -193,6 +193,7 @@ export const DEFAULT_SETTINGS: Settings = {
   noTimer: false,
   typewriter: true,
   lieHighlight: false,
+  nightScreens: "new",
 };
 
 export const DEFAULT_PROFILE: Profile = {
@@ -217,6 +218,7 @@ export const emptySeason = (): Season => ({
   runs: {},
   ending: null,
   endingsSeen: [],
+  cronSeen: {},
 });
 
 export const defaultPersisted = (): PersistedGame => ({
@@ -314,4 +316,37 @@ export function isIrinaNote(scene: { lines: readonly { speaker: string; directio
  */
 export function deletesEvidence(sql: string): boolean {
   return /\bDELETE\s+FROM\s+(?:main\.)?["`[]?(?:statements|persons|evidence_registry)\b/i.test(sqlSkeleton(sql));
+}
+
+// --- Ночь между делами (docs/design/NIGHTS.md, «Показ») ---
+
+/** Событие сезона: ночь перед делом досмотрена (или пропущена клавишей) */
+export const nightSeenEvent = (caseId: string) => `night_seen:${caseId}`;
+
+/**
+ * Показать ночь при открытии дела: у дела есть ночь, настройка не «не показывать»;
+ * при «только новые» — дело ещё не раскрыто и ночь перед ним не досмотрена.
+ */
+export function nightWanted(
+  def: Pick<CaseDef, "id" | "night">,
+  settings: Pick<Settings, "nightScreens">,
+  season: Pick<Season, "solved" | "events">
+): boolean {
+  if (!def.night) return false;
+  const mode = settings.nightScreens ?? "new";
+  if (mode === "off") return false;
+  if (mode === "always") return true;
+  return !season.solved[def.id] && !season.events.includes(nightSeenEvent(def.id));
+}
+
+/**
+ * Вернуться на ночь при «Продолжить» (сохранение стоит на фазе night): только если
+ * ночь перед делом ещё не досмотрена; иначе — сразу к делу.
+ */
+export function nightResumes(
+  def: Pick<CaseDef, "id" | "night">,
+  settings: Pick<Settings, "nightScreens">,
+  season: Pick<Season, "events">
+): boolean {
+  return Boolean(def.night) && (settings.nightScreens ?? "new") !== "off" && !season.events.includes(nightSeenEvent(def.id));
 }

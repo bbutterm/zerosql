@@ -20,7 +20,7 @@ import { typo } from "@/components/kit/typo";
 import { EVIDENCE_ITEM_WIDTH, EVIDENCE_KIND_META, EvidenceCard } from "@/components/case/evidence-card";
 import { sortByNight } from "@/components/case/evidence-board";
 import { PortraitFrame } from "./portrait";
-import { isMediaMissing, markMediaMissing, voiceUrl } from "./media-cache";
+import { useLineAudio, type VoiceState } from "./line-audio";
 
 export interface DialoguePlayerProps {
   scene: Scene;
@@ -41,6 +41,8 @@ export interface DialoguePlayerProps {
   lockedChoiceHint?: (choice: DialogueChoice, missing: string[]) => string;
   defaultMuted?: boolean;
   defaultAutoAdvance?: boolean;
+  /** Громкость голосов 0…1 (settings.voiceVolume) */
+  voiceVolume?: number;
   /** Скорость печати, знаков в секунду (по умолчанию 26 мс на знак) */
   charsPerSecond?: number;
   /** С какой реплики начать: номер или "end" — сразу к выбору/предъявлению */
@@ -71,8 +73,6 @@ function usePrefersReducedMotion() {
     () => false
   );
 }
-
-type VoiceState = "idle" | "playing" | "done" | "none";
 
 /** Запись лога: титр локации или реплика */
 interface Entry {
@@ -128,6 +128,7 @@ export function DialoguePlayer({
   lockedChoiceHint,
   defaultMuted = false,
   defaultAutoAdvance = false,
+  voiceVolume = 1,
   charsPerSecond = 1000 / 26,
   startAt = 0,
   autoFocus,
@@ -159,7 +160,6 @@ export function DialoguePlayer({
   const [table, setTable] = useState<{ id: string; raised: boolean } | null>(null);
   const [muted, setMuted] = useState(defaultMuted);
   const [auto, setAuto] = useState(defaultAutoAdvance);
-  const [voice, setVoice] = useState<{ lineId: string; state: VoiceState }>({ lineId: "", state: "idle" });
 
   // Новая сцена от родителя: прошлая уходит в историю, печать начинается заново
   if (scene.id !== current.id) {
@@ -179,7 +179,6 @@ export function DialoguePlayer({
   const text = item?.text ?? "";
   const visible = reduced || atEnd ? text.length : Math.min(shown, text.length);
   const typing = visible < text.length;
-  const voiceState: VoiceState = item?.lineId && voice.lineId === item.lineId ? voice.state : "idle";
 
   const owned = new Set(evidence.map((e) => e.id));
   // Предъявление — в порядке реестра «Материалы»: по времени ночи
@@ -245,7 +244,7 @@ export function DialoguePlayer({
   };
 
   const skip = () => {
-    audioRef.current?.pause();
+    stopVoice();
     if (endMode === "next") {
       setResolved(true);
       onFinish?.();
@@ -281,10 +280,8 @@ export function DialoguePlayer({
 
   /* ---------- Озвучка ---------- */
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const onVoiceEnded = useEffectEvent((lineId: string) => {
-    setVoice({ lineId, state: "done" });
+  // Доиграла реплика — с «Авто» сцена листается дальше
+  const handleVoiceEnded = (lineId: string) => {
     if (auto && !atEnd && item?.lineId === lineId) {
       if (index < items.length - 1) {
         setIndex(index + 1);
@@ -293,42 +290,16 @@ export function DialoguePlayer({
         setAtEnd(true);
       }
     }
-  });
+  };
 
   const lineId = item?.kind === "line" ? item.lineId : undefined;
-  useEffect(() => {
-    if (!lineId || atEnd || muted) return;
-    const url = voiceUrl(lineId, voiceBasePath);
-    if (isMediaMissing(url)) return;
-    const audio = audioRef.current ?? new Audio();
-    audioRef.current = audio;
-    let cancelled = false;
-
-    audio.preload = "auto";
-    audio.src = url;
-    audio.onplaying = () => !cancelled && setVoice({ lineId, state: "playing" });
-    audio.onended = () => !cancelled && onVoiceEnded(lineId);
-    audio.onerror = () => {
-      markMediaMissing(url);
-      if (!cancelled) setVoice({ lineId, state: "none" });
-    };
-    audio.play().catch((err: unknown) => {
-      // NotAllowedError — автоплей заблокирован до первого клика; файл при этом есть
-      if (!cancelled && err instanceof DOMException && err.name === "NotAllowedError") {
-        setVoice({ lineId, state: "none" });
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      audio.onplaying = null;
-      audio.onended = null;
-      audio.onerror = null;
-      audio.pause();
-    };
-  }, [lineId, atEnd, muted, voiceBasePath]);
-
-  useEffect(() => () => audioRef.current?.pause(), []);
+  const { voice, stop: stopVoice } = useLineAudio(lineId, {
+    enabled: !atEnd && !muted,
+    basePath: voiceBasePath,
+    volume: voiceVolume,
+    onEnded: handleVoiceEnded,
+  });
+  const voiceState: VoiceState = item?.lineId && voice.lineId === item.lineId ? voice.state : "idle";
 
   /* ---------- Автопрокрутка без голоса ---------- */
 

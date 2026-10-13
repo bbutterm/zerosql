@@ -302,6 +302,8 @@ c03.outro.009,public/voice/c03.outro.009.mp3,case-03-polyarnaya,outro,valentina,
 c03.outro.010,public/voice/c03.outro.010.mp3,case-03-polyarnaya,outro,dasha,Дарья Сергеевна Ким,determined,Позвоню. Сорок второго раза не будет.,,37,dry,100,yes
 c03.outro.011,public/voice/c03.outro.011.mp3,case-03-polyarnaya,outro,narrator,Рассказчик,neutral,В блокноте аномалий остаётся строка: КУСП 4518.,,47,dry,300,yes
 c03.outro.012,public/voice/c03.outro.012.mp3,case-03-polyarnaya,outro,narrator,Рассказчик,neutral,Телефон на столе молчит. Сорок второго звонка не будет.,,55,dry,300,yes
+c04.night.001,public/voice/c04.night.001.mp3,case-04-mertvaya-dusha,night,narrator,Рассказчик,neutral,Сорок один раз звонила она. Теперь звонить должны ей.,"ночной регистр: на полтона тише, фраза кончается вниз",53,dry,300,no
+c04.night.002,public/voice/c04.night.002.mp3,case-04-mertvaya-dusha,night,narrator,Рассказчик,neutral,"В Старом городе в десять минут двенадцатого гаснет свет на кухне. Телефон остаётся на подоконнике, экраном вверх.","ночной регистр; короткая пауза перед «экраном вверх»",113,dry,300,no
 c04.intro.001,public/voice/c04.intro.001.mp3,case-04-mertvaya-dusha,intro,narrator,Рассказчик,neutral,"Одиннадцатое декабря, десять утра. Из серверной тянет тёплым воздухом и пылью.",,78,dry,300,yes
 c04.intro.002,public/voice/c04.intro.002.mp3,case-04-mertvaya-dusha,intro,melnik,Константин Игоревич Мельник,smug,"Коллеги, синхронизируемся: сироты, дубли, рассинхрон.","чётко, чуть в нос; входит без стука",53,dry,100,yes
 c04.intro.003,public/voice/c04.intro.003.mp3,case-04-mertvaya-dusha,intro,melnik,Константин Игоревич Мельник,neutral,Перед финализацией миграции ИТ отчитывается о качестве данных. Дедлайн — обед.,канцелярские англицизмы как родные,78,dry,100,yes

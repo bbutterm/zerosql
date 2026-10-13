@@ -45,6 +45,31 @@
   "briefing": "Служебная записка ИТ-отдела, 11.12.2026. Перед финализацией миграции «Сокол» → ПБД проверить качество данных: сироты (записи без пары), дубли, рассинхрон с ЗЕРКАЛОМ. Ответственный — майор Мельник К. И. Отчёт — к 13:00.\n\nДопуск на время проверки: учётные записи (logins), рабочие станции (workstations), журнал аудита (audit_log), реестр смертей ЗАГС из ЗЕРКАЛА (zags_deaths), журнал запросов (query_log). Только чтение.",
   "starterSql": "SELECT id, full_name, person_id, login FROM staff LIMIT 10;",
   "introScene": "intro",
+  "night": {
+    "from": "2026-12-09 18:00",
+    "stamp": "Б0-03, WS-03. 9–11 декабря 2026 года.",
+    "beats": [
+      { "scene": "night", "line": 1 },
+      { "at": "2026-12-09 23:10", "scene": "night", "line": 2 },
+      {
+        "at": "2026-12-10 11:20",
+        "status": "Синхронизация WS-07: принято 60 строк",
+        "check": {
+          "sql": "SELECT COUNT(*) FROM audit_log WHERE workstation = 'WS-07' AND ts BETWEEN '2026-11-19 01:50:00' AND '2026-11-19 02:58:00'",
+          "expect": 60
+        }
+      },
+      { "at": "2026-12-11 03:12:00", "click": "full", "login": true },
+      {
+        "at": "2026-12-11 05:07:58",
+        "row": { "table": "plate_reads", "text": "камера 12  Р037АА  въезд" },
+        "check": {
+          "sql": "SELECT camera_id, plate, direction FROM plate_reads WHERE read_at = '2026-12-11 05:07:58'",
+          "expect": [[12, "Р037АА", "въезд"]]
+        }
+      }
+    ]
+  },
   "objectives": [
     {
       "id": "o4_1",

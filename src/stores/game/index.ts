@@ -55,11 +55,11 @@ export function useSfxBus(): void {
   useEffect(() => watchSfx(gameStore), []);
 }
 
-export { playSfx, SFX_MIX, type SfxName, type SfxCategory } from "./sfx";
+export { playSfx, createAmbienceLoop, SFX_MIX, DUCK_GAIN, type SfxName, type SfxCategory, type AmbienceLoop } from "./sfx";
 export { createGameStore, seasonPoints, isCaseUnlocked, casePlayable } from "./store";
 export type { GameState, GameActions, GameStore, GameStoreOptions, OfferInput } from "./store";
 export * from "./selectors";
 export { computeEnding, endingInputs, ENDING_TITLES } from "./endings";
-export { WEATHER_LABELS, DEFAULT_SETTINGS, PIN_ALL_LIMIT } from "./rules";
+export { WEATHER_LABELS, DEFAULT_SETTINGS, PIN_ALL_LIMIT, nightWanted, nightResumes, nightSeenEvent } from "./rules";
 export { SAVE_KEY, SAVE_VERSION, migrateSave } from "./persist";
 export type * from "./types";

@@ -247,10 +247,13 @@ for (const l of allLines) {
   byScene.set(sceneKey(l), list);
 }
 
-// speakers.<id>.voiced_scenes — озвучиваются только эти сцены (рассказчик: открытие и закрытие дел)
+// speakers.<id>.voiced_scenes — озвучиваются только эти сцены (рассказчик: открытие и закрытие дел, ночи);
+// «night_*» — любая сцена с этим префиксом. Последнее слово за манифестом: реплика без пресета
+// обработки (fx) в voice-lines.csv не озвучивается (сцена дела night_0312 — не ночь между делами)
 const sceneVoiced = (l) => {
   const scenes = config.speakers?.[l.speaker]?.voiced_scenes;
-  return !scenes || scenes.includes(l.scene);
+  if (scenes && l.fx === "") return false;
+  return !scenes || scenes.some((s) => (s.endsWith("*") ? l.scene.startsWith(s.slice(0, -1)) : s === l.scene));
 };
 
 let queue = allLines.filter(

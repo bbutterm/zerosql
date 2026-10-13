@@ -10,7 +10,7 @@
  * стор передаёт ему параметры отсюда.
  */
 import type { StoryPatchParams } from "./world/patches";
-import { CRON_JOBS } from "./world/facts";
+import { CRON_JOB1_VARIANTS, CRON_JOBS } from "./world/facts";
 import { lastCronLogin } from "./world/patches";
 import { normalizeCell } from "./values";
 
@@ -48,8 +48,22 @@ export function nextCronNight(clock: string): string {
   return lastCronLogin(new Date(t).toISOString().slice(0, 19).replace("T", " "));
 }
 
-/** Условие задания выполнено (живое задание ночью срабатывает всегда — если событие его не запустило) */
-export function cronConditionHolds(condition: string, seen: Seen): boolean {
+/**
+ * Ключи условий (SEEN_KEYS), которые выполнены по реестру увиденного дела.
+ * Стор копит их по делам (season.cronSeen): условие not_seen проверяется по
+ * всему сезону, а не только по делу, после которого задание перепроверяют.
+ */
+export function cronSeenKeys(seen: Seen): string[] {
+  const norm = new Set(seen.map(normalizeCell));
+  return Object.keys(SEEN_KEYS).filter((key) => seenKey(key, norm, seen));
+}
+
+/**
+ * Условие задания выполнено (живое задание ночью срабатывает всегда — если
+ * событие его не запустило). seenBefore — ключи SEEN_KEYS, увиденные в ранних
+ * делах: задание 4 не срабатывает после Д7 у того, кто видел SMS ещё в Д6.
+ */
+export function cronConditionHolds(condition: string, seen: Seen, seenBefore: ReadonlySet<string> = new Set()): boolean {
   let parsed: Record<string, unknown>;
   try {
     parsed = JSON.parse(condition) as Record<string, unknown>;
@@ -58,9 +72,39 @@ export function cronConditionHolds(condition: string, seen: Seen): boolean {
   }
   if (parsed.always === true || "live" in parsed) return true;
   const norm = new Set(seen.map(normalizeCell));
-  if ("seen" in parsed) return seenKey(parsed.seen, norm, seen);
-  if ("not_seen" in parsed) return !seenKey(parsed.not_seen, norm, seen);
+  const has = (key: unknown) => (typeof key === "string" && seenBefore.has(key)) || seenKey(key, norm, seen);
+  if ("seen" in parsed) return has(parsed.seen);
+  if ("not_seen" in parsed) return !has(parsed.not_seen);
   return false;
+}
+
+type PatchLike = string | { id: string; params?: StoryPatchParams };
+
+/**
+ * id заданий, сработавших НОЧЬЮ после дела (патчи cron.fire с моментом at,
+ * их добавляет стор при закрытии дела), по порядку патчей. Живое задание 1,
+ * сработавшее событием внутри Д5, сюда не входит. Ночь перед следующим делом
+ * играет по очереди клавиш на каждое.
+ */
+export function nightCronJobs(patches: ReadonlyArray<PatchLike>): NightCronJob[] {
+  const out: NightCronJob[] = [];
+  for (const p of patches) {
+    if (typeof p === "string" || p.id !== CRON_PATCH || typeof p.params?.jobId !== "number" || !p.params.at) continue;
+    const { jobId, at, variant } = p.params;
+    if (out.some((j) => j.jobId === jobId)) continue;
+    const job = CRON_JOBS.find((j) => j.id === jobId);
+    if (!job) continue;
+    out.push({ jobId, at, sql: jobId === 1 ? CRON_JOB1_VARIANTS[variant ?? "c"] : job.sql });
+  }
+  return out;
+}
+
+/** Задание zero, сработавшее ночью: момент и текст строки CRON-01 в query_log */
+export interface NightCronJob {
+  jobId: number;
+  /** 'YYYY-MM-DD 03:12:00' */
+  at: string;
+  sql: string;
 }
 
 /** id сработавших заданий по уже применённым патчам */
@@ -84,12 +128,20 @@ export function cronLiveParams(order: number, seen: Seen): StoryPatchParams | nu
 
 /**
  * Задания, которые срабатывают ночью после дела order: дело задания не позже
- * этого, задание ещё не сработало, условие выполнено по реестру увиденного дела.
+ * этого, задание ещё не сработало, условие выполнено по реестру увиденного дела
+ * и ключам ранних дел (seenBefore — cronSeenKeys прошлых дел сезона).
  * Возвращает параметры патчей cron.fire в порядке id.
  */
-export function cronFiresAfterCase(order: number, seen: Seen, fired: ReadonlySet<number>, clock: string): StoryPatchParams[] {
+export function cronFiresAfterCase(
+  order: number,
+  seen: Seen,
+  fired: ReadonlySet<number>,
+  clock: string,
+  seenBefore: Iterable<string> = []
+): StoryPatchParams[] {
   const at = nextCronNight(clock);
-  return CRON_JOBS.filter((j) => caseOrder(j.fireAfter) <= order && !fired.has(j.id) && cronConditionHolds(j.condition, seen)).map((j) => ({
+  const before = new Set(seenBefore);
+  return CRON_JOBS.filter((j) => caseOrder(j.fireAfter) <= order && !fired.has(j.id) && cronConditionHolds(j.condition, seen, before)).map((j) => ({
     jobId: j.id,
     at,
     ...(j.id === 1 ? { variant: cronJob1Variant(seen) } : {}),

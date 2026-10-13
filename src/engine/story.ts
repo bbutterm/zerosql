@@ -1,4 +1,4 @@
-import type { CaseDef, EventTrigger, FlagCondition } from "@/types/case";
+import type { CaseDef, EventTrigger, FlagCondition, NightBeat, NightDef } from "@/types/case";
 import {
   EMOTIONS,
   NARRATOR,
@@ -131,8 +131,24 @@ function sceneEntries(caseDef: CaseDef): string[] {
   }
   for (const e of caseDef.events ?? []) if (e.scene) entries.push(e.scene);
   if (caseDef.outroScene) entries.push(caseDef.outroScene);
+  // Ночь перед делом: реплики рассказчика играет экран ночи, а не цепочка сцен
+  for (const b of caseDef.night?.beats ?? []) if ("scene" in b) entries.push(b.scene);
   return entries;
 }
+
+/** Вид такта ночи по его ключу; null — ключа нет или их несколько */
+export function nightBeatKind(beat: NightBeat): NightBeatKind | null {
+  const kinds = NIGHT_BEAT_KINDS.filter((k) => k in beat);
+  return kinds.length === 1 ? kinds[0] : null;
+}
+
+/** Ключи видов такта ночи (docs/design/NIGHTS.md, «Встраивание») */
+export const NIGHT_BEAT_KINDS = ["scene", "row", "status", "sessions", "click", "montage"] as const;
+export type NightBeatKind = (typeof NIGHT_BEAT_KINDS)[number];
+
+/** Средняя точка в ленте и строке состояния запрещена (UI_ART_DIRECTION, разд. 3.5) */
+const MIDDLE_DOT_RE = /\u00B7/;
+const NIGHT_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** id всех улик сезона (из задач всех дел) */
 export function collectEvidenceIds(cases: readonly CaseDef[]): Set<string> {
@@ -388,6 +404,9 @@ export function validateCaseContent(
     if (!e.scene && !e.patch && !e.line && !e.clockTo) add(`${where}: нет эффекта — scene, patch, line или clockTo`);
   }
 
+  // --- Ночь перед делом ---
+  if (caseDef.night) checkNight(caseDef.night);
+
   // --- Протокол ---
   const protocol = caseDef.protocol;
   if (protocol) {
@@ -470,6 +489,119 @@ export function validateCaseContent(
 
   function checkFlags(at: string, condition: FlagCondition | undefined) {
     if (condition && Object.keys(condition).length === 0) add(`${at}: пустое условие на флаги`);
+  }
+
+  /** Ночь: штамп, такты, ссылки на сцены, from ≤ at ≤ date, моменты не назад */
+  function checkNight(night: NightDef) {
+    const where = "ночь";
+    const fromOk = Boolean(parseClock(night.from));
+    if (!fromOk) add(`${where}: from «${night.from}» не в формате 'YYYY-MM-DD HH:MM[:SS]'`);
+    else if (parseClock(caseDef.date) && compareClock(night.from, caseDef.date) > 0) add(`${where}: from позже даты дела`);
+    if (!night.stamp?.trim()) add(`${where}: пустой штамп`);
+    else if (MIDDLE_DOT_RE.test(night.stamp)) add(`${where}: в штампе средняя точка`);
+    if (!Array.isArray(night.beats) || night.beats.length === 0) {
+      add(`${where}: нет ни одного такта`);
+      return;
+    }
+    let prev: string | null = fromOk ? night.from : null;
+    /** Момент внутри паузы: from ≤ value ≤ date; при order — не раньше прошлого такта */
+    const inPause = (at: string, value: string | undefined, order: boolean): boolean => {
+      if (value === undefined) return false;
+      if (!parseClock(value)) {
+        add(`${at}: «${value}» не в формате 'YYYY-MM-DD HH:MM[:SS]'`);
+        return false;
+      }
+      if (fromOk && compareClock(value, night.from) < 0) add(`${at}: «${value}» раньше начала паузы (from)`);
+      if (parseClock(caseDef.date) && compareClock(value, caseDef.date) > 0) add(`${at}: «${value}» позже даты дела`);
+      if (order) {
+        if (prev && compareClock(value, prev) < 0) add(`${at}: «${value}» раньше прошлого такта — время идёт только вперёд`);
+        prev = value;
+      }
+      return true;
+    };
+    const plainText = (at: string, text: unknown) => {
+      if (typeof text !== "string" || text.trim() === "") add(`${at}: пустой текст`);
+      else if (MIDDLE_DOT_RE.test(text)) add(`${at}: средняя точка — поля разделяются двумя пробелами или тире`);
+    };
+
+    night.beats.forEach((beat, i) => {
+      const at = `${where}, такт ${i + 1}`;
+      const kind = nightBeatKind(beat);
+      if (!kind) {
+        add(`${at}: нужен ровно один вид — ${NIGHT_BEAT_KINDS.join(", ")}`);
+        return;
+      }
+      checkFlags(`${at}, when`, beat.when);
+      if (beat.at !== undefined) inPause(`${at}, at`, beat.at, true);
+      switch (kind) {
+        case "scene": {
+          const b = beat as Extract<NightBeat, { scene: string }>;
+          const scene = getScene(caseDef, b.scene);
+          if (!scene) {
+            add(`${at}: сцена «${b.scene}» не найдена`);
+            break;
+          }
+          if (b.line !== undefined && (!Number.isInteger(b.line) || b.line < 1 || b.line > scene.lines.length)) {
+            add(`${at}: в сцене «${b.scene}» нет реплики № ${b.line}`);
+          }
+          for (const line of scene.lines) {
+            if (line.speaker !== NARRATOR) add(`${at}: реплика «${line.id}» — ночью говорит только рассказчик`);
+          }
+          if (scene.choices?.length || scene.present || scene.interrogation || scene.next) {
+            add(`${at}: у сцены ночи «${b.scene}» не бывает выбора, предъявления, допроса и next`);
+          }
+          break;
+        }
+        case "row": {
+          const b = beat as Extract<NightBeat, { row: unknown }>;
+          if (b.at === undefined) add(`${at}: у строки ленты нет at`);
+          if (!b.row || typeof b.row.table !== "string") add(`${at}: у строки ленты нет таблицы`);
+          else if (!caseDef.tables.includes(b.row.table)) add(`${at}: таблица «${b.row.table}» не открыта в деле`);
+          plainText(`${at}, строка`, b.row?.text);
+          if (!b.check || typeof b.check.sql !== "string" || b.check.sql.trim() === "") add(`${at}: нет проверки check.sql`);
+          else if (b.check.expect === undefined) add(`${at}: нет check.expect`);
+          break;
+        }
+        case "status": {
+          const b = beat as Extract<NightBeat, { status: string }>;
+          plainText(`${at}, сообщение`, b.status);
+          if (b.check && (typeof b.check.sql !== "string" || b.check.sql.trim() === "" || b.check.expect === undefined)) {
+            add(`${at}: у проверки сообщения нужны check.sql и check.expect`);
+          }
+          break;
+        }
+        case "sessions": {
+          const b = beat as Extract<NightBeat, { sessions: number }>;
+          if (b.sessions !== 2) add(`${at}: sessions бывает только 2`);
+          if (b.at === undefined) add(`${at}: у «сеансов: 2» нет at`);
+          if (inPause(`${at}, until`, b.until, false) && b.at && parseClock(b.at) && compareClock(b.until, b.at) <= 0) {
+            add(`${at}: until должен быть позже at`);
+          } else if (b.until === undefined) add(`${at}: у «сеансов: 2» нет until`);
+          break;
+        }
+        case "click": {
+          const b = beat as Extract<NightBeat, { click: string }>;
+          if (b.click !== "full" && b.click !== "short") add(`${at}: click бывает full или short`);
+          if (b.at === undefined) add(`${at}: у щелчка нет at`);
+          else if (parseClock(b.at) && !/ 03:12(:00)?$/.test(b.at.trim())) add(`${at}: щелчок бывает только в 03:12:00`);
+          if (b.login && !caseDef.tables.includes("logins")) add(`${at}: строка входа без таблицы logins в деле`);
+          break;
+        }
+        case "montage": {
+          const m = (beat as Extract<NightBeat, { montage: unknown }>).montage;
+          if (!m || !NIGHT_DATE_RE.test(m.from ?? "") || !NIGHT_DATE_RE.test(m.to ?? "")) {
+            add(`${at}: montage — даты 'YYYY-MM-DD' from и to`);
+            break;
+          }
+          if (inPause(`${at}, montage.from`, `${m.from} 03:12:00`, false) && inPause(`${at}, montage.to`, `${m.to} 03:12:00`, false)) {
+            if (compareClock(`${m.from} 03:12:00`, `${m.to} 03:12:00`) > 0) add(`${at}: montage.from позже montage.to`);
+            else if (prev && compareClock(`${m.from} 03:12:00`, prev) < 0) add(`${at}: монтаж раньше прошлого такта`);
+            else prev = `${m.to} 03:12:00`;
+          }
+          break;
+        }
+      }
+    });
   }
 }
 

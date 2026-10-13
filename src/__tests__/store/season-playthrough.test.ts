@@ -144,6 +144,12 @@ async function playCase(store: GameStore, def: CaseDef): Promise<Run> {
     const st = store.getState();
     const s = st.session!;
     if (s.phase === "debrief") return run;
+    // Ночь между делами: как «Пропустить ночь» и «К делу»
+    if (s.phase === "night") {
+      say("ночь");
+      await st.finishNight();
+      continue;
+    }
     const flags = { ...s.baseFlags, ...s.flags };
 
     if (s.stage) {
@@ -307,6 +313,11 @@ describe("сезон через стор: автоигрок проходит в
       store.getState().finishDebrief();
       expect(store.getState().season.solved[def.id], def.id).toBeDefined();
     }
+    // Ночи между делами показаны по разу (только новые) и отмечены
+    const events = store.getState().season.events;
+    for (const def of ORDERED.filter((c) => c.night)) expect(events, def.id).toContain(`night_seen:${def.id}`);
+    // Ключи условий заданий zero сохранены по делам — not_seen перепроверяется по всему сезону
+    expect(Object.keys(store.getState().season.cronSeen)).toHaveLength(ORDERED.length);
     // Сработавшие задания zero ушли в патчи следующих дел
     const cron = Object.values(store.getState().season.casePatches)
       .flat()

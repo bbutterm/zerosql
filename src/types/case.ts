@@ -351,6 +351,111 @@ export interface CaseClockDef {
   holds?: ClockHold[];
 }
 
+// --- Ночь между делами (docs/design/NIGHTS.md) ---
+
+/**
+ * Проверка строки ленты. Строки ленты — литералы (мир детерминирован), а тест
+ * src/__tests__/cases/night.test.ts выполняет sql на базе дела на старте
+ * часов (таблицы дела, патч p0.player и patches) и сверяет ответ с expect.
+ */
+export interface NightCheck {
+  /** Запрос к базе дела: только таблицы из CaseDef.tables */
+  sql: string;
+  /**
+   * Ожидаемый результат. Одно значение — результат ровно из одной строки,
+   * сверяется первая ячейка. Массив строк — весь результат по порядку.
+   */
+  expect: CellValue | CellValue[][];
+  /** id сюжетных патчей, без которых строки нет в мире (ветка сезона: c09.watcher) */
+  patches?: string[];
+}
+
+/** Строка ленты «Приём данных». Время в ленте — из at такта (ЧЧ:ММ:СС) */
+export interface NightFeedRow {
+  /** Таблица-источник; должна входить в tables дела */
+  table: string;
+  /**
+   * Запись: поля через два пробела или тире, без средней точки. Логины и имена
+   * пишутся как есть — маску по раскрытым делам накладывает селектор nightView
+   * (zero, i.valts — до Д4, Лыков, a.lykov, B-4210 — до Д8, nol — всегда).
+   */
+  text: string;
+}
+
+interface NightBeatBase {
+  /**
+   * Момент такта 'YYYY-MM-DD HH:MM[:SS]': время в строке состояния
+   * перескакивает сюда. Не задан — время стоит. Моменты идут не назад.
+   */
+  at?: string;
+  /** Такт только при этих флагах ранних дел (отсутствующий флаг — false и null) */
+  when?: FlagCondition;
+}
+
+/** Реплика рассказчика из сцены script.json (night, night_<вариант>) */
+export interface NightSceneBeat extends NightBeatBase {
+  scene: string;
+  /** Номер реплики в сцене с 1 (id …001 → 1). Не задан — все реплики сцены подряд */
+  line?: number;
+}
+
+/** Строка ленты «Приём данных» с проверкой по миру */
+export interface NightRowBeat extends NightBeatBase {
+  at: string;
+  row: NightFeedRow;
+  check: NightCheck;
+}
+
+/** Системное сообщение строки состояния (держится 6 с) */
+export interface NightStatusBeat extends NightBeatBase {
+  status: string;
+  /** Необязательная проверка факта сообщения по миру (как у строки ленты) */
+  check?: NightCheck;
+}
+
+/** «сеансов: 2» цветом --alarm со звуком notify.session — до момента until */
+export interface NightSessionsBeat extends NightBeatBase {
+  at: string;
+  sessions: 2;
+  until: string;
+}
+
+/**
+ * Щелчок 03:12:00. full — часы встают на 03:11, гул обрывается, 1,2 с тишины,
+ * щелчок; short — щелчок без тишины. cron — очереди клавиш по заданиям zero,
+ * сработавшим ночью после прошлого дела (после Д8 — и строки с их текстом);
+ * без cron очереди встают на щелчок в ночь срабатывания или на первый полный.
+ * login — строка входа zero в ленте (только если logins входит в tables дела).
+ */
+export interface NightClickBeat extends NightBeatBase {
+  at: string;
+  click: "full" | "short";
+  cron?: boolean;
+  login?: boolean;
+}
+
+/** Монтаж пропущенных ночей: дата листается по 0,5 с, на каждую — короткий щелчок */
+export interface NightMontageBeat extends NightBeatBase {
+  /** Даты 'YYYY-MM-DD' включительно */
+  montage: { from: string; to: string };
+}
+
+export type NightBeat = NightSceneBeat | NightRowBeat | NightStatusBeat | NightSessionsBeat | NightClickBeat | NightMontageBeat;
+
+/**
+ * Ночь перед делом (экран «Ночь 03:12»): заблокированная WS-03, реплики
+ * рассказчика, лента данных, щелчок в 03:12 и карточка дела. Лежит в case.json
+ * СЛЕДУЮЩЕГО дела: ночь после Д3 — поле night дела Д4.
+ */
+export interface NightDef {
+  /** Начало паузы 'YYYY-MM-DD HH:MM[:SS]' — время в строке состояния на входе */
+  from: string;
+  /** Штамп: «Б0-03, WS-03. 9–11 декабря 2026 года.» */
+  stamp: string;
+  /** Такты по порядку времени; from ≤ at ≤ CaseDef.date */
+  beats: NightBeat[];
+}
+
 // --- Контекст проверки ---
 
 /**
@@ -416,6 +521,8 @@ export interface CaseDef {
   events?: LiveEventDef[];
   /** Финальная сцена, если нет протокола */
   outroScene?: string;
+  /** Ночь перед делом: экран между разбором прошлого дела и вступлением этого */
+  night?: NightDef;
   /** Сцены из script.json */
   scenes: Scene[];
 }

@@ -554,6 +554,19 @@ async function main() {
       }
       const flags = { ...s.baseFlags, ...s.flags };
 
+      // Ночь между делами: Esc — к карточке, дождаться «К делу» (дело собрано) и нажать
+      if (s.phase === "night") {
+        await page.getByTestId("night-screen").waitFor({ timeout: 30_000 });
+        if (shots) await page.screenshot({ path: path.join(args.shotsDir, `night-${String(def.order).padStart(2, "0")}.png`) });
+        caseLog.push("ночь: пропустить");
+        await page.getByTestId("night-screen").press("Escape");
+        const start = page.locator('[data-testid="night-start"]:not([disabled])');
+        await start.waitFor({ timeout: 60_000 });
+        await start.click();
+        await waitState((x) => x.session?.phase !== "night", "конец ночи", 30_000);
+        continue;
+      }
+
       // Дело ещё открывается: сессия уже есть, вступительная сцена — ещё нет
       if (s.phase === "intro" && !s.stage && !s.interrogation) {
         await waitState((x) => x.session?.phase !== "intro" || Boolean(x.session?.stage), "вступительная сцена", 60_000);

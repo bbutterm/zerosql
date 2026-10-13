@@ -23,6 +23,7 @@ import {
   createEngineClient,
   cronFiresAfterCase,
   cronLiveParams,
+  cronSeenKeys,
   firedCronJobs,
   dueEvents,
   getScene,
@@ -70,6 +71,9 @@ import {
   flagRaised,
   futureConcepts,
   isIrinaNote,
+  nightResumes,
+  nightSeenEvent,
+  nightWanted,
   tripFlags,
   flagsBefore,
   hintTierAllowed,
@@ -85,6 +89,7 @@ import {
 import type {
   Bark,
   BarkKind,
+  CasePhase,
   CaseSession,
   Debrief,
   EndingResult,
@@ -127,6 +132,11 @@ export interface GameActions {
   abandonCase(): void;
   /** Закрыть разбор и вернуться в календарь */
   finishDebrief(): void;
+  /**
+   * Ночь досмотрена или пропущена («К делу»): отметка night_seen:<id>, дальше —
+   * вступление. Ждёт, пока база дела соберётся.
+   */
+  finishNight(): Promise<void>;
 
   // сцены
   playScene(sceneId: string): Promise<void>;
@@ -202,6 +212,7 @@ const BUDGET_LINE = "Лимит запросов по делу исчерпан.
 
 const initialTransient = (): Transient => ({
   loading: { status: "idle", progress: null, fromCache: null, error: null },
+  caseReady: false,
   busy: false,
   schema: [],
   foreignKeys: [],
@@ -240,7 +251,10 @@ const shiftSessionFlag = (s: CaseSession, name: string, delta: number): CaseSess
   flags: { ...s.flags, [name]: shiftFlag(effectiveFlags(s), name, delta)[name] },
 });
 
-function newSession(def: CaseDef, init: Pick<CaseSession, "runId" | "replay" | "baseFlags" | "startPatches" | "priorLog" | "clock">): CaseSession {
+function newSession(
+  def: CaseDef,
+  init: Pick<CaseSession, "runId" | "replay" | "baseFlags" | "startPatches" | "priorLog" | "clock"> & { phase?: CasePhase }
+): CaseSession {
   return {
     caseId: def.id,
     phase: "intro",
@@ -381,6 +395,8 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
 
   let client: EngineClient | null = null;
   let openedCase: string | null = null;
+  /** Дело, которое ядро открывает прямо сейчас: второй вызов ждёт тот же промис */
+  let pendingOpen: { key: string; promise: Promise<void> } | null = null;
   let barkSeq = 0;
   let initPromise: Promise<void> | null = null;
 
@@ -474,25 +490,43 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           return fresh;
         };
 
+        const sessionKey = (s: Pick<CaseSession, "caseId" | "runId">) => `${s.caseId}#${s.runId}`;
+
         const openInEngine = async (s: CaseSession, d: CaseDef) => {
-          const c = engine();
-          await c.init((progress) => set((st) => ({ loading: { ...st.loading, progress } })));
-          const opened = await c.openCase(d, {
-            ...(get().profile.playerName ? { playerName: get().profile.playerName } : {}),
-            patches: s.startPatches,
-            queryLog: s.priorLog,
-            journal: s.journal,
-          });
-          openedCase = `${s.caseId}#${s.runId}`;
-          set({ schema: opened.schema, foreignKeys: opened.foreignKeys, playerViews: opened.playerViews });
-          patchSession((x) => ({ ...x, clock: opened.clock, journal: [...c.getJournal()] }));
+          const key = sessionKey(s);
+          if (pendingOpen?.key === key) return pendingOpen.promise;
+          const promise = (async () => {
+            const c = engine();
+            await c.init((progress) => set((st) => ({ loading: { ...st.loading, progress } })));
+            const opened = await c.openCase(d, {
+              ...(get().profile.playerName ? { playerName: get().profile.playerName } : {}),
+              patches: s.startPatches,
+              queryLog: s.priorLog,
+              journal: s.journal,
+            });
+            openedCase = key;
+            const current = get().session;
+            set({
+              schema: opened.schema,
+              foreignKeys: opened.foreignKeys,
+              playerViews: opened.playerViews,
+              caseReady: current !== null && sessionKey(current) === key,
+            });
+            patchSession((x) => (sessionKey(x) === key ? { ...x, clock: opened.clock, journal: [...c.getJournal()] } : x));
+          })();
+          pendingOpen = { key, promise };
+          try {
+            await promise;
+          } finally {
+            if (pendingOpen?.promise === promise) pendingOpen = null;
+          }
         };
 
         const ensureOpen = async () => {
           const s = get().session;
           const d = def();
           if (!s || !d) return false;
-          if (openedCase !== `${s.caseId}#${s.runId}`) await openInEngine(s, d);
+          if (openedCase !== sessionKey(s)) await openInEngine(s, d);
           return true;
         };
 
@@ -501,7 +535,8 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           for (let guard = 0; guard < 16; guard++) {
             const s = get().session;
             const d = def();
-            if (!s || !d || s.phase === "debrief") return;
+            // Ночь: дело ещё не началось — события ждут вступления
+            if (!s || !d || s.phase === "debrief" || s.phase === "night") return;
             const due = dueEvents(d, {
               completed: new Set(s.completed),
               endedScenes: new Set(s.endedScenes),
@@ -543,7 +578,7 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
         const maybeClose = () => {
           const s = get().session;
           const d = def();
-          if (!s || !d || s.phase === "debrief") return;
+          if (!s || !d || s.phase === "debrief" || s.phase === "night") return;
           // Финал без протокола — только когда сюжет стоит: сцена, очередь или допрос могут
           // ещё выставить флаг условной задачи (Д8: кода после допроса Тохи)
           const resting = s.stage === null && s.queue.length === 0 && s.interrogation === null;
@@ -639,12 +674,14 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
             }
           }
 
-          // Ночь после дела: задания zero, чьё условие выполнено (М6), — патчи для следующих дел
-          const earlierPatches = cases.filter((c) => c.order < d.order).flatMap((c) => st.season.casePatches[c.id] ?? []);
-          const cron = cronFiresAfterCase(d.order, s.seen, firedCronJobs([...earlierPatches, ...s.patches]), s.clock).map((params) => ({
-            id: CRON_PATCH,
-            params,
-          }));
+          // Ночь после дела: задания zero, чьё условие выполнено (М6), — патчи для следующих дел.
+          // Увиденное ранних дел тоже считается: not_seen не перепроверяется по одному делу
+          const earlier = cases.filter((c) => c.order < d.order);
+          const earlierPatches = earlier.flatMap((c) => st.season.casePatches[c.id] ?? []);
+          const seenBefore = earlier.flatMap((c) => st.season.cronSeen?.[c.id] ?? []);
+          const cron = cronFiresAfterCase(d.order, s.seen, firedCronJobs([...earlierPatches, ...s.patches]), s.clock, seenBefore).map(
+            (params) => ({ id: CRON_PATCH, params })
+          );
 
           const hour = now().getHours();
           set({
@@ -654,6 +691,7 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
               caseFlags: { ...st.season.caseFlags, [d.id]: s.flags },
               casePatches: { ...st.season.casePatches, [d.id]: [...s.patches, ...cron] },
               caseQueryLog: { ...st.season.caseQueryLog, [d.id]: s.log },
+              cronSeen: { ...st.season.cronSeen, [d.id]: cronSeenKeys(s.seen) },
               evidence: pushUniq(st.season.evidence, ...s.evidence),
               events: pushUniq(
                 st.season.events,
@@ -738,13 +776,23 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
               initPromise = (async () => {
                 if (options.skipHydration) await store.persist.rehydrate();
                 set((st) => ({ loading: { ...st.loading, status: "loading", error: null } }));
+                // «Продолжить» на ночи: досмотренная (или выключенная) ночь не повторяется — сразу к делу
+                const restored = get().session;
+                const restoredDef = def();
+                let skippedNight = false;
+                if (restored?.phase === "night" && restoredDef && !nightResumes(restoredDef, get().settings, get().season)) {
+                  patchSession((x) => startScene({ ...x, phase: "intro" }, sceneCtx(x, restoredDef), restoredDef.introScene));
+                  skippedNight = true;
+                }
                 try {
                   const info = await engine().init((progress) => set((st) => ({ loading: { ...st.loading, progress } })));
                   set((st) => ({ loading: { ...st.loading, status: "ready", fromCache: info.fromCache } }));
                   const s = get().session;
                   const d = def();
-                  if (s && d) await openInEngine(s, d);
-                  else if (s) set({ session: null });
+                  if (s && d) {
+                    await openInEngine(s, d);
+                    if (skippedNight) await afterStory();
+                  } else if (s) set({ session: null });
                 } catch (error) {
                   initPromise = null;
                   set((st) => ({
@@ -764,7 +812,15 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           resetSeason() {
             openedCase = null;
             const fresh = defaultPersisted();
-            set((st) => ({ season: fresh.season, session: null, profile: { ...st.profile, onboarded: false }, last: null, barks: [], toasts: [] }));
+            set((st) => ({
+              season: fresh.season,
+              session: null,
+              profile: { ...st.profile, onboarded: false },
+              last: null,
+              barks: [],
+              toasts: [],
+              caseReady: false,
+            }));
           },
 
           async openCase(caseId) {
@@ -777,6 +833,8 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
             }
             const earlier = [...cases].filter((c) => c.order < d.order).sort((a, b) => a.order - b.order);
             const run = (st.season.runs[caseId] ?? 0) + 1;
+            // Ночь закрывает сборку базы: фаза night ставится до ожидания ядра
+            const night = nightWanted(d, st.settings, st.season);
             const session = newSession(d, {
               runId: `${caseShort(d)}-r${run}`,
               replay: Boolean(st.season.solved[caseId]),
@@ -784,17 +842,34 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
               startPatches: earlier.flatMap((c) => st.season.casePatches[c.id] ?? []),
               priorLog: earlier.flatMap((c) => st.season.caseQueryLog[c.id] ?? []),
               clock: d.date,
+              phase: night ? "night" : "intro",
             });
             set({
               session,
               last: null,
               barks: [],
+              caseReady: false,
               season: { ...st.season, runs: { ...st.season.runs, [caseId]: run } },
             });
             await openInEngine(session, d);
+            // Вступление после ночи запускает finishNight
+            if (night) return true;
             patchSession((x) => startScene(x, sceneCtx(x, d), d.introScene));
             await afterStory();
             return true;
+          },
+
+          async finishNight() {
+            const s = get().session;
+            const d = def();
+            if (!s || !d || s.phase !== "night") return;
+            recordEvents(nightSeenEvent(d.id));
+            await ensureOpen();
+            const key = sessionKey(s);
+            patchSession((x) =>
+              sessionKey(x) === key && x.phase === "night" ? startScene({ ...x, phase: "intro" }, sceneCtx(x, d), d.introScene) : x
+            );
+            await afterStory();
           },
 
           async restartCase() {
@@ -806,13 +881,13 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
 
           abandonCase() {
             openedCase = null;
-            set({ session: null, last: null, barks: [] });
+            set({ session: null, last: null, barks: [], caseReady: false });
           },
 
           finishDebrief() {
             if (get().session?.phase !== "debrief") return;
             openedCase = null;
-            set({ session: null, last: null, barks: [] });
+            set({ session: null, last: null, barks: [], caseReady: false });
           },
 
           // --- сцены ---
@@ -890,7 +965,7 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
             const st = get();
             const s0 = st.session;
             const d = def();
-            if (!s0 || !d || st.busy || s0.phase === "debrief") return null;
+            if (!s0 || !d || st.busy || s0.phase === "debrief" || s0.phase === "night") return null;
             const sql = (sqlIn ?? s0.draftSql).trim();
             if (!sql) return null;
             if (d.queryBudget !== undefined && s0.queryCount >= d.queryBudget) {

@@ -6,8 +6,10 @@ import {
   calendar,
   caseOf,
   continueTarget,
+  daysToSunrise,
   ENDING_TITLES,
   gameStore,
+  nightView,
   rankOf,
   useGame,
   useGameView,
@@ -21,12 +23,12 @@ import { CaseJournal, type CaseJournalEntry } from "@/components/title/case-jour
 import { LoadingScreen, OnboardingDialog, SettingsPanel } from "@/components/play/screens";
 import { DebriefScreen, EndingScreen } from "@/components/play/debrief";
 import { SeasonRecords } from "@/components/play/records";
+import { NightScreen } from "@/components/play/night-screen";
 import { CaseDesk } from "./case-desk";
 import { caseCode, clockRu } from "./views";
 
 type View = "desk" | "journal" | "settings" | "records" | "ending";
 
-const SUNRISE = Date.UTC(2027, 0, 11);
 const ACHIEVEMENT_TEXT = Object.fromEntries(achievements.map((a) => [a.id, { title: a.title, description: a.description }]));
 
 function journalEntry(c: CalendarEntry): CaseJournalEntry {
@@ -78,6 +80,8 @@ export function PlayRoot({ journal = false }: { journal?: boolean }) {
   const entries = useGameView(calendar);
   const next = useGameView(continueTarget);
   const rank = useGameView(rankOf);
+  const night = useGameView(nightView);
+  const caseReady = useGame((s) => s.caseReady);
   const act = gameStore.getState;
 
   const [view, setView] = useState<View>(journal ? "journal" : "desk");
@@ -91,6 +95,12 @@ export function PlayRoot({ journal = false }: { journal?: boolean }) {
   useEffect(() => {
     if (hydrated && !profile.ageConfirmed) router.replace("/");
   }, [hydrated, profile.ageConfirmed, router]);
+
+  // Фаза ночи без ночи в контенте (ночь убрали из дела) — сразу к вступлению
+  const nightless = session?.phase === "night" && night === null;
+  useEffect(() => {
+    if (nightless) void gameStore.getState().finishNight();
+  }, [nightless]);
 
   const overlay = (v: View) => {
     setBack(view === "settings" || view === "records" ? back : view);
@@ -126,6 +136,22 @@ export function PlayRoot({ journal = false }: { journal?: boolean }) {
   if (loading.status === "failed") {
     return <LoadingScreen lines={lines} error={loading.error ?? "ядро не запустилось"} onRetry={() => void act().boot()} />;
   }
+  // Ночь между делами закрывает сборку базы дела: «К делу» — когда дело собрано
+  if (session?.phase === "night" && night) {
+    return (
+      <NightScreen
+        key={`${session.caseId}:${session.runId}`}
+        night={night}
+        ready={caseReady}
+        settings={settings}
+        onStart={() => {
+          setView("desk");
+          void act().finishNight();
+        }}
+      />
+    );
+  }
+
   if (loading.status !== "ready" || opening) {
     return <LoadingScreen lines={opening ? [...lines, "Открываю дело…"] : lines} />;
   }
@@ -216,7 +242,7 @@ export function PlayRoot({ journal = false }: { journal?: boolean }) {
   }
 
   const nextDate = cases.find((c) => c.id === next)?.date;
-  const days = nextDate ? Math.max(0, Math.ceil((SUNRISE - Date.parse(`${nextDate.slice(0, 10)}T00:00:00Z`)) / 86_400_000)) : null;
+  const days = nextDate ? daysToSunrise(nextDate) : null;
   const done = entries.filter((e) => e.status === "solved").length;
 
   return (
