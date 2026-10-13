@@ -289,9 +289,9 @@ describe("хроника вмешательств (М5, М6, М14, М15)", () =>
   });
 
   it("22.12 02:47:19: выгрузка 15-0219 под nol с WS-07; 21.12 03:04 — агент на WS-07", () => {
-    expect(rows(world, "SELECT terminal, query_text, rows_returned FROM query_log WHERE login = 'nol'"))
+    expect(rows(world, "SELECT terminal, query_text, rows_returned FROM query_log WHERE login = 'nol' AND logged_at < '2027-01-01'"))
       .toEqual([["WS-07", "SELECT * FROM statements WHERE case_id = '15-0219'", 63]]);
-    expect(one(world, "SELECT logged_at FROM query_log WHERE login = 'nol'")).toBe("2026-12-22 02:47:19");
+    expect(one(world, "SELECT logged_at FROM query_log WHERE login = 'nol' AND logged_at < '2027-01-01'")).toBe("2026-12-22 02:47:19");
     expect(rows(world, "SELECT ts, login, workstation, new_value FROM audit_log WHERE table_name = 'workstations' AND row_id = 'WS-07'"))
       .toEqual([["2026-12-21 03:04:00", "a.lykov", "WS-07", "агент синхронизации v2"]]);
   });

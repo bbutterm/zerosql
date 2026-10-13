@@ -2,23 +2,1491 @@
   "scenes": [
     {
       "id": "intro",
+      "location": "ocr_office",
       "lines": [
         {
           "id": "c12.intro.001",
           "speaker": "narrator",
-          "text": "Одиннадцатое января, половина двенадцатого. Над заливом светлеет край неба."
+          "text": "Одиннадцатое января, половина двенадцатого. Праздники кончились. Над заливом светлеет край неба.",
+          "direction": "тихо, ровно"
+        },
+        {
+          "id": "c12.intro.002",
+          "speaker": "mira",
+          "text": "Доброе утро. Сегодня в тринадцать ноль-ноль — финализация миграции «Сокол — ПБД». Ответственный: nol.",
+          "emotion": "neutral",
+          "direction": "дружелюбно, одной интонацией"
+        },
+        {
+          "id": "c12.intro.003",
+          "speaker": "nina",
+          "text": "Слыхал, голубчик? Ответственный — ты. Это они тебе так спасибо говорят.",
+          "emotion": "sad",
+          "direction": "оканье, постукивает пальцем по столу"
+        },
+        {
+          "id": "c12.intro.004",
+          "speaker": "dasha",
+          "text": "Так. Стоп. Что значит «финализация»? По-русски.",
+          "emotion": "angry",
+          "direction": "быстро, на ходу снимает парку"
+        },
+        {
+          "id": "c12.intro.005",
+          "speaker": "nina",
+          "text": "По-русски — диск мой в staging лёг. В двенадцать двадцать реестр сотрут, в двенадцать сорок — объяснения, в час — карточки.",
+          "emotion": "thinking"
+        },
+        {
+          "id": "c12.intro.006",
+          "speaker": "nina",
+          "text": "Что в ПБД не вернём — того больше нигде нет. Копирка моя не в счёт: четыре листа на одиннадцать бумаг.",
+          "emotion": "sad"
+        },
+        {
+          "id": "c12.intro.007",
+          "speaker": "dasha",
+          "text": "А Гранин?",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.intro.008",
+          "speaker": "nina",
+          "text": "Гранин в час на сцене. Кандидат, понимаешь ли. Ленточку резать приедет.",
+          "emotion": "angry",
+          "direction": "передразнивает бас"
+        },
+        {
+          "id": "c12.intro.009",
+          "speaker": "dasha",
+          "text": "Он знает про диск. Десятого ночью кто-то выгрузил журнал с WS-07. Весь твой журнал.",
+          "emotion": "determined",
+          "direction": "тише, к игроку"
+        },
+        {
+          "id": "c12.intro.010",
+          "speaker": "nina",
+          "text": "Значит, пошлёт за диском. И за копиркой. Они у меня в серверной, под замком, не по описи.",
+          "emotion": "scared"
+        },
+        {
+          "id": "c12.intro.011",
+          "speaker": "dasha",
+          "text": "Пусть шлёт. Я в здании. Каждый запрос — три минуты, помни.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.intro.012",
+          "speaker": "nina",
+          "text": "Начинай с объяснений, голубчик. Что в архиве есть, а у нас нет. Номера при миграции не менялись.",
+          "emotion": "thinking"
+        },
+        {
+          "id": "c12.intro.013",
+          "speaker": "mira",
+          "text": "Каждый запрос сдвигает часы на три минуты. Солнце встаёт в двенадцать пятьдесят восемь. Хорошего дня.",
+          "emotion": "neutral"
+        }
+      ],
+      "music": "final_clock"
+    },
+    {
+      "id": "helper_tokha",
+      "lines": [
+        {
+          "id": "c12.helper_tokha.001",
+          "speaker": "tokha",
+          "text": "Короч, я тут. Серверная за мной, чайник тоже. Хе.",
+          "emotion": "uneasy",
+          "direction": "быстро, шёпотом в гарнитуру"
+        },
+        {
+          "id": "c12.helper_tokha.002",
+          "speaker": "tokha",
+          "text": "Staging дропнется по крону, я его не остановлю — подпись nol. Но транзакцию твою прибьёт, имей в виду.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.helper_tokha.003",
+          "speaker": "tokha",
+          "text": "Коммить почаще. Жиза: всё, что не закоммичено, — не было.",
+          "emotion": "uneasy"
+        }
+      ]
+    },
+    {
+      "id": "helper_melnik",
+      "lines": [
+        {
+          "id": "c12.helper_melnik.001",
+          "speaker": "melnik",
+          "text": "Коллеги, синхронизируемся. Удаление staging в регламенте, я его не двигаю.",
+          "emotion": "neutral",
+          "direction": "чётко, в нос"
+        },
+        {
+          "id": "c12.helper_melnik.002",
+          "speaker": "melnik",
+          "text": "Перед каждым дропом движок откатывает открытые транзакции. Дедлайн жёсткий. Коммитьте.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.helper_melnik.003",
+          "speaker": "melnik",
+          "text": "И, Ноль. Я этого не говорил.",
+          "emotion": "scared",
+          "direction": "тише"
+        }
+      ]
+    },
+    {
+      "id": "helper_mira",
+      "lines": [
+        {
+          "id": "c12.helper_mira.001",
+          "speaker": "mira",
+          "text": "Помощник по миграции отстранён. Его функции выполняет МИРА.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.helper_mira.002",
+          "speaker": "mira",
+          "text": "Перед каждым удалением staging открытая транзакция будет отменена. Рекомендуется завершать транзакции вовремя.",
+          "emotion": "neutral"
+        }
+      ]
+    },
+    {
+      "id": "purge",
+      "lines": [
+        {
+          "id": "c12.purge.001",
+          "speaker": "mira",
+          "text": "Плановое обслуживание. Данные не изменяются.",
+          "emotion": "neutral",
+          "direction": "ровно; в фоне треск"
+        },
+        {
+          "id": "c12.purge.002",
+          "speaker": "dasha",
+          "text": "Ага. «Сияние» только что пыталось стереть «Тайгу» с камер за восемнадцатое.",
+          "emotion": "smug"
+        },
+        {
+          "id": "c12.purge.003",
+          "speaker": "dasha",
+          "text": "Не вышло. Строки «Дорсети» им не по зубам. Клюёт.",
+          "emotion": "determined"
+        }
+      ]
+    },
+    {
+      "id": "feed",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.feed.001",
+          "speaker": "mira",
+          "text": "Событие СКУД: КПП-1, вход, гостевой пропуск.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.feed.002",
+          "speaker": "nina",
+          "text": "Голубчик… это он. «Охрана кандидата». Гранин своих вперёд себя шлёт.",
+          "emotion": "scared",
+          "direction": "шёпотом"
+        },
+        {
+          "id": "c12.feed.003",
+          "speaker": "dasha",
+          "text": "Бурый в здании. Так. Стоп. Мне нужно, где он, а не где был.",
+          "emotion": "determined",
+          "direction": "уже бежит, дыхание сбито"
+        },
+        {
+          "id": "c12.feed.004",
+          "speaker": "dasha",
+          "text": "Строка раз в шесть минут — он идёт не спеша. Говори, что перекрыть.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.feed.005",
+          "speaker": "nina",
+          "text": "А я к серверной. Диск там. Дверь я держать умею, я с восемьдесят первого года её держу.",
+          "emotion": "angry"
+        }
+      ]
+    },
+    {
+      "id": "block",
+      "lines": [
+        {
+          "id": "c12.block.001",
+          "speaker": "dasha",
+          "text": "Ну? Где он?",
+          "emotion": "determined",
+          "direction": "в гарнитуру, на бегу"
+        }
+      ],
+      "choices": [
+        {
+          "id": "stairs",
+          "text": "Лестница Б. Перекрой её снизу, у Б0.",
+          "say": "Лестница Б, Даша. Перекрой снизу, у выхода в Б0.",
+          "flag": "burtsev_caught=лестница",
+          "goto": "stairs"
+        },
+        {
+          "id": "kpp",
+          "text": "КПП-1. Встань на выходе.",
+          "say": "Он на КПП-1. Встань на выходе, не выпускай.",
+          "goto": "door"
+        }
+      ]
+    },
+    {
+      "id": "stairs",
+      "location": "stairwell_b",
+      "lines": [
+        {
+          "id": "c12.stairs.001",
+          "speaker": "dasha",
+          "text": "Вижу. Пролёт между первым и Б0. Валерий Николаевич, стоять.",
+          "emotion": "determined",
+          "direction": "шёпотом, на бегу, дыхание"
+        },
+        {
+          "id": "c12.stairs.002",
+          "speaker": "burtsev",
+          "text": "Не надо.",
+          "emotion": "cold",
+          "direction": "почти шёпот, медленно"
+        },
+        {
+          "id": "c12.stairs.003",
+          "speaker": "dasha",
+          "text": "Надо. Руки на перила. Левую тоже. Ту, где пальца нет.",
+          "emotion": "angry"
+        },
+        {
+          "id": "c12.stairs.004",
+          "speaker": "burtsev",
+          "text": "Я охрана кандидата. Меня отпустят к вечеру.",
+          "emotion": "smug",
+          "direction": "очень медленно"
+        },
+        {
+          "id": "c12.stairs.005",
+          "speaker": "dasha",
+          "text": "Может быть. Но не сейчас и не к серверной.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.stairs.006",
+          "speaker": "nina",
+          "text": "Взяла? Ох, девочка… Я уж дверь подпёрла.",
+          "emotion": "happy",
+          "direction": "выдох, смешок"
+        }
+      ]
+    },
+    {
+      "id": "door",
+      "location": "server_tambour",
+      "lines": [
+        {
+          "id": "c12.door.001",
+          "speaker": "narrator",
+          "text": "Двенадцать тридцать две. Б0, тамбур серверной. Лестница Б пуста — он уже прошёл.",
+          "direction": "ровно"
+        },
+        {
+          "id": "c12.door.002",
+          "speaker": "burtsev",
+          "text": "Отойдите, Нина Фёдоровна. Не надо.",
+          "emotion": "cold",
+          "direction": "почти шёпот"
+        },
+        {
+          "id": "c12.door.003",
+          "speaker": "nina",
+          "text": "А ты меня не учи, Валера. Я эту дверь держала, когда ты ещё траулеры мыл.",
+          "emotion": "angry",
+          "direction": "голос дрожит, но громко"
+        },
+        {
+          "id": "c12.door.004",
+          "speaker": "narrator",
+          "text": "Глухой удар. Звук падающей коробки из-под печенья.",
+          "direction": "пауза"
+        },
+        {
+          "id": "c12.door.005",
+          "speaker": "dasha",
+          "text": "Нина Фёдоровна! Лицом к стене, Бурцев. Сука, к стене, я сказала!",
+          "emotion": "angry",
+          "direction": "запыхавшись, сорванный голос"
+        },
+        {
+          "id": "c12.door.006",
+          "speaker": "nina",
+          "text": "Цел диск, девочка. Рука вот… не по описи.",
+          "emotion": "sad",
+          "direction": "слабо, с выдохом"
+        }
+      ],
+      "choices": [
+        {
+          "id": "trauma",
+          "text": "Вызывайте скорую. Диск — ко мне.",
+          "flag": "burtsev_caught=дверь"
+        }
+      ]
+    },
+    {
+      "id": "drop_registry",
+      "lines": [
+        {
+          "id": "c12.drop_registry.001",
+          "speaker": "mira",
+          "text": "Плановое удаление staging по расписанию migration_jobs: sokol_stage_registry. Представление arch16_registry удалено.",
+          "emotion": "neutral",
+          "direction": "ровно; треск льда"
+        },
+        {
+          "id": "c12.drop_registry.002",
+          "speaker": "nina",
+          "text": "Реестр ушёл. Номера наши — вместе с ним. Ну-ну, лёд и лёд.",
+          "emotion": "sad"
+        }
+      ]
+    },
+    {
+      "id": "drop_statements",
+      "lines": [
+        {
+          "id": "c12.drop_statements.001",
+          "speaker": "mira",
+          "text": "Плановое удаление staging: sokol_stage_statements. Представление arch16_statements удалено.",
+          "emotion": "neutral",
+          "direction": "ровно; треск льда громче"
+        },
+        {
+          "id": "c12.drop_statements.002",
+          "speaker": "nina",
+          "text": "Всё, голубчик. Объяснений из архива больше нет. Что успели — то наше.",
+          "emotion": "sad",
+          "direction": "тихо"
+        },
+        {
+          "id": "c12.drop_statements.003",
+          "speaker": "nina",
+          "text": "Не успели — значит, копирка. Три-три-один-два у меня есть всегда. Остальное — как Бог даст.",
+          "emotion": "thinking"
+        }
+      ]
+    },
+    {
+      "id": "restored",
+      "lines": [
+        {
+          "id": "c12.restored.001",
+          "speaker": "mira",
+          "text": "Найдено строк: ноль. Расхождений: ноль.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.restored.002",
+          "speaker": "nina",
+          "text": "Ноль, голубчик. Первый раз за одиннадцать лет архив и база говорят одно и то же.",
+          "emotion": "happy",
+          "direction": "почти шёпотом"
+        },
+        {
+          "id": "c12.restored.003",
+          "speaker": "dasha",
+          "text": "Палец его в карточке. Девчонкины слова в базе. Клюёт.",
+          "emotion": "determined",
+          "direction": "с хрипотцой"
+        }
+      ],
+      "choices": [
+        {
+          "id": "commit",
+          "text": "Зафиксировать. Пусть финализация катит это в ПБД.",
+          "flag": "archive_restored"
+        }
+      ]
+    },
+    {
+      "id": "board_full",
+      "lines": [
+        {
+          "id": "c12.board_full.001",
+          "speaker": "dasha",
+          "text": "Девять узлов. Каждый — двумя руками. Это уже не версия, это пакет.",
+          "emotion": "determined"
+        }
+      ],
+      "choices": [
+        {
+          "id": "full",
+          "text": "Девять из девяти. Пакет держится.",
+          "flag": "final_board"
+        }
+      ]
+    },
+    {
+      "id": "granin_arrives",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.granin_arrives.001",
+          "speaker": "narrator",
+          "text": "Двенадцать тридцать. По коридору идёт запах дорогой кожи и одеколона.",
+          "direction": "ровно"
+        },
+        {
+          "id": "c12.granin_arrives.002",
+          "speaker": "granin",
+          "text": "Понимаешь, я пять минут. Церемония у меня. Где тут ваш Ноль?",
+          "emotion": "happy",
+          "direction": "раскатисто, на публику"
+        },
+        {
+          "id": "c12.granin_arrives.003",
+          "speaker": "dasha",
+          "text": "Ноль за стеклом. Разговаривать будете со мной. Присаживайтесь, Эдуард Витальевич.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.granin_arrives.004",
+          "speaker": "granin",
+          "text": "С тобой, дочка, по-человечески — хоть до вечера.",
+          "emotion": "smug",
+          "direction": "пауза «на аплодисменты»"
+        }
+      ],
+      "next": "int_granin"
+    },
+    {
+      "id": "granin_watch",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.granin_watch.001",
+          "speaker": "granin",
+          "text": "По фамилии меня искать — наивно. Двадцать восьмого машинка-то под окнами стояла, понимаешь?",
+          "emotion": "smug",
+          "direction": "медленно, с удовольствием"
+        }
+      ]
+    },
+    {
+      "id": "granin_quiet",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.granin_quiet.001",
+          "speaker": "granin",
+          "text": "Аккуратно работаешь. Моего имени в журнале нет. Уважаю.",
+          "emotion": "smug",
+          "direction": "в стекло, к игроку"
+        }
+      ]
+    },
+    {
+      "id": "int_granin",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin.001",
+          "speaker": "dasha",
+          "text": "Девятнадцатое февраля пятнадцатого года. Вы директор «Глубина-Строя». Начнём.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin.002",
+          "speaker": "granin",
+          "text": "Начнём, дочка. Только я тоже кое-что принёс.",
+          "emotion": "smug",
+          "direction": "шуршит бумагой"
+        },
+        {
+          "id": "c12.int_granin.003",
+          "speaker": "narrator",
+          "text": "Гранин двигает по столу распечатку. Столбцы logged_at, terminal, query_text. Логин nol.",
+          "direction": "ровно"
+        },
+        {
+          "id": "c12.int_granin.014",
+          "speaker": "granin",
+          "text": "Вот твой журнал. Почитай, понимаешь. Интересное чтение.",
+          "emotion": "smug",
+          "direction": "к стеклу, громко"
+        },
+        {
+          "id": "c12.int_granin.018",
+          "speaker": "granin",
+          "text": "Ты не спишь по ночам. Это заметно.",
+          "emotion": "smug",
+          "direction": "тише, почти ласково"
+        },
+        {
+          "id": "c12.int_granin.019",
+          "speaker": "granin",
+          "text": "Понимаешь, журнал мне принесли добрые люди. Из твоей же системы. Всё по закону.",
+          "emotion": "smug",
+          "direction": "«понимаешь» перед ложью",
+          "lie": true
+        },
+        {
+          "id": "c12.int_granin.020",
+          "speaker": "granin",
+          "text": "Понимаешь, Бурцеву я никогда приказов не отдавал. Охрана — не мой уровень.",
+          "emotion": "smug",
+          "direction": "«понимаешь» перед ложью",
+          "lie": true
+        },
+        {
+          "id": "c12.int_granin.021",
+          "speaker": "dasha",
+          "text": "А кто отдавал?",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.int_granin.022",
+          "speaker": "granin",
+          "text": "Начальник участка. Прораб. Я людей по фамилии не помнил — их тысяча была.",
+          "emotion": "smug"
+        },
+        {
+          "id": "c12.int_granin.023",
+          "speaker": "dasha",
+          "text": "Ладно. Сброс у Старого причала. Март пятнадцатого.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin.024",
+          "speaker": "granin",
+          "text": "Понимаешь, сброс переносили инженеры. Я подписывал, что приносили.",
+          "emotion": "smug",
+          "direction": "«понимаешь» перед ложью",
+          "lie": true
+        },
+        {
+          "id": "c12.int_granin.025",
+          "speaker": "dasha",
+          "text": "И «Щит». Деньги за Ирину. Триста тысяч.",
+          "emotion": "angry"
+        },
+        {
+          "id": "c12.int_granin.026",
+          "speaker": "granin",
+          "text": "Это ты про какую Ирину, дочка?",
+          "emotion": "cold",
+          "direction": "пауза"
+        },
+        {
+          "id": "c12.int_granin.027",
+          "speaker": "dasha",
+          "text": "Про Вальц. Ирину Петровну.",
+          "emotion": "angry",
+          "direction": "сквозь зубы"
+        },
+        {
+          "id": "c12.int_granin.028",
+          "speaker": "granin",
+          "text": "Понимаешь, «Щит» — независимая компания. Я его в глаза не видел.",
+          "emotion": "smug",
+          "direction": "«понимаешь» перед ложью",
+          "lie": true
+        },
+        {
+          "id": "c12.int_granin.029",
+          "speaker": "dasha",
+          "text": "Ноль. Мне нужна строка. Любая из трёх.",
+          "emotion": "determined",
+          "direction": "в наушник игроку"
+        }
+      ],
+      "music": "interrogation",
+      "interrogation": {
+        "suspect": "granin",
+        "interrogator": "dasha",
+        "mode": "standard",
+        "patience": 3,
+        "breakSteps": [
+          "smug",
+          "cold",
+          "cold",
+          "shaken",
+          "scared"
+        ],
+        "lieTell": "«понимаешь» в начале фразы перед ложью",
+        "liveQuery": true,
+        "points": [
+          {
+            "line": "c12.int_granin.019",
+            "press": "int_granin_p1",
+            "present": {
+              "prompt": "Откуда у него журнал?",
+              "correct": [],
+              "cards": [
+                {
+                  "all": [
+                    {
+                      "column": [
+                        "logged_at",
+                        "ts"
+                      ],
+                      "prefix": "2027-01-10 02:14"
+                    },
+                    {
+                      "column": [
+                        "terminal",
+                        "workstation"
+                      ],
+                      "eq": "WS-07"
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": "door",
+                      "eq": "Серверная"
+                    },
+                    {
+                      "column": "note",
+                      "contains": "аварийное открытие"
+                    }
+                  ]
+                }
+              ],
+              "success": "int_granin_b1",
+              "failure": "int_granin_miss"
+            }
+          },
+          {
+            "line": "c12.int_granin.020",
+            "press": "int_granin_p2",
+            "present": {
+              "prompt": "Кто отдал приказ Бурцеву?",
+              "correct": [],
+              "cards": [
+                {
+                  "all": [
+                    {
+                      "column": [
+                        "from_ext",
+                        "ext"
+                      ],
+                      "eq": "2-14"
+                    },
+                    {
+                      "column": "text",
+                      "contains": "СТАРОМУ ПРИЧАЛУ"
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": [
+                        "ext",
+                        "from_ext"
+                      ],
+                      "eq": "2-14"
+                    },
+                    {
+                      "column": "holder_person_id",
+                      "eq": 1001
+                    }
+                  ]
+                }
+              ],
+              "requireAll": true,
+              "success": "int_granin_b2",
+              "failure": "int_granin_miss"
+            }
+          },
+          {
+            "line": "c12.int_granin.024",
+            "press": "int_granin_p3",
+            "present": {
+              "prompt": "Кто подписал перенос сброса?",
+              "correct": [
+                "ev.c06.outfall_moved"
+              ],
+              "cards": [
+                {
+                  "all": [
+                    {
+                      "column": "doc_no",
+                      "eq": "ПД-117/изм.3"
+                    },
+                    {
+                      "column": "signed_by_person_id",
+                      "eq": 1001
+                    }
+                  ]
+                }
+              ],
+              "success": "int_granin_b3",
+              "failure": "int_granin_miss"
+            }
+          },
+          {
+            "line": "c12.int_granin.028",
+            "press": "int_granin_p4",
+            "present": {
+              "prompt": "Чей «Щит»?",
+              "correct": [],
+              "cards": [
+                {
+                  "table": "company_owners",
+                  "any": [
+                    {
+                      "column": [
+                        "owner_person_id",
+                        "person_id"
+                      ],
+                      "eq": 1001
+                    },
+                    {
+                      "contains": "Kordon"
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": "amount",
+                      "eq": 300000
+                    }
+                  ],
+                  "any": [
+                    {
+                      "contains": "Щит"
+                    },
+                    {
+                      "contains": "ACC-10017"
+                    }
+                  ]
+                }
+              ],
+              "success": "int_granin_b4",
+              "failure": "int_granin_miss"
+            }
+          }
+        ],
+        "closedScene": "int_granin_closed",
+        "doneScene": "int_granin_done"
+      }
+    },
+    {
+      "id": "int_granin_p1",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_p1.001",
+          "speaker": "dasha",
+          "text": "Какие добрые люди? Имена.",
+          "emotion": "angry"
+        },
+        {
+          "id": "c12.int_granin_p1.002",
+          "speaker": "granin",
+          "text": "Понимаешь, у меня полгорода добрых людей. Избиратели.",
+          "emotion": "smug",
+          "direction": "раскатисто"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_p2",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_p2.001",
+          "speaker": "dasha",
+          "text": "Девятнадцатого в девять вечера вы где были?",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.int_granin_p2.002",
+          "speaker": "granin",
+          "text": "В приёмной своей. Работал. Директор работает допоздна, дочка, это не стыдно.",
+          "emotion": "smug"
+        },
+        {
+          "id": "c12.int_granin_p2.003",
+          "speaker": "dasha",
+          "text": "В приёмной. Запомню.",
+          "emotion": "smug",
+          "direction": "быстро"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_p3",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_p3.001",
+          "speaker": "dasha",
+          "text": "Какие инженеры? Фамилии.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.int_granin_p3.002",
+          "speaker": "granin",
+          "text": "Шесть ревизий, шесть подписей. Найди любого — тебе скажут: техническое решение.",
+          "emotion": "smug"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_p4",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_p4.001",
+          "speaker": "dasha",
+          "text": "А кто тогда Kordon Holdings?",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.int_granin_p4.002",
+          "speaker": "granin",
+          "text": "Иностранцы. Инвесторы. Тепло, которое не кончается, — его же кто-то оплачивает.",
+          "emotion": "happy",
+          "direction": "лозунгом, на публику"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_miss",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_miss.001",
+          "speaker": "granin",
+          "text": "Это что, бумажка? У меня таких бумажек — архив целый. Спроси у своей старушки.",
+          "emotion": "smug",
+          "direction": "с удовольствием"
+        },
+        {
+          "id": "c12.int_granin_miss.002",
+          "speaker": "dasha",
+          "text": "Мимо. Он доволен. Дай то, от чего он перестанет улыбаться.",
+          "emotion": "angry",
+          "direction": "в наушник, сквозь зубы"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_b1",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_b1.001",
+          "speaker": "dasha",
+          "text": "Десятое января, два часа девять. Серверную открыли удалённой командой. Без пропуска.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin_b1.002",
+          "speaker": "dasha",
+          "text": "Два четырнадцать — с WS-07 выгружен журнал Ноля. Ваша распечатка — краденая строка, Эдуард Витальевич.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin_b1.003",
+          "speaker": "granin",
+          "text": "…Это чья-то самодеятельность.",
+          "emotion": "cold",
+          "direction": "бас пропадает, коротко"
+        },
+        {
+          "id": "c12.int_granin_b1.004",
+          "speaker": "dasha",
+          "text": "Ваша машина, кстати, стояла у ГУ с без двух минут два до половины третьего.",
+          "emotion": "smug"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_b2",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_b2.001",
+          "speaker": "dasha",
+          "text": "Девятнадцатое февраля, двадцать один пятьдесят шесть. SMS с внутреннего два-четырнадцать.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin_b2.002",
+          "speaker": "dasha",
+          "text": "«Гость едет к Старому причалу. Встреть». Получатель — ст. наряда Бурцев.",
+          "emotion": "determined",
+          "direction": "читает с планшета"
+        },
+        {
+          "id": "c12.int_granin_b2.003",
+          "speaker": "dasha",
+          "text": "Два-четырнадцать — приёмная директора. Держатель номера — вы.",
+          "emotion": "angry"
+        },
+        {
+          "id": "c12.int_granin_b2.004",
+          "speaker": "granin",
+          "text": "Секретарша… могла взять трубку.",
+          "emotion": "cold",
+          "direction": "медленно, без «понимаешь»"
+        },
+        {
+          "id": "c12.int_granin_b2.005",
+          "speaker": "dasha",
+          "text": "В десять вечера. Ваша секретарша. Ага.",
+          "emotion": "smug"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_b3",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_b3.001",
+          "speaker": "dasha",
+          "text": "ПД-117, изменение три. Перенос оголовка в восемнадцать метров от точки, где утонула машина Сазонова.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin_b3.002",
+          "speaker": "dasha",
+          "text": "Подпись — ваша. Не инженера. Ваша, Эдуард Витальевич.",
+          "emotion": "angry"
+        },
+        {
+          "id": "c12.int_granin_b3.003",
+          "speaker": "granin",
+          "text": "Вода… она всё равно бы замёрзла.",
+          "emotion": "shaken",
+          "direction": "тихо, почти себе"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_b4",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_b4.001",
+          "speaker": "dasha",
+          "text": "«Щит» — дочка «Ладоги», «Ладога» — дочка Kordon. Наверху цепочки — вы.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.int_granin_b4.002",
+          "speaker": "dasha",
+          "text": "Двадцатое ноября: «Ладога Инвест» платит «Щиту» триста тысяч. Через два дня после Ирины.",
+          "emotion": "angry",
+          "direction": "голос срывается"
+        },
+        {
+          "id": "c12.int_granin_b4.003",
+          "speaker": "granin",
+          "text": "Понимаешь… я не… это не я её.",
+          "emotion": "shaken",
+          "direction": "впервые без раскатов"
+        }
+      ]
+    },
+    {
+      "id": "int_granin_closed",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_closed.001",
+          "speaker": "granin",
+          "text": "Всё, дочка. Мне на сцену. Протокол пришли в штаб — юристы почитают.",
+          "emotion": "smug",
+          "direction": "встаёт, отодвигает стул"
+        },
+        {
+          "id": "c12.int_granin_closed.002",
+          "speaker": "dasha",
+          "text": "Ушёл. Твою ж мать. Ладно. Пакет всё равно уйдёт.",
+          "emotion": "angry",
+          "direction": "в наушник, быстро"
+        }
+      ],
+      "next": "package"
+    },
+    {
+      "id": "int_granin_done",
+      "location": "interrogation_glass",
+      "lines": [
+        {
+          "id": "c12.int_granin_done.001",
+          "speaker": "granin",
+          "text": "Давай по-человечески. Ты отдаёшь пакет мне. Я тебе — должность, квартиру и тишину.",
+          "emotion": "scared",
+          "direction": "очень тихо, через стекло"
+        },
+        {
+          "id": "c12.int_granin_done.002",
+          "speaker": "granin",
+          "text": "Иначе финализация. Пункт четыре-два. Утрата архивов — на тебе, Ноль.",
+          "emotion": "cold"
+        },
+        {
+          "id": "c12.int_granin_done.003",
+          "speaker": "dasha",
+          "text": "Он сломался. Это не угроза. Это торг.",
+          "emotion": "determined",
+          "direction": "в наушник"
+        }
+      ],
+      "choices": [
+        {
+          "id": "broken",
+          "text": "Пусть торгуется со следователем. Оформляй.",
+          "flag": "granin_broken",
+          "goto": "package"
+        }
+      ]
+    },
+    {
+      "id": "package",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.package.001",
+          "speaker": "nina",
+          "text": "Последний вопрос, голубчик. Квартира Лев Борисыча. Северная, четырнадцать — двадцать семь.",
+          "emotion": "sad",
+          "direction": "медленно"
+        },
+        {
+          "id": "c12.package.002",
+          "speaker": "nina",
+          "text": "Включишь — адвокатам нечем крыть. И он потеряет всё. Не включишь — его пощадишь, а дело ослабишь.",
+          "emotion": "sad"
+        },
+        {
+          "id": "c12.package.003",
+          "speaker": "dasha",
+          "text": "Он сам сказал: пиши всё. Я помню.",
+          "emotion": "hurt",
+          "direction": "тихо"
+        }
+      ],
+      "choices": [
+        {
+          "id": "k_on",
+          "text": "Включить квартиру Ратникова. Пусть будет всё.",
+          "flag": "final_k",
+          "goto": "package_r"
+        },
+        {
+          "id": "k_off",
+          "text": "Без квартиры. Хватит с него.",
+          "flag": "!final_k",
+          "goto": "package_r"
+        }
+      ]
+    },
+    {
+      "id": "package_r",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.package_r.001",
+          "speaker": "dasha",
+          "text": "Кому отдаём? Прокуратура города — это Шубин. Он из той же квартирной очереди.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.package_r.002",
+          "speaker": "dasha",
+          "text": "Областной СК — далеко, но не куплен. Алла — быстро и громко. Гранин — ты слышал.",
+          "emotion": "neutral"
+        }
+      ],
+      "choices": [
+        {
+          "id": "sk",
+          "text": "Областной СК.",
+          "flag": "recipient=sk",
+          "goto": "send"
+        },
+        {
+          "id": "sk_alla",
+          "text": "СК и Алла одновременно. Чтобы не похоронили.",
+          "flag": "recipient=sk_alla",
+          "goto": "alla_task"
+        },
+        {
+          "id": "alla",
+          "text": "Только Алла. Пусть весь город прочитает.",
+          "flag": "recipient=alla",
+          "goto": "alla_task"
+        },
+        {
+          "id": "prosecutor",
+          "text": "Прокуратура города. По инстанции.",
+          "flag": "recipient=prosecutor",
+          "goto": "send"
+        },
+        {
+          "id": "deal",
+          "text": "Принять сделку Гранина.",
+          "flag": "recipient=deal",
+          "goto": "send"
+        }
+      ]
+    },
+    {
+      "id": "send",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.send.001",
+          "speaker": "mira",
+          "text": "Пакет evidence_package готов к отправке. Подтвердите.",
+          "emotion": "neutral"
+        }
+      ],
+      "choices": [
+        {
+          "id": "send",
+          "text": "Отправить.",
+          "flag": "package_sent",
+          "goto": "replay"
+        }
+      ]
+    },
+    {
+      "id": "alla_task",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.alla_task.001",
+          "speaker": "alla",
+          "text": "Ноль? Пакет беру. Без комментариев — тоже комментарий, но я напишу с комментариями.",
+          "emotion": "smug",
+          "direction": "в трубку, прокуренно, быстро"
+        },
+        {
+          "id": "c12.alla_task.002",
+          "speaker": "alla",
+          "text": "Только пришли мне таблицу publication. Как напечатаешь — так и выйдет.",
+          "emotion": "tired"
+        },
+        {
+          "id": "c12.alla_task.003",
+          "speaker": "nina",
+          "text": "Из газеты — можно, голубчик. Из дела — никогда. Девочку помнишь?",
+          "emotion": "thinking",
+          "direction": "кладёт руку на стол рядом"
+        }
+      ]
+    },
+    {
+      "id": "send_alla",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.send_alla.001",
+          "speaker": "alla",
+          "text": "Вижу таблицу. Отправляешь как есть?",
+          "emotion": "neutral",
+          "direction": "в трубку"
+        }
+      ],
+      "choices": [
+        {
+          "id": "as_is",
+          "text": "Как есть. Отправить.",
+          "flag": "package_sent",
+          "goto": "replay"
+        },
+        {
+          "id": "wait",
+          "text": "Подожди. Сначала уберу тех, кого нельзя называть."
+        }
+      ]
+    },
+    {
+      "id": "redacted",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.redacted.001",
+          "speaker": "nina",
+          "text": "Вот так. Шпалу не тронут, а девочке с этим жить не придётся.",
+          "emotion": "happy",
+          "direction": "тихо"
+        },
+        {
+          "id": "c12.redacted.002",
+          "speaker": "alla",
+          "text": "Чисто. Даже я бы так не вычистила.",
+          "emotion": "tired"
+        }
+      ],
+      "choices": [
+        {
+          "id": "redacted",
+          "text": "Чисто. Теперь отправляем.",
+          "flag": "redacted",
+          "goto": "send_final"
+        }
+      ]
+    },
+    {
+      "id": "send_final",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.send_final.001",
+          "speaker": "mira",
+          "text": "Пакет evidence_package и публикация готовы к отправке. Подтвердите.",
+          "emotion": "neutral"
+        }
+      ],
+      "choices": [
+        {
+          "id": "send",
+          "text": "Отправить.",
+          "flag": "package_sent",
+          "goto": "replay"
+        }
+      ]
+    },
+    {
+      "id": "replay",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.replay.001",
+          "speaker": "nina",
+          "text": "Он был у тебя на экране в первые пять минут.",
+          "emotion": "sad",
+          "direction": "экран погас, на нём сам собой выполнился первый запрос игры; тихо"
+        },
+        {
+          "id": "c12.replay.002",
+          "speaker": "nina",
+          "text": "А я сказала — пролистывай. Прости, голубчик.",
+          "emotion": "ashamed",
+          "direction": "шёпотом, палец на столе замирает"
+        },
+        {
+          "id": "c12.replay.004",
+          "speaker": "narrator",
+          "text": "Десять строк, сверху висяки «Сокола». Седьмая подсвечена: свет у Старого причала, проверено нарядом, старший — Бурцев.",
+          "direction": "медленно"
+        },
+        {
+          "id": "c12.replay.005",
+          "speaker": "mira",
+          "text": "Пакет отправлен. Найдено строк: десять.",
+          "emotion": "neutral",
+          "direction": "ровно"
+        }
+      ],
+      "music": "first_sun"
+    },
+    {
+      "id": "charged",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.charged.001",
+          "speaker": "dasha",
+          "text": "Двое на доске. Один приказывал, другой делал. Без «дежурный напутал».",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.charged.002",
+          "speaker": "nina",
+          "text": "Одиннадцать лет одна строка, а теперь — две фамилии. Не по описи, зато по правде.",
+          "emotion": "sad"
+        }
+      ]
+    },
+    {
+      "id": "deadline",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.deadline.001",
+          "speaker": "mira",
+          "text": "Тринадцать ноль-ноль. Финализация «Сокол — ПБД» завершена. Ответственный: nol.",
+          "emotion": "neutral",
+          "direction": "ровно"
+        },
+        {
+          "id": "c12.deadline.002",
+          "speaker": "mira",
+          "text": "Таблицы staging удалены. Найдено строк: ноль.",
+          "emotion": "neutral"
+        },
+        {
+          "id": "c12.deadline.003",
+          "speaker": "nina",
+          "text": "Не успели, голубчик.",
+          "emotion": "sad",
+          "direction": "очень тихо"
+        }
+      ],
+      "choices": [
+        {
+          "id": "late",
+          "text": "…",
+          "flag": "package_late"
+        }
+      ]
+    },
+    {
+      "id": "accuse_granin",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.accuse_granin.001",
+          "speaker": "dasha",
+          "text": "Приказ. SMS из его приёмной, подпись под переносом, деньги через «Щит». Сходится.",
+          "emotion": "determined"
+        },
+        {
+          "id": "c12.accuse_granin.002",
+          "speaker": "nina",
+          "text": "Сам он руки не марал. Он приказы отдавал. Вот это и есть его руки.",
+          "emotion": "angry"
+        }
+      ]
+    },
+    {
+      "id": "accuse_burtsev",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.accuse_burtsev.001",
+          "speaker": "dasha",
+          "text": "Бурцев. Палец, «Тайга», SMS на его номер. Он столкнул машину и сам пришёл к нам «проверять».",
+          "emotion": "hurt",
+          "direction": "медленно, с паузой"
+        },
+        {
+          "id": "c12.accuse_burtsev.002",
+          "speaker": "dasha",
+          "text": "Я его помню, Ноль. Рука на косяке. Мне было тринадцать.",
+          "emotion": "hurt",
+          "direction": "тихо"
+        }
+      ]
+    },
+    {
+      "id": "accuse_ratnikov",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.accuse_ratnikov.001",
+          "speaker": "dasha",
+          "text": "Лев Борисыч прятал. Покрывал. Квартиру взял. Но приказов он не отдавал. Не путай.",
+          "emotion": "hurt"
+        }
+      ]
+    },
+    {
+      "id": "accuse_tokha",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.accuse_tokha.001",
+          "speaker": "dasha",
+          "text": "Тоха сливал и чистил. Он мелкий. Ищи, кому он чистил.",
+          "emotion": "angry"
+        }
+      ]
+    },
+    {
+      "id": "accuse_granin_hands",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.accuse_granin_hands.001",
+          "speaker": "dasha",
+          "text": "Гранин рук не марает. На Полярной за рулём сидел не он. Чья машина?",
+          "emotion": "angry"
+        }
+      ]
+    },
+    {
+      "id": "accuse_wrong",
+      "location": "ocr_office",
+      "lines": [
+        {
+          "id": "c12.accuse_wrong.001",
+          "speaker": "dasha",
+          "text": "Нет. Карточки про другого. Время идёт, Ноль, не трать его на догадки.",
+          "emotion": "angry"
         }
       ]
     },
     {
       "id": "outro",
+      "location": "first_sun_window",
       "lines": [
         {
           "id": "c12.outro.001",
           "speaker": "narrator",
-          "text": "Двенадцать пятьдесят восемь. Над заливом встаёт солнце."
+          "text": "Двенадцать пятьдесят восемь. Над заливом впервые за сорок дней показывается солнце.",
+          "direction": "медленно, с паузами"
+        },
+        {
+          "id": "c12.outro.002",
+          "speaker": "mira",
+          "text": "Статус сообщения изменён: доставлено.",
+          "emotion": "neutral",
+          "direction": "ровно"
+        },
+        {
+          "id": "c12.outro.003",
+          "speaker": "nina",
+          "text": "Слышишь, голубчик? Ирочкино ушло. Мама сейчас слушает.",
+          "emotion": "sad",
+          "direction": "шёпотом"
+        },
+        {
+          "id": "c12.outro.004",
+          "speaker": "dasha",
+          "text": "Солнце. Я его с ноября не видела. Ни хрена себе.",
+          "emotion": "hurt",
+          "direction": "смешок сквозь слёзы, хрипло"
+        },
+        {
+          "id": "c12.outro.005",
+          "speaker": "nina",
+          "text": "Кружку её возьми. Она бы разрешила.",
+          "emotion": "happy",
+          "direction": "тихо"
+        },
+        {
+          "id": "c12.outro.006",
+          "speaker": "mira",
+          "text": "Тринадцать ноль-ноль. Финализация завершена. Хорошего дня.",
+          "emotion": "neutral"
         }
-      ]
+      ],
+      "music": "first_sun"
     }
   ]
 }

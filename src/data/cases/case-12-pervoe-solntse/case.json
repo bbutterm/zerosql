@@ -8,8 +8,14 @@
   "date": "2027-01-11 11:30",
   "minutesPerQuery": 3,
   "clock": {
-    "cap": "2027-01-11 13:00"
+    "cap": "2027-01-11 13:00",
+    "holds": [
+      { "at": "2027-01-11 12:26", "until": { "flag": "burtsev_caught" }, "noTimerOnly": true },
+      { "at": "2027-01-11 12:39:59", "until": { "objective": "o11_3" }, "noTimerOnly": true },
+      { "at": "2027-01-11 12:57", "until": { "flag": "package_sent" }, "noTimerOnly": true }
+    ]
   },
+  "location": "ГУ, ОЦР и Б0",
   "difficulty": "expert",
   "concepts": [],
   "tables": [
@@ -69,19 +75,432 @@
     "publication_source",
     "publication"
   ],
-  "newTables": [
-    "publication_source",
-    "publication"
-  ],
-  "writableTables": [
-    "statements",
-    "persons",
-    "evidence_registry",
-    "publication"
-  ],
+  "newTables": ["publication_source", "publication"],
+  "writableTables": ["statements", "persons", "evidence_registry", "publication"],
   "allowViews": true,
-  "briefing": "11 января, 13:00 — пресс-церемония «Сияния»: завершение миграции и финализация, ответственный — nol. В 12:58 встанет первое солнце. Таблицы staging-контура удаляются по расписанию.",
+  "briefing": "11 января 2027 года, 11:30. В 13:00 в ГУ пресс-церемония «Сияния»: завершение миграции «Сокол → ПБД» и финализация. Ответственный по migration_jobs — nol. Staging-таблицы с диском Нины удаляются по расписанию: 12:20 — реестр, 12:40 — объяснения, 13:00 — карточки. Каждый запрос — три минуты. Задача отдела: вернуть в ПБД то, что стёрли, собрать пакет, где на каждый узел два независимых источника, и отправить его до финализации. Гранин приезжает к 12:30 как кандидат. Солнце встаёт в 12:58.",
+  "starterSql": "SELECT id, run_at, action, target, status\nFROM migration_jobs\nWHERE status = 'запланировано'\nORDER BY run_at;",
   "introScene": "intro",
-  "objectives": [],
+  "objectives": [
+    {
+      "id": "o11_1",
+      "order": 1,
+      "optional": true,
+      "when": { "burtsev_caught": null },
+      "task": "«Где он?» С 12:14 по ГУ идёт гостевой пропуск охраны кандидата. Найди его последнюю строку в door_access и скажи Даше, что перекрывать, пока он не дошёл до тамбура серверной.",
+      "concept": "w.skud",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Последняя строка — на лестнице Б.",
+        "rules": [
+          { "type": "cell_value", "value": "G-0412", "columns": ["badge_id", "badge", "пропуск"] },
+          {
+            "type": "any_of",
+            "successMessage": "Он на лестнице Б.",
+            "rules": [
+              { "type": "cell_value", "value": "Лестница Б, 1 эт.", "columns": ["door", "место", "где"] },
+              { "type": "cell_value", "value": "Лестница Б, Б0", "columns": ["door", "место", "где"] }
+            ]
+          },
+          {
+            "type": "not",
+            "rule": { "type": "cell_value", "value": "КПП-1", "columns": ["door", "место", "где"] },
+            "message": "КПП-1 он уже прошёл. Нужна последняя строка, а не вся лента: ORDER BY ts DESC и LIMIT 1."
+          }
+        ]
+      },
+      "hints": [
+        { "by": "dasha", "line": "hint.c12_o11_1.001", "text": "Так. Стоп. Мне не лента нужна, мне нужно, где он сейчас. Одна строка. Последняя." },
+        { "by": "mira", "text": "Последнее событие по пропуску: сортировка по времени по убыванию и LIMIT 1. Номер пропуска — в строке КПП-1 с пометкой «охрана кандидата». См. СКУД в справочнике." },
+        { "by": "mira", "text": "SELECT ts, door FROM door_access WHERE badge_id = (SELECT badge_id FROM door_access WHERE note LIKE ___) ORDER BY ___ DESC LIMIT 1;" },
+        { "by": "nina", "text": "SELECT ts, door FROM door_access WHERE badge_id = 'G-0412' ORDER BY ts LIMIT 1; — голубчик, так ты получишь, где он был, а не где он есть." }
+      ],
+      "success": "Последняя строка — лестница Б. Даша ждёт слова.",
+      "evidence": {
+        "id": "ev.c12.burtsev_feed",
+        "title": "Гостевой G-0412",
+        "text": "door_access 11.01: 12:14 КПП-1, «охрана кандидата (Бурцев В. Н.)» → 12:20 «Лестница Б, 1 эт.» → 12:26 «Лестница Б, Б0». Дальше по ленте — тамбур серверной, где диск Нины и копирка.",
+        "kind": "record"
+      },
+      "sceneAfter": "block",
+      "solution": "SELECT ts, badge_id, door, note FROM door_access WHERE badge_id = (SELECT badge_id FROM door_access WHERE note LIKE '%Бурцев%') ORDER BY ts DESC LIMIT 1"
+    },
+    {
+      "id": "o11_2",
+      "order": 2,
+      "task": "«Верни удалённое». В архиве 2016 года (arch16_statements) есть объяснения, которых нет в ПБД. Верни в statements все — с теми же id и статусом «восстановлено». Дубли импорта, которые в ПБД уже есть, не трогай. В 12:40 arch16_statements удалят.",
+      "concept": "h.anti_join",
+      "prediction": {
+        "question": "Сколько объяснений архива 2016 года нет в ПБД?",
+        "sql": "SELECT a.id FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements)",
+        "options": [11, 37, 63],
+        "answer": 11,
+        "explanation": "Одиннадцать. Тридцать семь — дубли импорта: они в ПБД уже есть, анти-джойн их отсекает. Шестьдесят три — всё дело 15-0219 вместе с подделками."
+      },
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Пропавших объяснений в ПБД больше нет.",
+        "rules": [
+          {
+            "type": "compound",
+            "successMessage": "Все одиннадцать — на своих номерах.",
+            "rules": [
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS пропавших FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements)",
+                "rule": { "type": "cell_value", "value": 0 }
+              },
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS вернулись FROM statements WHERE id IN (1187, 1342, 1468, 1590, 1723, 1856, 1914, 2033, 2071, 2072, 2098)",
+                "rule": { "type": "cell_value", "value": 11 }
+              }
+            ]
+          },
+          {
+            "type": "compound",
+            "successMessage": "Архива больше нет. Осталась копирка Нины.",
+            "rules": [
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS осталось FROM sqlite_master WHERE name = 'arch16_statements'",
+                "rule": { "type": "cell_value", "value": 0 }
+              },
+              { "type": "column_values", "columns": ["doc_reg_no", "reg_no", "номер"], "values": [3312], "mode": "superset" }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        { "by": "nina", "line": "hint.c12_o11_2.001", "text": "Что в архиве есть, а в ПБД нет — то и неси обратно, голубчик. Номера при миграции не менялись." },
+        { "by": "mira", "text": "Вставка результата запроса: INSERT INTO … (столбцы) SELECT … Отбор недостающих — анти-джойн: NOT IN по id или NOT EXISTS. См. «Анти-джойн»." },
+        { "by": "mira", "text": "INSERT INTO statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status) SELECT id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, ___ FROM arch16_statements a WHERE a.id ___ (SELECT id FROM statements);" },
+        { "by": "nina", "text": "INSERT INTO statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status) SELECT id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, 'восстановлено' FROM arch16_statements; — а дубли куда денешь? База скажет UNIQUE и ничего не вставит." }
+      ],
+      "success": "Одиннадцать объяснений вернулись на свои номера. 3312 — среди них.",
+      "evidence": {
+        "id": "ev.c12.restored",
+        "title": "Возвращённые объяснения",
+        "text": "statements: 1187, 1342, 1468, 1590, 1723, 1856, 1914, 2033, 2071, 2072, 2098 — вставлены из arch16_statements со статусом «восстановлено». 2071 — объяснение Ким Д. С. (журнал 3312), 2072 — Ким С. А.",
+        "kind": "document"
+      },
+      "solution": "INSERT INTO statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status) SELECT a.id, a.case_id, a.doc_reg_no, a.person_text, a.taken_at, a.taken_by, a.typed_by, a.text, 'восстановлено' FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements)"
+    },
+    {
+      "id": "o11_3",
+      "order": 3,
+      "task": "«Верни стёртое и пометь подлоги». Верни приметы из arch16_persons только тем, чьи special_marks правил логин i.valts (так говорит audit_log). Объяснения по делу 15-0219, которых не было в 2016 году, пометь статусом «подлог». Закрой транзакцию и проверь контрольным запросом — расхождений должно быть 0.",
+      "concept": "h.correlated",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Архив и ПБД сошлись.",
+        "rules": [
+          {
+            "type": "compound",
+            "successMessage": "Контрольный запрос вернул ноль.",
+            "rules": [
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS расхождений FROM (SELECT a.id FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements) UNION ALL SELECT p.id FROM persons p JOIN arch16_persons a ON a.id = p.id WHERE p.special_marks IS NOT a.special_marks AND p.id IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks') UNION ALL SELECT s.id FROM statements s WHERE s.case_id = '15-0219' AND s.id NOT IN (SELECT id FROM arch16_statements) AND s.status IS NOT 'подлог')",
+                "rule": { "type": "cell_value", "value": 0 }
+              },
+              {
+                "type": "not",
+                "rule": {
+                  "type": "table_state",
+                  "query": "SELECT COUNT(*) AS законных FROM persons p JOIN arch16_persons a ON a.id = p.id WHERE p.special_marks IS NOT a.special_marks AND p.id NOT IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks')",
+                  "rule": { "type": "cell_value", "value": 0 }
+                },
+                "message": "Откатились и законные изменения. Возвращать нужно только то, что правил i.valts."
+              },
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS лишних FROM statements WHERE status = 'подлог' AND (case_id IS NOT '15-0219' OR id IN (SELECT id FROM arch16_statements))",
+                "rule": { "type": "cell_value", "value": 0 }
+              }
+            ]
+          },
+          {
+            "type": "compound",
+            "successMessage": "Объяснений из архива уже нет, но приметы и подлоги на месте.",
+            "rules": [
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS осталось FROM sqlite_master WHERE name = 'arch16_statements'",
+                "rule": { "type": "cell_value", "value": 0 }
+              },
+              {
+                "type": "table_state",
+                "query": "SELECT COUNT(*) AS расхождений FROM persons p JOIN arch16_persons a ON a.id = p.id WHERE p.special_marks IS NOT a.special_marks AND p.id IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks')",
+                "rule": { "type": "cell_value", "value": 0 }
+              },
+              {
+                "type": "not",
+                "rule": {
+                  "type": "table_state",
+                  "query": "SELECT COUNT(*) AS законных FROM persons p JOIN arch16_persons a ON a.id = p.id WHERE p.special_marks IS NOT a.special_marks AND p.id NOT IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks')",
+                  "rule": { "type": "cell_value", "value": 0 }
+                },
+                "message": "Откатились и законные изменения. Возвращать нужно только то, что правил i.valts."
+              }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        { "by": "nina", "line": "hint.c12_o11_3.001", "text": "Не всё, что в карточках поменялось с шестнадцатого года, — призрак. Люди женятся, шрамы заживают. Смотри журнал: что правил её логин." },
+        { "by": "mira", "text": "UPDATE с коррелированным подзапросом: SET столбец = (SELECT … FROM другая WHERE другая.id = таблица.id). Отбор строк — WHERE id IN (SELECT … FROM audit_log). NULL сравнивайте через IS NOT." },
+        { "by": "mira", "text": "UPDATE persons SET special_marks = (SELECT a.special_marks FROM arch16_persons a WHERE a.id = persons.id) WHERE id IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = ___ AND field = ___); UPDATE statements SET status = 'подлог' WHERE case_id = '15-0219' AND id ___ (SELECT id FROM arch16_statements);" },
+        { "by": "nina", "text": "UPDATE persons SET special_marks = (SELECT a.special_marks FROM arch16_persons a WHERE a.id = persons.id) WHERE special_marks != (SELECT a.special_marks FROM arch16_persons a WHERE a.id = persons.id); — глянь, что стоит в стёртой графе. С пустотой «не равно» не работает." }
+      ],
+      "success": "Палец Бурцева снова в его карточке. Три подделки помечены. Контрольный запрос — ноль.",
+      "evidence": {
+        "id": "ev.c12.forgeries",
+        "title": "Подлоги помечены",
+        "text": "statements 5203, 5204, 5207 (дело 15-0219, вставлены в 2026 году) — статус «подлог». persons 2214, 1288, 1471, 2650, 3015, 3390 — приметы возвращены из arch16_persons по правкам i.valts в audit_log; 2214: нет фаланги безымянного пальца левой руки.",
+        "kind": "document"
+      },
+      "solution": "UPDATE persons SET special_marks = (SELECT a.special_marks FROM arch16_persons a WHERE a.id = persons.id) WHERE id IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks'); UPDATE statements SET status = 'подлог' WHERE case_id = '15-0219' AND id NOT IN (SELECT id FROM arch16_statements)"
+    },
+    {
+      "id": "o11_3v",
+      "order": 31,
+      "optional": true,
+      "task": "★ Контрольный запрос до 12:40: архив 2016 года и ПБД сходятся полностью (V).",
+      "concept": "h.correlated",
+      "validation": {
+        "type": "table_state",
+        "query": "SELECT COUNT(*) AS расхождений FROM (SELECT a.id FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements) UNION ALL SELECT p.id FROM persons p JOIN arch16_persons a ON a.id = p.id WHERE p.special_marks IS NOT a.special_marks AND p.id IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks') UNION ALL SELECT s.id FROM statements s WHERE s.case_id = '15-0219' AND s.id NOT IN (SELECT id FROM arch16_statements) AND s.status IS NOT 'подлог')",
+        "rule": { "type": "cell_value", "value": 0 }
+      },
+      "hints": [
+        { "by": "nina", "line": "hint.c12_o11_3v.001", "text": "Пока архив на месте — сверь всё разом. Потом сверять будет не с чем." },
+        { "by": "mira", "text": "Три проверки через UNION ALL под одним COUNT(*): пропавшие объяснения, стёртые приметы, неотмеченные подделки." },
+        { "by": "mira", "text": "SELECT COUNT(*) FROM (SELECT … UNION ALL SELECT … UNION ALL SELECT …);" }
+      ],
+      "success": "Ноль расхождений. Архив восстановлен до удаления staging.",
+      "sceneAfter": "restored",
+      "solution": "SELECT COUNT(*) AS расхождений FROM (SELECT a.id FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements) UNION ALL SELECT p.id FROM persons p JOIN arch16_persons a ON a.id = p.id WHERE p.special_marks IS NOT a.special_marks AND p.id IN (SELECT CAST(row_id AS INTEGER) FROM audit_log WHERE login = 'i.valts' AND table_name = 'persons' AND field = 'special_marks') UNION ALL SELECT s.id FROM statements s WHERE s.case_id = '15-0219' AND s.id NOT IN (SELECT id FROM arch16_statements) AND s.status IS NOT 'подлог')"
+    },
+    {
+      "id": "o11_4",
+      "order": 4,
+      "task": "«Два источника на каждый узел». Собери пакет представлением evidence_package: активные карточки из evidence_registry (node, source_class, card_title, key_json) — только по узлам, где не меньше двух разных классов источников.",
+      "concept": "h.having",
+      "validation": {
+        "type": "view_match",
+        "view": "evidence_package",
+        "referenceQuery": "SELECT e.node, e.source_class, e.card_title, e.key_json FROM evidence_registry e WHERE e.status = 'активна' AND e.node IN (SELECT node FROM evidence_registry WHERE status = 'активна' GROUP BY node HAVING COUNT(DISTINCT source_class) >= 2)"
+      },
+      "hints": [
+        { "by": "dasha", "line": "hint.c12_o11_4.001", "text": "Прокурор спросит одно: а кто ещё это подтверждает? Один источник — это сплетня." },
+        { "by": "mira", "text": "Узлы с двумя классами — GROUP BY node HAVING COUNT(DISTINCT source_class) >= 2. Призраки и удалённые не считаются: фильтр по status. Представление — CREATE VIEW имя AS SELECT …" },
+        { "by": "mira", "text": "CREATE VIEW evidence_package AS SELECT e.node, e.source_class, e.card_title, e.key_json FROM evidence_registry e WHERE e.status = 'активна' AND e.node IN (SELECT node FROM evidence_registry WHERE ___ GROUP BY node HAVING ___ >= 2);" },
+        { "by": "nina", "text": "CREATE VIEW evidence_package AS SELECT e.node, e.source_class, e.card_title, e.key_json FROM evidence_registry e WHERE e.status = 'активна' AND e.node IN (SELECT node FROM evidence_registry WHERE status = 'активна' GROUP BY node HAVING COUNT(source_class) >= 2); — две карточки из одного места — это один свидетель, голубчик." }
+      ],
+      "success": "Пакет собран: в нём только узлы, подтверждённые дважды.",
+      "evidence": {
+        "id": "ev.c12.package",
+        "title": "Пакет evidence_package",
+        "text": "Представление: активные карточки evidence_registry по узлам, у которых COUNT(DISTINCT source_class) >= 2. Призраки, подлоги и одиночки в пакет не входят.",
+        "kind": "document"
+      },
+      "sceneAfter": "granin_arrives",
+      "solution": "CREATE VIEW evidence_package AS SELECT e.node, e.source_class, e.card_title, e.key_json FROM evidence_registry e WHERE e.status = 'активна' AND e.node IN (SELECT node FROM evidence_registry WHERE status = 'активна' GROUP BY node HAVING COUNT(DISTINCT source_class) >= 2)"
+    },
+    {
+      "id": "o11_4a",
+      "order": 41,
+      "optional": true,
+      "task": "★ Все девять обязательных узлов (N1–N9) в evidence_package, каждый — двумя классами источников (A).",
+      "concept": "h.having",
+      "validation": {
+        "type": "view_match",
+        "view": "evidence_package",
+        "rule": {
+          "type": "column_values",
+          "columns": ["node"],
+          "values": ["N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9"],
+          "mode": "superset"
+        }
+      },
+      "hints": [
+        { "by": "dasha", "line": "hint.c12_o11_4a.001", "text": "Девять узлов. Каждый — двумя руками. Какого не хватает — того и ищи." },
+        { "by": "mira", "text": "Каких узлов нет в пакете: узлы доски EXCEPT узлы представления." },
+        { "by": "mira", "text": "SELECT node, COUNT(DISTINCT source_class) FROM evidence_registry WHERE status = 'активна' GROUP BY node ORDER BY node;" }
+      ],
+      "success": "Девять узлов из девяти. Каждый подтверждён дважды.",
+      "sceneAfter": "board_full",
+      "solution": "SELECT * FROM evidence_package"
+    },
+    {
+      "id": "o11_5",
+      "order": 5,
+      "task": "Обвинение на доске: не меньше двух карточек на Гранина и двух на Бурцева — по содержимому (id, телефон, номер машины, пропуск, ФИО). Если карточки не хватает, найди её живым запросом.",
+      "concept": "h.inner_join",
+      "validation": {
+        "type": "compound",
+        "successMessage": "На доске по двое на каждого.",
+        "rules": [
+          {
+            "type": "pin",
+            "min": 2,
+            "where": {
+              "any": [
+                { "column": ["person_id", "holder_person_id", "signed_by_person_id", "owner_person_id", "director_person_id", "requester_person_id"], "eq": 1001 },
+                { "contains": "Гранин" }
+              ]
+            },
+            "message": "На Гранина нужно две карточки: справочник 2-14, подпись ПД-117/изм.3, цепочка владения."
+          },
+          {
+            "type": "pin",
+            "min": 2,
+            "where": {
+              "any": [
+                { "column": ["person_id", "holder_person_id", "owner_person_id", "director_person_id", "payer_person_id"], "eq": 2214 },
+                { "contains": "Бурцев" },
+                { "eq": "К404ТО" },
+                { "eq": "G-0412" },
+                { "eq": "+7 900 000-22-14" }
+              ]
+            },
+            "message": "На Бурцева нужно две карточки: «Тайга» К404ТО, SMS на 22-14, приметы 2214, гостевой G-0412."
+          }
+        ]
+      },
+      "hints": [
+        { "by": "dasha", "line": "hint.c12_o11_5.001", "text": "Один отдавал приказы, другой исполнял. На доску — обоих. По две карточки, не меньше." },
+        { "by": "mira", "text": "Карточка засчитывается по содержимому: в строке должен быть ключ человека — persons.id, телефон, номер машины, пропуск или ФИО." },
+        { "by": "mira", "text": "SELECT * FROM gs_phonebook WHERE ext = '2-14'; SELECT doc_no, signed_by_person_id FROM construction_docs WHERE doc_no = 'ПД-117/изм.3'; SELECT * FROM plate_reads WHERE plate = ___;" },
+        { "by": "nina", "text": "SELECT * FROM persons WHERE last_name = 'Гранин' OR last_name = 'Бурцев'; — одна строка на человека, голубчик. Это два человека, а не две улики." }
+      ],
+      "success": "Гранин и Бурцев на доске. Каждый — двумя строками.",
+      "evidence": {
+        "id": "ev.c12.charges",
+        "title": "Обвинение",
+        "text": "Гранин Э. В. (1001): внутренний 2-14 «приёмная директора», подпись ПД-117/изм.3, вершина цепочки «Щита». Бурцев В. Н. (2214): SMS 21:56 на 22-14, «Тайга» К404ТО на Полярной, приметы в архиве 2016 года, гостевой G-0412.",
+        "kind": "lead"
+      },
+      "sceneAfter": "charged",
+      "solution": "SELECT g.ext, g.room, g.holder_person_id, c.ts_unix, c.to_number, c.recipient_name, c.text FROM gs_comms_2015 c JOIN gs_phonebook g ON g.ext = c.from_ext WHERE c.kind = 'sms' AND c.from_ext = '2-14' AND c.to_number = '+7 900 000-22-14'"
+    },
+    {
+      "id": "o11_6",
+      "order": 6,
+      "when": { "recipient": [null, "alla", "sk_alla"] },
+      "task": "Если пакет уходит Алле: «Собери публикацию и убери тех, кого нельзя называть». Перенеси publication_source в publication, затем удали информаторов и тех, кому на дату показаний не было восемнадцати.",
+      "concept": "h.dates",
+      "validation": {
+        "type": "table_state",
+        "query": "SELECT COUNT(*) > 0 AS собрана FROM publication",
+        "rule": { "type": "cell_value", "value": 1 }
+      },
+      "hints": [
+        { "by": "nina", "line": "hint.c12_o11_6.001", "text": "Из газеты — можно. Из дела — никогда. Сначала перенеси всё, потом вычёркивай." },
+        { "by": "mira", "text": "INSERT INTO … SELECT * FROM … переносит строки целиком. Возраст на дату — date(день_рождения, '+18 years') > date(ts)." },
+        { "by": "mira", "text": "INSERT INTO publication SELECT * FROM publication_source; DELETE FROM publication WHERE source_role = ___ OR date(person_birth_date, ___) > date(ts);" },
+        { "by": "nina", "text": "DELETE FROM publication WHERE source_role IN ('информатор', 'свидетель'); — свидетелей-то зачем, голубчик? Девочку по роли не найдёшь, она свидетель. По годам ищи." }
+      ],
+      "success": "Публикация собрана.",
+      "evidence": {
+        "id": "ev.c12.publication",
+        "title": "Публикация для «Подлёдного лова»",
+        "text": "publication: строки из publication_source. Нельзя называть: Ким Д. С. (id 7 и 19, тринадцать лет на дату показаний) и информатора Шпакова Г. И. (id 12 и 33).",
+        "kind": "document"
+      },
+      "sceneAfter": "send_alla",
+      "solution": "INSERT INTO publication SELECT * FROM publication_source"
+    },
+    {
+      "id": "o11_6r",
+      "order": 61,
+      "optional": true,
+      "when": { "recipient": ["alla", "sk_alla"] },
+      "task": "★ В публикации не осталось ни информаторов, ни несовершеннолетних на дату показаний — и никого лишнего не вычеркнули.",
+      "concept": "h.dates",
+      "validation": {
+        "type": "table_state",
+        "query": "SELECT COUNT(*) = 56 AND SUM(source_role = 'информатор' OR date(person_birth_date, '+18 years') > date(ts)) = 0 AS чисто FROM publication",
+        "rule": { "type": "cell_value", "value": 1 }
+      },
+      "hints": [
+        { "by": "nina", "line": "hint.c12_o11_6r.001", "text": "Ей тогда было тринадцать. Посчитай по датам, а не по фамилии: Кимов там двое." },
+        { "by": "mira", "text": "Несовершеннолетний на дату: date(person_birth_date, '+18 years') > date(ts). У документов даты рождения нет — для них сравнение даёт NULL, и строка остаётся." },
+        { "by": "mira", "text": "DELETE FROM publication WHERE source_role = 'информатор' OR date(person_birth_date, '+18 years') > ___;" }
+      ],
+      "success": "Шпала и девочка из публикации убраны. Остальные пятьдесят шесть — на месте.",
+      "sceneAfter": "redacted",
+      "solution": "DELETE FROM publication WHERE source_role = 'информатор' OR date(person_birth_date, '+18 years') > date(ts)"
+    },
+    {
+      "id": "o11_7",
+      "order": 7,
+      "when": { "package_sent": null, "package_late": null },
+      "task": "Отправь пакет до 13:00: адресат и узел «Квартира Ратникова» выбираются на экране «Отправка пакета». В 12:58 встанет солнце, в 13:00 — финализация.",
+      "validation": {
+        "type": "slot",
+        "slot": "package_sent",
+        "value": "отправлен",
+        "message": "Пакет уходит не запросом, а кнопкой «Отправить» на экране «Отправка пакета»."
+      },
+      "hints": [
+        { "by": "nina", "line": "hint.c12_o11_7.001", "text": "Всё собрано, голубчик. Теперь реши, кому отдаёшь. И отдай, пока часы не встали." },
+        { "by": "dasha", "text": "Прокуратура города — это Шубин. Он сам из той же квартирной очереди. Думай." },
+        { "by": "mira", "text": "Адресат, узел K и сводка последствий — на экране «Отправка пакета». Отправка не двигает часы." }
+      ],
+      "success": "Пакет ушёл.",
+      "solution": "SELECT * FROM evidence_package"
+    }
+  ],
+  "accusations": [
+    {
+      "id": "granin",
+      "prompt": "Приказ насчёт Сазонова отдал …",
+      "answer": "Гранин Эдуард Витальевич",
+      "keys": [1001, "Гранин Э. В.", "Гранин Эдуард Витальевич", "2-14"],
+      "minCards": 2,
+      "successScene": "accuse_granin",
+      "wrong": [
+        { "person": "Ратников Лев Борисович", "scene": "accuse_ratnikov" },
+        { "person": "Лыков Антон Сергеевич", "scene": "accuse_tokha" }
+      ],
+      "wrongScene": "accuse_wrong",
+      "trustFlag": "dasha_trust"
+    },
+    {
+      "id": "burtsev",
+      "prompt": "Машину Сазонова столкнул в промоину и сбил Ирину …",
+      "answer": "Бурцев Валерий Николаевич",
+      "keys": [2214, "Бурцев В. Н.", "Бурцев Валерий Николаевич", "К404ТО", "G-0412", "+7 900 000-22-14", "B-2214"],
+      "minCards": 2,
+      "successScene": "accuse_burtsev",
+      "wrong": [
+        { "person": "Лыков Антон Сергеевич", "scene": "accuse_tokha" },
+        { "person": "Гранин Эдуард Витальевич", "scene": "accuse_granin_hands" }
+      ],
+      "wrongScene": "accuse_wrong",
+      "trustFlag": "dasha_trust"
+    }
+  ],
+  "events": [
+    { "id": "e_publication", "atTime": "2027-01-11 11:30", "patch": "late.publication" },
+    { "id": "e_purge", "atTime": "2027-01-11 11:30", "patch": "c12.plate_purge_attempt", "scene": "purge" },
+    { "id": "e_helper_tokha", "after": { "scene": "intro" }, "when": { "tokha_turned": true }, "scene": "helper_tokha" },
+    { "id": "e_helper_melnik", "after": { "scene": "intro" }, "when": { "tokha_turned": false, "melnik": [null, "blackmail"] }, "scene": "helper_melnik" },
+    { "id": "e_helper_mira", "after": { "scene": "intro" }, "when": { "tokha_turned": false, "melnik": "reported" }, "scene": "helper_mira" },
+    { "id": "e_feed", "atTime": "2027-01-11 12:14", "scene": "feed" },
+    { "id": "e_drop_registry", "atTime": "2027-01-11 12:20", "when": { "melnik": [null, "reported"] }, "patch": "c12.drop.registry", "scene": "drop_registry" },
+    { "id": "e_drop_registry_late", "atTime": "2027-01-11 12:32", "when": { "melnik": "blackmail" }, "patch": "c12.drop.registry", "scene": "drop_registry" },
+    { "id": "e_door", "atTime": "2027-01-11 12:32", "when": { "burtsev_caught": null }, "scene": "door" },
+    { "id": "e_drop_statements", "atTime": "2027-01-11 12:40", "when": { "melnik": [null, "reported"] }, "patch": "c12.drop.statements", "scene": "drop_statements" },
+    { "id": "e_drop_statements_late", "atTime": "2027-01-11 12:52", "when": { "melnik": "blackmail" }, "patch": "c12.drop.statements", "scene": "drop_statements" },
+    { "id": "e_voice", "atTime": "2027-01-11 12:58", "patch": "c12.voice" },
+    { "id": "e_drop_persons", "atTime": "2027-01-11 13:00", "patch": "c12.drop.persons" },
+    { "id": "e_finalize", "atTime": "2027-01-11 13:00", "patch": "c12.finalize" },
+    { "id": "e_deadline", "atTime": "2027-01-11 13:00", "when": { "package_sent": null }, "scene": "deadline" },
+    { "id": "e_watch", "after": { "scene": "granin_arrives" }, "when": { "watcher_tripped": true }, "scene": "granin_watch" },
+    { "id": "e_quiet", "after": { "scene": "granin_arrives" }, "when": { "watcher_tripped": false }, "scene": "granin_quiet" }
+  ],
   "outroScene": "outro"
 }
