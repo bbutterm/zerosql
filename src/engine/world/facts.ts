@@ -9,7 +9,7 @@
 
 export const WORLD_SEED = "POLYNYA-S1";
 /** Версия генератора: входит в ключ кеша байтов мира (world:<version>:<seed>) */
-export const WORLD_GENERATOR_VERSION = 3;
+export const WORLD_GENERATOR_VERSION = 4;
 
 // ------------------------------------------------------------------ дела
 
@@ -469,7 +469,7 @@ export const KEY_TIMES = {
   shchitBonus: "2026-11-20 14:05:00",
   lykovLoanPaid: "2026-11-12 11:47:00",
   /** Ночная загрузка журнала «Сокола» через staging */
-  sokolLoad: "2026-12-14 01:30:00",
+  sokolLoad: "2026-12-15 01:30:00",
 } as const;
 
 /** Задания cron Ирины (М6): created_at и дело, после которого задание проверяется */

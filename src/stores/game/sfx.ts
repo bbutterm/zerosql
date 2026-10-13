@@ -233,7 +233,10 @@ export function watchSfx(store: GameStore): () => void {
       }
       if (Object.keys(s.slots).length && s.slots !== p.slots) play("paper.pencil");
     }
-    if (state.schema.length > prev.schema.length && prev.schema.length > 0) play("ui.unlock");
+    // Новая таблица посреди дела. Сборка базы при открытии дела (в том числе под ночью
+    // между делами) — не открытие: до неё caseReady ложно, а схема прошлого дела ещё в сторе
+    const sameRun = s && p && s.caseId === p.caseId && s.runId === p.runId;
+    if (sameRun && prev.caseReady && state.caseReady && state.schema.length > prev.schema.length) play("ui.unlock");
     if (state.barks.length > prev.barks.length) {
       const fresh = state.barks.filter((b) => !prev.barks.some((x) => x.id === b.id));
       if (fresh.some((b) => !SYSTEM_SPEAKERS.has(b.speaker) && b.kind !== "system")) play("notify.message");

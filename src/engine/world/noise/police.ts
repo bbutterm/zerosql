@@ -649,7 +649,7 @@ export function generateMigrationJobs(ctx: WorldContext): void {
   fillOrdered(ctx, {
     table: "migration_jobs", idFrom: 1, idTo: 20, keyFrom: parseTs("2026-10-05 00:00:00"), keyTo: parseTs(CASE_START.c09) - DAY, rng,
     keyOf: (r) => parseTs(String(r.run_at)),
-    // Между якорями 10 (14.12) и 17 (11.01) шум не заходит за старт Д9: таблица без горизонта
+    // Между якорями 10 (15.12) и 17 (11.01) шум не заходит за старт Д9: таблица без горизонта
     sampleKeys: (r, n, lo, hi) => sampleTimes(r, n, lo, Math.min(hi, parseTs(CASE_START.c09) - DAY), (t) => (hourOfDay(t) >= 1 && hourOfDay(t) < 4 ? 1 : 0.02)),
     build: (key, id) => {
       const [action, target] = jobs[k++ % jobs.length];

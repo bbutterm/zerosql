@@ -61,7 +61,11 @@ export function cronSeenKeys(seen: Seen): string[] {
 /**
  * Условие задания выполнено (живое задание ночью срабатывает всегда — если
  * событие его не запустило). seenBefore — ключи SEEN_KEYS, увиденные в ранних
- * делах: задание 4 не срабатывает после Д7 у того, кто видел SMS ещё в Д6.
+ * делах; они идут только в not_seen: задание 4 не срабатывает после Д7 у того,
+ * кто видел SMS ещё в Д6. Условие seen — только по реестру этого дела: ключ
+ * doc_registry:3313 — просто число 3313, а оно есть и в таблицах Д1–Д4
+ * (persons.id, transactions.id, КУСП), так что задание 2 сработало бы у того,
+ * кто 3313 в Д5 не видел.
  */
 export function cronConditionHolds(condition: string, seen: Seen, seenBefore: ReadonlySet<string> = new Set()): boolean {
   let parsed: Record<string, unknown>;
@@ -72,9 +76,11 @@ export function cronConditionHolds(condition: string, seen: Seen, seenBefore: Re
   }
   if (parsed.always === true || "live" in parsed) return true;
   const norm = new Set(seen.map(normalizeCell));
-  const has = (key: unknown) => (typeof key === "string" && seenBefore.has(key)) || seenKey(key, norm, seen);
-  if ("seen" in parsed) return has(parsed.seen);
-  if ("not_seen" in parsed) return !has(parsed.not_seen);
+  if ("seen" in parsed) return seenKey(parsed.seen, norm, seen);
+  if ("not_seen" in parsed) {
+    const key = parsed.not_seen;
+    return !((typeof key === "string" && seenBefore.has(key)) || seenKey(key, norm, seen));
+  }
   return false;
 }
 
@@ -129,7 +135,7 @@ export function cronLiveParams(order: number, seen: Seen): StoryPatchParams | nu
 /**
  * Задания, которые срабатывают ночью после дела order: дело задания не позже
  * этого, задание ещё не сработало, условие выполнено по реестру увиденного дела
- * и ключам ранних дел (seenBefore — cronSeenKeys прошлых дел сезона).
+ * (not_seen — ещё и по ключам ранних дел: seenBefore — cronSeenKeys прошлых дел сезона).
  * Возвращает параметры патчей cron.fire в порядке id.
  */
 export function cronFiresAfterCase(

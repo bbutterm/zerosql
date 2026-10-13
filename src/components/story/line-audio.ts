@@ -10,7 +10,10 @@ import { isMediaMissing, markMediaMissing, voiceUrl } from "./media-cache";
  * (settings.voiceVolume). Нет файла — состояние none, текст идёт без звука.
  */
 
-/** idle — ещё не играла; playing — звучит; done — доиграла; none — файла нет или автоплей запрещён */
+/**
+ * idle — не звучит: ещё не играла или снята, не доиграв (выключили звук, сменилась
+ * реплика); playing — звучит; done — доиграла; none — файла нет или автоплей запрещён
+ */
 export type VoiceState = "idle" | "playing" | "done" | "none";
 
 export interface LineAudioOptions {
@@ -87,6 +90,8 @@ export function useLineAudio(lineId: string | undefined, { enabled = true, baseP
       audio.onended = null;
       audio.onerror = null;
       audio.pause();
+      // Голос снят, не доиграв: «playing» не должен держать реплику (ночь и «Авто» ждут конца голоса)
+      setVoice((v) => (v.lineId === lineId && v.state === "playing" ? { lineId, state: "idle" } : v));
     };
   }, [lineId, enabled, basePath]);
 

@@ -320,9 +320,9 @@ describe("хроника вмешательств (М5, М6, М14, М15)", () =>
     db.close();
   });
 
-  it("migration_jobs: загрузка 14.12 и финализация 11.01 под nol", () => {
+  it("migration_jobs: загрузка в ночь на 15.12 и финализация 11.01 под nol", () => {
     expect(rows(world, "SELECT run_at, action, target, responsible_login, status FROM migration_jobs WHERE id = 9"))
-      .toEqual([["2026-12-14 01:30:00", "LOAD", "sokol_stage_registry → doc_registry", "k.melnik", "выполнено"]]);
+      .toEqual([["2026-12-15 01:30:00", "LOAD", "sokol_stage_registry → doc_registry", "k.melnik", "выполнено"]]);
     expect(rows(world, "SELECT id, run_at, action, target, responsible_login, status FROM migration_jobs WHERE run_at >= '2027-01-11 00:00:00' ORDER BY id")).toEqual(
       F.MIGRATION_FINAL.map((j) => [j.id, j.runAt, j.action, j.target, "nol", "запланировано"])
     );

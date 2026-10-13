@@ -760,11 +760,12 @@ function plantChronicle(ctx: WorldContext): void {
     ts_real: null, case_id: null, objective_id: null, run_id: null,
   }, { orderAt: ts(F.KEY_TIMES.nolExport) });
 
-  // --- миграция «Сокола»: загрузка в staging, перенос 14.12, расписание финализации
+  // --- миграция «Сокола»: загрузка в staging, перенос в ночь на 15.12 (Д5: Тоха «стережёт заливку»,
+  // c05.sealed.002 «05:40. Заливка завершена»), расписание финализации
   const jobs: Row[] = [
     { id: 5, run_at: "2026-11-10 01:30:00", action: "LOAD", target: "дамп «Сокола» 2017 → sokol_stage_registry", responsible_login: F.LOGIN.melnik, status: "выполнено" },
     { id: 9, run_at: F.KEY_TIMES.sokolLoad, action: "LOAD", target: "sokol_stage_registry → doc_registry", responsible_login: F.LOGIN.melnik, status: "выполнено" },
-    { id: 10, run_at: "2026-12-14 02:10:00", action: "CLEANUP", target: "sokol_stage_registry", responsible_login: F.LOGIN.melnik, status: "выполнено" },
+    { id: 10, run_at: "2026-12-15 05:40:00", action: "CLEANUP", target: "sokol_stage_registry", responsible_login: F.LOGIN.melnik, status: "выполнено" },
     ...F.MIGRATION_FINAL.map((j) => ({ id: j.id, run_at: j.runAt, action: j.action, target: j.target, responsible_login: F.LOGIN.player, status: "запланировано" })),
   ];
   for (const j of jobs) ctx.insert("migration_jobs", j, { orderAt: ts(String(j.run_at)) });

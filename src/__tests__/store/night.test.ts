@@ -331,7 +331,7 @@ describe("стор: фаза night", () => {
   }, 120_000);
 });
 
-describe("cron: условие not_seen — по всему сезону", () => {
+describe("cron: условие not_seen — по всему сезону, seen — по своему делу", () => {
   const SMS = "gs_comms_2015:sms:2-14:2015-02-19";
   const fired = new Set([1, 2, 3, 5, 6]);
 
@@ -344,7 +344,8 @@ describe("cron: условие not_seen — по всему сезону", () =>
     const after7 = (seenBefore: string[]) => cronFiresAfterCase(7, [], fired, "2026-12-21 23:41:00", seenBefore).map((p) => p.jobId);
     expect(after7([])).toContain(4);
     expect(after7([SMS])).not.toContain(4);
-    // seen-условие тоже засчитывается по ранним делам
-    expect(cronFiresAfterCase(6, [], new Set([1, 3]), "2026-12-17 20:00:00", ["doc_registry:3313"]).map((p) => p.jobId)).toContain(2);
+    // seen — только по своему делу: 3313 из Д1–Д4 (persons.id, transactions.id, КУСП) задание 2 не включает
+    expect(cronFiresAfterCase(6, [], new Set([1, 3]), "2026-12-17 20:00:00", ["doc_registry:3313"]).map((p) => p.jobId)).not.toContain(2);
+    expect(cronFiresAfterCase(6, ["3313"], new Set([1, 3]), "2026-12-17 20:00:00").map((p) => p.jobId)).toContain(2);
   });
 });

@@ -294,8 +294,11 @@ export function NightScreen({
     }
   };
 
+  // «К делу» — только с карточки, когда видны номер и дата (тот же порог, что у кнопки):
+  // зажатый или двойной Esc и Enter не проскакивают карточку
   const start = () => {
-    if (startedRef.current || !ready) return;
+    const p = posRef.current;
+    if (startedRef.current || !ready || p.stage !== "card" || p.t < T.startDelay) return;
     startedRef.current = true;
     setStarted(true);
     audio.stop(120);
@@ -369,7 +372,13 @@ export function NightScreen({
 
   /* ---------- Управление ---------- */
 
-  useEffect(() => rootRef.current?.focus({ preventScroll: true }), []);
+  // Фокус на корне: при входе и когда карточка убрала «Пропустить ночь» из-под фокуса,
+  // иначе клавиши уходят в body и Enter, Esc, A и M молчат
+  useEffect(() => {
+    const root = rootRef.current;
+    const active = document.activeElement;
+    if (root && (!active || active === document.body || !root.contains(active))) root.focus({ preventScroll: true });
+  }, [pos.stage]);
 
   const next = () => {
     const p = posRef.current;
@@ -395,6 +404,11 @@ export function NightScreen({
 
   const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    // Автоповтор зажатой клавиши — не такт
+    if (e.repeat) {
+      if (e.key === "Escape" || e.key === "Enter" || e.key === " " || e.key === "ArrowRight") e.preventDefault();
+      return;
+    }
     const onControl = e.target !== rootRef.current && Boolean((e.target as HTMLElement).closest("button, a"));
     if (e.key === "Escape") {
       e.preventDefault();
@@ -497,7 +511,9 @@ export function NightScreen({
 
       {/* A: штамп и блокировка */}
       <div className={cn("shrink-0 px-4 lg:absolute lg:top-12 lg:left-16 lg:px-0", halo)}>
-        <p className="mono-13 text-ink-2" aria-label={night.stamp}>
+        <p className="mono-13 text-ink-2">
+          {/* Печать скрыта от чтения, полный текст — для экранного диктора */}
+          <span className="sr-only">{night.stamp}</span>
           <span aria-hidden>{night.stamp.slice(0, stampTyped)}</span>
           <span aria-hidden className="invisible">
             {night.stamp.slice(stampTyped)}
@@ -543,7 +559,8 @@ export function NightScreen({
               <p className="mono-13 text-ink-3">{card.code}</p>
               <h2 className="mt-1 doc-22 text-[19px] leading-7 text-ink-1 lg:text-[22px] lg:leading-8">{typo(card.title)}</h2>
               <p className="doc-15 text-ink-2">{typo(card.subtitle)}</p>
-              <p className="mt-3 mono-13 text-ink-2" aria-label={card.date}>
+              <p className="mt-3 mono-13 text-ink-2">
+                <span className="sr-only">{card.date}</span>
                 <span aria-hidden>{cardDate.slice(0, dateTyped)}</span>
                 <span aria-hidden className="invisible">
                   {cardDate.slice(dateTyped)}

@@ -517,10 +517,22 @@ describe("Д5: посаженные факты (разд. 8.4, блок «Д5»)
     expect(rows(world, "SELECT id FROM statements WHERE case_id = '15-0219' AND id IN (5203, 5204, 5207) ORDER BY id").map((r) => r[0])).toEqual([5203, 5204, 5207]);
   });
 
-  it("migration_jobs 9: заливка sokol_stage_registry → doc_registry 14.12 01:30 под k.melnik", () => {
+  it("migration_jobs 9: заливка sokol_stage_registry → doc_registry в ночь на 15.12, 01:30, под k.melnik", () => {
     const row = rows(world, "SELECT * FROM migration_jobs WHERE id = 9")[0].map(String).join(" | ");
-    expect(row).toContain("2026-12-14 01:30:00");
+    expect(row).toContain("2026-12-15 01:30:00");
     expect(row).toContain("k.melnik");
     expect(row).toContain("doc_registry");
+  });
+
+  it("заливка — в ночь 14→15: после записки Ратникова в ночи (14.12 вечером), до старта Д5; брифинг говорит то же", () => {
+    const load = String(one(world, "SELECT run_at FROM migration_jobs WHERE id = 9"));
+    const cleanup = String(one(world, "SELECT run_at FROM migration_jobs WHERE id = 10"));
+    const note = (c05.night?.beats ?? []).flatMap((b) => ("scene" in b && /^night_(soft|hard)$/.test(b.scene) && b.at ? [b.at] : []));
+    expect(note.length).toBe(2);
+    for (const at of note) expect(load > at).toBe(true);
+    expect(load < c05.date).toBe(true);
+    // Staging чистят, когда заливка завершена: c05.sealed.002 «05:40. Заливка завершена»
+    expect(cleanup).toBe("2026-12-15 05:40:00");
+    expect(c05.briefing).toContain("в ночь на 15.12 с 01:30");
   });
 });

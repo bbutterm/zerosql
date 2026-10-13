@@ -675,7 +675,7 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           }
 
           // Ночь после дела: задания zero, чьё условие выполнено (М6), — патчи для следующих дел.
-          // Увиденное ранних дел тоже считается: not_seen не перепроверяется по одному делу
+          // Увиденное ранних дел идёт в not_seen (не перепроверяется по одному делу); seen — только по этому делу
           const earlier = cases.filter((c) => c.order < d.order);
           const earlierPatches = earlier.flatMap((c) => st.season.casePatches[c.id] ?? []);
           const seenBefore = earlier.flatMap((c) => st.season.cronSeen?.[c.id] ?? []);

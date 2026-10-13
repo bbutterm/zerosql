@@ -309,7 +309,9 @@ export function ColdOpen({
 
   const text = (
     <>
-      <p className="mono-13 text-ink-2" aria-label={stamp}>
+      <p className="mono-13 text-ink-2">
+        {/* Печать скрыта от чтения, полный текст — для экранного диктора (aria-label у <p> не читается) */}
+        <span className="sr-only">{stamp}</span>
         <span aria-hidden>{stamp.slice(0, typed)}</span>
         <span aria-hidden className="invisible">
           {stamp.slice(typed)}
