@@ -455,8 +455,6 @@ export function NightScreen({
   const dateTyped = reduced ? cardDate.length : Math.max(0, Math.floor((pos.t - T.cardFade) / T.stampChar));
   const showStart = onCard && pos.t >= T.startDelay;
   const rows = frame.rows.slice(-WINDOW_ROWS);
-  // На картине текст держит тёмный ореол: светлые места кадра (монитор, лампа) не съедают ink-2 и ink-3
-  const halo = showBg ? "[text-shadow:0_1px_2px_rgb(0_0_0/0.9),0_0_12px_rgb(0_0_0/0.7)]" : undefined;
   const fade = (ms: number, curve: "in" | "out") => (reduced ? undefined : `opacity ${ms}ms var(--ease-${curve})`);
 
   return (
@@ -482,7 +480,8 @@ export function NightScreen({
             className="pointer-events-none absolute inset-0 -z-10 size-full object-cover"
             style={{ animation: reduced || bgUrl === bgAtStart ? undefined : "zs-fade-in 400ms var(--ease-out) both" }}
           />
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-room/72 lg:bg-room/55" />
+          {/* Текст ночи стоит по всему кадру (штамп над окнами, лента над мониторами): комната 0.85, как за логом диалога */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-room/85" />
         </>
       )}
 
@@ -512,7 +511,7 @@ export function NightScreen({
       </div>
 
       {/* A: штамп и блокировка */}
-      <div className={cn("shrink-0 px-4 lg:absolute lg:top-12 lg:left-16 lg:px-0", halo)}>
+      <div className="shrink-0 px-4 lg:absolute lg:top-12 lg:left-16 lg:px-0">
         <p className="mono-13 text-ink-2">
           {/* Печать скрыта от чтения, полный текст — для экранного диктора */}
           <span className="sr-only">{night.stamp}</span>
@@ -534,7 +533,7 @@ export function NightScreen({
         )}
       >
         {!onCard ? (
-          <div className={halo} style={{ opacity: leaving ? 0 : 1, transition: fade(T.cardFade, "in") }}>
+          <div style={{ opacity: leaving ? 0 : 1, transition: fade(T.cardFade, "in") }}>
             <p
               aria-live="polite"
               className="h-[84px] doc-22 text-[19px] leading-7 text-ink-1 [text-wrap:pretty] lg:h-24 lg:text-[22px] lg:leading-8"
@@ -556,7 +555,7 @@ export function NightScreen({
           </div>
         ) : (
           <div className="flex flex-col">
-            <div className={halo}>
+            <div>
               {card.part && <p className="mono-13 text-ink-3">{card.part}</p>}
               <p className="mono-13 text-ink-3">{card.code}</p>
               <h2 className="mt-1 doc-22 text-[19px] leading-7 text-ink-1 lg:text-[22px] lg:leading-8">{typo(card.title)}</h2>
