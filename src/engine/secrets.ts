@@ -1,6 +1,6 @@
 import type { Database } from "sql.js";
 import type { QueryResult } from "@/types/database";
-import type { SecretDef } from "@/types/case";
+import type { SecretDef, ValidationContext } from "@/types/case";
 import { validate } from "./validator";
 
 /**
@@ -18,14 +18,16 @@ function tablesUnlocked(secret: SecretDef, unlockedTables: readonly string[] | n
 /**
  * Возвращает id тайников, найденных этим запросом (в порядке объявления).
  * Уже найденные пропускаются; запрос с ошибкой ничего не находит.
- * unlockedTables = null — доступны все таблицы.
+ * unlockedTables = null — доступны все таблицы. ctx — состояние стола для
+ * правил pin / seen / slot (необязательно).
  */
 export function checkSecrets(
   secrets: readonly SecretDef[],
   result: QueryResult,
   db: Database,
   found: ReadonlySet<string>,
-  unlockedTables: readonly string[] | null
+  unlockedTables: readonly string[] | null,
+  ctx?: ValidationContext
 ): string[] {
   if (result.error) return [];
   const discovered: string[] = [];
@@ -33,7 +35,7 @@ export function checkSecrets(
     if (found.has(secret.id) || discovered.includes(secret.id)) continue;
     if (!tablesUnlocked(secret, unlockedTables)) continue;
     try {
-      if (validate(secret.trigger, result, db).passed) discovered.push(secret.id);
+      if (validate(secret.trigger, result, db, ctx).passed) discovered.push(secret.id);
     } catch {
       // Сломанное правило тайника не должно ронять игру
     }

@@ -24,7 +24,7 @@ export const CHARACTERS: CharacterDef[] = [
     role: "Начальник аналитического отдела",
     accent: "#7aa2f7",
     bio: "Строгая, но справедливая.",
-    emotions: ["neutral", "angry"],
+    emotions: ["neutral", "angry", "happy"],
   },
   {
     id: "lev",
@@ -33,7 +33,7 @@ export const CHARACTERS: CharacterDef[] = [
     role: "Архивариус",
     accent: "#9ece6a",
     bio: "Знает, где что лежит.",
-    emotions: ["neutral"],
+    emotions: ["neutral", "scared", "smug"],
   },
 ];
 

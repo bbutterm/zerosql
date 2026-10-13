@@ -63,7 +63,9 @@ export function ensureQueryLog(db: Database): void {
 /** Статус записи журнала по результату executeSQL */
 export function queryLogStatus(result: QueryResult): QueryLogStatus {
   if (!result.error) return "ok";
-  return result.errorKind === "locked_table" || result.errorKind === "read_only" ? "denied" : "error";
+  return result.errorKind === "locked_table" || result.errorKind === "read_only" || result.errorKind === "forbidden"
+    ? "denied"
+    : "error";
 }
 
 /** Обрезает текст по QUERY_TEXT_MAX символов, не разрывая суррогатные пары */

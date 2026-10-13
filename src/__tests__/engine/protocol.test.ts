@@ -101,7 +101,7 @@ describe("scanSeenOptions", () => {
     expect(scanSeenOptions(protocol, result([["ЕЛКИН"]]))).toEqual(["Ёлкин", "Елкин"]);
   });
 
-  it("быстро на 5000×10", () => {
+  it("быстро на 5000×10; в большом результате числа вне столбцов-сущностей не видны (разд. 6.4)", () => {
     const rows = Array.from({ length: 5000 }, (_, r) =>
       Array.from({ length: 10 }, (_, c) => (c % 3 === 0 ? r * 10 + c : `Строка ${r}-${c}`))
     );
@@ -109,8 +109,10 @@ describe("scanSeenOptions", () => {
     const start = performance.now();
     const seen = scanSeenOptions(PROTOCOL, result(rows));
     const elapsed = performance.now() - start;
+    // ФИО под любым алиасом: столбец «попал» в варианты person
     expect(seen).toContain("Борис Ёлкин");
-    expect(seen).toContain("80"); // 80 = r*10+c при r=8, c=0
+    // 80 = r*10+c при r=8, c=0 — но столбец c0 не сущность, а строк больше 200
+    expect(seen).not.toContain("80");
     expect(elapsed).toBeLessThan(500);
   });
 });

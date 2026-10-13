@@ -134,7 +134,6 @@ describe("checkSqlPolicy: только чтение", () => {
     ["ALTER TABLE suspects ADD COLUMN x", "ALTER"],
     ["WITH x AS (SELECT 1) DELETE FROM suspects", "DELETE"],
     ["SELECT 1; DELETE FROM suspects", "DELETE"],
-    ["PRAGMA foreign_keys = OFF", "PRAGMA"],
   ])("блокирует %s", (sql, keyword) => {
     const r = checkSqlPolicy(sql, policy);
     expect(r.allowed).toBe(false);

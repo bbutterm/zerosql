@@ -1,8 +1,9 @@
 import type { Database } from "sql.js";
 import type { QueryResult } from "@/types/database";
 import type { ValidationOutcome, ValidationRule } from "@/types/mission";
-import type { CaseDef, CaseObjective, EvidenceDef } from "@/types/case";
+import type { CaseDef, CaseObjective, EvidenceDef, FlagValue, ValidationContext } from "@/types/case";
 import { validate } from "./validator";
+import { flagsMatch } from "./live";
 
 /**
  * Прогресс по задачам дела (v2).
@@ -12,7 +13,14 @@ import { validate } from "./validator";
  * задачи. Дополнительные (`optional`) задачи порядка не имеют — каждая
  * проверяется на любом запросе, и за один запрос их может закрыться сколько
  * угодно. Проверяется результат запроса, а не его текст.
+ *
+ * Условные задачи (`when`) существуют только при своих флагах: если условие
+ * ложно, задача не активна и не нужна для закрытия дела. Флаги берутся из
+ * ValidationContext.flags (или отдельного аргумента flags); без них
+ * отсутствующий флаг равен false.
  */
+
+type Flags = Readonly<Record<string, FlagValue>> | undefined;
 
 /** Задача, выполненная этим запросом */
 export interface CompletedObjective {
@@ -43,9 +51,9 @@ const BROKEN_RULE: ValidationOutcome = {
 };
 
 /** validate(), который не роняет игру на сломанном правиле (например, custom) */
-function safeValidate(rule: ValidationRule, result: QueryResult, db: Database): ValidationOutcome {
+function safeValidate(rule: ValidationRule, result: QueryResult, db: Database, ctx?: ValidationContext): ValidationOutcome {
   try {
-    return validate(rule, result, db);
+    return validate(rule, result, db, ctx);
   } catch {
     return BROKEN_RULE;
   }
@@ -61,44 +69,55 @@ function toCompleted(objective: CaseObjective): CompletedObjective {
   };
 }
 
-/** Основные задачи по порядку выполнения */
-export function mainObjectives(caseDef: CaseDef): CaseObjective[] {
-  return caseDef.objectives.filter((o) => !o.optional).sort((a, b) => a.order - b.order);
+/** Задача существует при этих флагах (условие when) */
+export function objectiveApplies(objective: CaseObjective, flags?: Flags): boolean {
+  return flagsMatch(objective.when, flags);
 }
 
-/** Дополнительные задачи в порядке объявления */
-export function optionalObjectives(caseDef: CaseDef): CaseObjective[] {
-  return caseDef.objectives.filter((o) => o.optional);
+/** Основные задачи по порядку выполнения (условные — только при своих флагах) */
+export function mainObjectives(caseDef: CaseDef, flags?: Flags): CaseObjective[] {
+  return caseDef.objectives
+    .filter((o) => !o.optional && objectiveApplies(o, flags))
+    .sort((a, b) => a.order - b.order);
+}
+
+/** Дополнительные задачи в порядке объявления (условные — только при своих флагах) */
+export function optionalObjectives(caseDef: CaseDef, flags?: Flags): CaseObjective[] {
+  return caseDef.objectives.filter((o) => o.optional && objectiveApplies(o, flags));
 }
 
 /** Текущая основная задача — самая ранняя невыполненная; null, если все выполнены */
-export function activeObjective(caseDef: CaseDef, completedIds: ReadonlySet<string>): CaseObjective | null {
-  return mainObjectives(caseDef).find((o) => !completedIds.has(o.id)) ?? null;
+export function activeObjective(caseDef: CaseDef, completedIds: ReadonlySet<string>, flags?: Flags): CaseObjective | null {
+  return mainObjectives(caseDef, flags).find((o) => !completedIds.has(o.id)) ?? null;
 }
 
 /** Все основные задачи выполнены (дополнительные не обязательны) */
-export function isCaseObjectivesDone(caseDef: CaseDef, completedIds: ReadonlySet<string>): boolean {
-  return activeObjective(caseDef, completedIds) === null;
+export function isCaseObjectivesDone(caseDef: CaseDef, completedIds: ReadonlySet<string>, flags?: Flags): boolean {
+  return activeObjective(caseDef, completedIds, flags) === null;
 }
 
 /**
  * Проверяет результат запроса против задач дела.
  * Запрос с ошибкой ничего не закрывает и не даёт обратной связи.
+ * ctx — состояние стола (доска, реестр увиденного, слоты, флаги) для правил
+ * pin / seen / slot и условных задач; необязателен.
  */
 export function checkCaseProgress(
   caseDef: CaseDef,
   result: QueryResult,
   db: Database,
-  completedIds: ReadonlySet<string>
+  completedIds: ReadonlySet<string>,
+  ctx?: ValidationContext
 ): CaseProgress {
   if (result.error) return { completed: [], activeFeedback: null };
 
   const completed: CompletedObjective[] = [];
   let activeFeedback: string | null = null;
+  const flags = ctx?.flags;
 
-  const active = activeObjective(caseDef, completedIds);
+  const active = activeObjective(caseDef, completedIds, flags);
   if (active) {
-    const outcome = safeValidate(active.validation, result, db);
+    const outcome = safeValidate(active.validation, result, db, ctx);
     if (outcome.passed) {
       completed.push(toCompleted(active));
     } else if (result.columns.length > 0) {
@@ -106,9 +125,9 @@ export function checkCaseProgress(
     }
   }
 
-  for (const objective of optionalObjectives(caseDef)) {
+  for (const objective of optionalObjectives(caseDef, flags)) {
     if (completedIds.has(objective.id)) continue;
-    if (safeValidate(objective.validation, result, db).passed) {
+    if (safeValidate(objective.validation, result, db, ctx).passed) {
       completed.push(toCompleted(objective));
     }
   }

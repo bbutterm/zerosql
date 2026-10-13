@@ -281,7 +281,7 @@ describe("validateCaseContent", () => {
       });
       const problems = problemsOf(bad, new Set(["ev.c03.list", "ev.c03.same", "clue-1"]));
       expectProblem(problems, "улика «ev.c03.same» объявлена дважды");
-      expectProblem(problems, "улика «clue-1»: id должен начинаться с «ev.»");
+      expectProblem(problems, "улика «clue-1»: id должен быть вида ev.c03.<slug>");
     });
   });
 

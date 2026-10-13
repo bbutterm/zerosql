@@ -150,7 +150,8 @@ export function scanSeenOptions(protocol: ProtocolDef, result: QueryResult): str
     let set = exact.get(key);
     if (!set) exact.set(key, (set = new Set()));
     set.add(option);
-    if (person) personKeys.add(key);
+    // ФИО ищем в любом столбце; числовые alias (persons.id) — только в столбцах-сущностях
+    if (person && asNumber(value) === null) personKeys.add(key);
   };
 
   for (const blank of protocol.blanks) {

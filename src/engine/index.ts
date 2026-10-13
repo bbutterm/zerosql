@@ -7,7 +7,7 @@ import type { Database } from "sql.js";
 import { createDatabase, executeQuery, getTableSchema, getForeignKeys as _getForeignKeys } from "./database";
 import { SCHEMA_SQL } from "./schema";
 import { SEED_SQL } from "./seed";
-import { checkSqlPolicy } from "./table-guard";
+import { checkSqlPolicy, describePolicyViolation } from "./table-guard";
 import { explainSqlError } from "./sql-errors";
 import { checkObjectives, isMissionComplete as _isMissionComplete } from "./mission-runner";
 
@@ -34,7 +34,24 @@ export type {
   SecretDef,
   AchievementDef,
   AchievementKind,
+  BlankKind,
+  DatetimePrecision,
+  FlagValue,
+  FlagCondition,
+  PredictionDef,
+  SourceClass,
+  CardStamp,
+  PinnedCard,
+  CardCondition,
+  CardPredicate,
+  AccusationDef,
+  EventTrigger,
+  LiveEventDef,
+  ClockHold,
+  CaseClockDef,
+  ValidationContext,
 } from "@/types/case";
+export { SOURCE_CLASS_LABELS } from "@/types/case";
 export type {
   CharacterDef,
   Scene,
@@ -42,8 +59,12 @@ export type {
   DialogueChoice,
   EvidencePresent,
   Emotion,
+  PortraitVariant,
+  InterrogationDef,
+  InterrogationMode,
+  TestimonyPoint,
 } from "@/types/story";
-export { EMOTIONS, NARRATOR, PLAYER } from "@/types/story";
+export { EMOTIONS, NARRATOR, PLAYER, PORTRAIT_VARIANTS } from "@/types/story";
 
 // --- v2: игровая логика ---
 
@@ -54,19 +75,68 @@ export {
   activeObjective,
   mainObjectives,
   optionalObjectives,
+  objectiveApplies,
 } from "./case-runner";
 export type { CaseProgress, CompletedObjective } from "./case-runner";
 
-/** Протокол-дедукция: увиденные варианты и пакетная сверка */
+/** Протокол-дедукция: реестр увиденного, типы пропусков и пакетная сверка */
 export {
+  scanSeen,
   scanSeenOptions,
   availableOptions,
+  optionSeen,
+  isBlankCorrect,
+  isEntityColumn,
   checkProtocol,
   statementParts,
   protocolFailureLine,
   DEFAULT_BATCH_SIZE,
+  SEEN_FULL_SCAN_ROWS,
 } from "./protocol";
 export type { ProtocolCheck, StatementPart } from "./protocol";
+
+/** Сравнение значений по типам пропусков (person / number / datetime / text) */
+export { normalizeCell, valuesMatch, toIsoDateTime } from "./values";
+export type { MatchOptions } from "./values";
+
+/** Доска улик и обвинение */
+export { cardMatches, cardHasKey, isSourceCard, checkAccusation } from "./board";
+export type { AccusationCheck, AccusationOutcome } from "./board";
+
+/** Допрос «Наушник» */
+export {
+  startInterrogation,
+  interrogationEmotion,
+  visiblePoints,
+  pressPoint,
+  presentEvidence,
+  presentMatches,
+  reopenInterrogation,
+  DEFAULT_PATIENCE,
+} from "./interrogation";
+export type { InterrogationState, OfferedEvidence, PresentOutcome, PresentResult } from "./interrogation";
+
+/** Живое время дела: часы по запросам, остановки, события, условия на флаги */
+export {
+  caseClock,
+  nextQueryClock,
+  movesClock,
+  dueEvents,
+  eventDue,
+  triggerMet,
+  flagsMatch,
+  applyClockTo,
+  DEFAULT_MINUTES_PER_QUERY,
+} from "./live";
+export type { ResolvedClock, CaseProgressSnapshot, LiveEventState } from "./live";
+
+/** Семантический линтер (разд. 7.3): предупреждения bark.* на то, что SQLite молча пропускает */
+export { lintSql, JOIN_ROWS_LIMIT, SELECT_STAR_ROWS } from "./sql-lint";
+export type { LintWarning, LintRule, LintSpeaker, LintOptions } from "./sql-lint";
+
+/** Политика запросов игрока: какие представления создал/удалил запрос */
+export { viewChanges, ALLOWED_PRAGMAS } from "./table-guard";
+export type { AccessCheck, AccessDenial, SqlAccessPolicy } from "./table-guard";
 
 /** Тайники (пасхалки) */
 export { checkSecrets } from "./secrets";
@@ -93,7 +163,13 @@ export {
   collectEvidenceIds,
   validateCaseContent,
   validateSeasonContent,
+  parseLineId,
+  lineIdProblem,
+  portraitKey,
+  LINE_ID_RE,
+  SERVICE_LINE_PREFIXES,
 } from "./story";
+export type { LineIdParts } from "./story";
 
 /**
  * Журнал запросов query_log. Писать ПОСЛЕ checkCaseProgress/checkSecrets:
@@ -104,7 +180,7 @@ export { ensureQueryLog, logPlayerQuery, logQueryResult, queryLogStatus, QUERY_L
 export type { PlayerQueryEntry, QueryLogMeta, QueryLogStatus } from "./query-log";
 
 /** Игровые часы */
-export { advanceClock, formatClockRu, parseClock } from "./clock";
+export { advanceClock, formatClockRu, parseClock, toGameTime, compareClock } from "./clock";
 
 // --- Facade functions ---
 
@@ -124,7 +200,19 @@ export async function initEngine(): Promise<{
 }
 
 export interface ExecuteOptions {
-  /** Разрешить INSERT/UPDATE/DELETE/DDL (по умолчанию архив только для чтения) */
+  /**
+   * Белый список записи (CaseDef.writableTables): INSERT/UPDATE/DELETE/REPLACE
+   * только в эти таблицы, плюс BEGIN/COMMIT/ROLLBACK. Пуст — только чтение.
+   */
+  writableTables?: readonly string[];
+  /** CREATE VIEW / DROP VIEW своих представлений (CaseDef.allowViews) */
+  allowViews?: boolean;
+  /** Представления, созданные игроком (viewChanges): их можно читать и удалять */
+  playerViews?: readonly string[];
+  /**
+   * v1: разрешить любую запись и DDL. Запреты ATTACH, PRAGMA и main./temp. действуют всегда.
+   * @deprecated v2 передаёт writableTables / allowViews.
+   */
   allowWrites?: boolean;
   /** Схема для подсказок в ошибках (только доступные игроку таблицы) */
   schema?: TableInfo[];
@@ -137,31 +225,16 @@ export function executeSQL(
   unlockedTables: string[] | null,
   options: ExecuteOptions = {}
 ): QueryResult {
-  const access = checkSqlPolicy(sql, { unlockedTables, allowWrites: options.allowWrites });
+  const policy = {
+    unlockedTables,
+    allowWrites: options.allowWrites,
+    writableTables: options.writableTables,
+    allowViews: options.allowViews,
+    playerViews: options.playerViews,
+  };
+  const access = checkSqlPolicy(sql, policy);
   if (!access.allowed) {
-    const base = { columns: [], rows: [], rowCount: 0, executionTimeMs: 0 };
-    if (access.reason === "read_only") {
-      return {
-        ...base,
-        error: `[ТОЛЬКО ЧТЕНИЕ] Команда ${access.blockedKeyword} недоступна: архив нельзя изменять.`,
-        errorKind: "read_only",
-        errorHelp: {
-          title: "Архив только для чтения",
-          explanation: `Команды, меняющие данные или структуру (${access.blockedKeyword}), в этом деле запрещены — улики нельзя трогать.`,
-          suggestion: "Используйте SELECT, чтобы найти нужное. Если очень хочется — WITH … SELECT тоже можно.",
-        },
-      };
-    }
-    return {
-      ...base,
-      error: `[ДОСТУП ЗАПРЕЩЁН] Таблица «${access.blockedTable}» ещё не разблокирована.`,
-      errorKind: "locked_table",
-      errorHelp: {
-        title: "Доступ закрыт",
-        explanation: `Таблица «${access.blockedTable}» пока засекречена.`,
-        suggestion: "Продолжайте расследование — доступ к новым данным откроется по ходу дела.",
-      },
-    };
+    return { columns: [], rows: [], rowCount: 0, executionTimeMs: 0, ...describePolicyViolation(access, policy) };
   }
 
   const result = executeQuery(db, sql);
