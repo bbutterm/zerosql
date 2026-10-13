@@ -400,9 +400,19 @@ function inProcessCache() {
  * таймаутом 3 с, если в среде есть Worker и IndexedDB, иначе — тот же поток.
  */
 export function createEngineClient(options: EngineClientOptions = {}): EngineClient {
-  const canWorker = typeof Worker !== "undefined" && indexedDbAvailable();
-  const mode = options.mode ?? "auto";
-  const useWorker = mode === "worker" ? Boolean(options.workerFactory) || typeof Worker !== "undefined" : mode === "auto" && (Boolean(options.workerFactory) || canWorker);
+  const hasWorker = Boolean(options.workerFactory) || typeof Worker !== "undefined";
+  let useWorker: boolean;
+  switch (options.mode ?? "auto") {
+    case "in-process":
+      useWorker = false;
+      break;
+    case "worker":
+      useWorker = hasWorker;
+      break;
+    default:
+      // Без IndexedDB воркер после таймаута собирал бы мир заново — тогда проще в том же потоке
+      useWorker = Boolean(options.workerFactory) || (hasWorker && indexedDbAvailable());
+  }
   if (useWorker) {
     const factory = options.workerFactory ?? defaultWorkerFactory;
     return new EngineClientImpl("worker", () => workerTransport(factory()), options);
