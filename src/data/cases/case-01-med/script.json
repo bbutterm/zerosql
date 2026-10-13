@@ -2,21 +2,764 @@
   "scenes": [
     {
       "id": "intro",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
       "lines": [
         {
           "id": "c01.intro.001",
           "speaker": "narrator",
-          "text": "Промзона, третье декабря, поздний вечер. Над подстанцией гудят провода, которых стало меньше."
+          "text": "Подвал ГУ, кабинет Б0-03. Третье декабря, половина десятого вечера. За стеной гудит серверная."
+        },
+        {
+          "id": "c01.intro.002",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Ну-с, медь. Классика.",
+          "direction": "входит с подстаканником; тепло, с выдохом"
+        },
+        {
+          "id": "c01.intro.003",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Три ночи подряд режут кабель на «Промзоне-2». Даша уже едет туда. Даш, тут Ноль. Представься коллеге.",
+          "direction": "медленно, с паузами; ставит рацию на стол"
+        },
+        {
+          "id": "c01.intro.004",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Меня в ОЦР дядя Лёва первого числа перетащил. Из патруля. Он с батей моим на корюшку ходил.",
+          "direction": "по рации, из машины; быстро, глотает окончания"
+        },
+        {
+          "id": "c01.intro.005",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Ходил. Было дело.",
+          "direction": "коротко; пауза, отводит взгляд"
+        },
+        {
+          "id": "c01.intro.006",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Так. Стоп. Что ищем-то? Сторож мне уже полчаса по телефону про свою пенсию рассказывает.",
+          "direction": "по рации, с усмешкой; жуёт жвачку"
+        },
+        {
+          "id": "c01.intro.007",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Сторож видел «Сайгак». В номере, говорит, «вроде триста семьдесят два». Вроде, коллега. Запомни это слово.",
+          "direction": "с иронией, выделяет «вроде»"
+        },
+        {
+          "id": "c01.intro.008",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Подстанция кормит новый зал «Глубины». Корпорация звонит наверх, а сверху звонят мне.",
+          "direction": "вздох"
+        },
+        {
+          "id": "c01.intro.009",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Клюёт, Лев Борисович. Ноль, жду от тебя ночи. Я пока доеду.",
+          "direction": "по рации; мотор, поворотник"
+        }
+      ],
+      "choices": [
+        {
+          "id": "journal",
+          "text": "Начну с журнала происшествий.",
+          "goto": "intro_start"
+        },
+        {
+          "id": "vrode",
+          "text": "Почему «вроде», Лев Борисович?",
+          "goto": "intro_vrode"
+        }
+      ]
+    },
+    {
+      "id": "intro_start",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c01.intro_start.001",
+          "speaker": "ratnikov",
+          "emotion": "happy",
+          "text": "Вот это по-нашему. Шукшин писал: нравственность есть правда. А правда, коллега, обычно лежит в журнале.",
+          "direction": "тепло, с усмешкой"
+        },
+        {
+          "id": "c01.intro_start.002",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Медь режут ночью, а заявляют утром. Ищи утренние кражи. Я к себе, чай стынет.",
+          "direction": "встаёт, медленно"
+        },
+        {
+          "id": "c01.intro_start.003",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Философы. Я на Энергетиков, связь держу.",
+          "direction": "по рации, фыркает"
+        }
+      ]
+    },
+    {
+      "id": "intro_vrode",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c01.intro_vrode.001",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Потому что сторожу семьдесят два, мела метель, а очки у него для телевизора.",
+          "direction": "с иронией, медленно"
+        },
+        {
+          "id": "c01.intro_vrode.002",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Номер не прочитал сторож — прочитает камера. «Дорсеть» тебе открыли. Но сначала даты: когда резали.",
+          "direction": "спокойно"
+        },
+        {
+          "id": "c01.intro_vrode.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Сначала даты. Ноль, ищи кражи в журнале. Медь режут ночью, а заявляют утром.",
+          "direction": "по рации, быстро"
+        }
+      ]
+    },
+    {
+      "id": "substation",
+      "location": "substation_promzona_2",
+      "music": "ice",
+      "outdoor": true,
+      "lines": [
+        {
+          "id": "c01.substation.001",
+          "speaker": "narrator",
+          "text": "Подстанция «Промзона-2». Минус тридцать шесть. Прожектор над воротами, пар изо рта, гул трансформаторов."
+        },
+        {
+          "id": "c01.substation.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Так. Я на месте. Кабель срезан с тыла, у ограды. Там, где прожектор не достаёт.",
+          "direction": "на морозе, дыхание сбивается; вдох посреди фразы"
+        },
+        {
+          "id": "c01.substation.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Камера подстанции смотрит на ворота. Ворота целые. Резали сзади, черти.",
+          "direction": "на морозе, коротко"
+        },
+        {
+          "id": "c01.substation.004",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Сторож говорит — уходили на выезд, по Энергетиков. Там висит камера «Дорсети». Двенадцатая.",
+          "direction": "вдох; быстрее"
+        },
+        {
+          "id": "c01.substation.005",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "И будка охраны у ворот. «Щит». Три ночи подряд мужик в будке ничего не видел. Вообще ничего.",
+          "direction": "медленнее, со значением"
+        },
+        {
+          "id": "c01.substation.006",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Это потом. Ноль, глянь двенадцатую в эти три ночи. Сторож божится: «вроде триста семьдесят два».",
+          "direction": "на морозе; топает, стряхивает снег"
+        }
+      ]
+    },
+    {
+      "id": "tokha_ocr",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c01.tokha_ocr.001",
+          "speaker": "narrator",
+          "text": "Дверь без стука. В проёме — длинный парень в худи со светящимися швами, в руке банка энергетика."
+        },
+        {
+          "id": "c01.tokha_ocr.002",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "Хе, привет. Я Тоха, ИТ. Шёл мимо, вижу — на экране «Дорсеть». Короч, глянь на номер за первое число.",
+          "direction": "быстро, с нервным смешком"
+        },
+        {
+          "id": "c01.tokha_ocr.003",
+          "speaker": "tokha",
+          "emotion": "neutral",
+          "text": "Цифры те же, а буквы латинские. Камера на морозе обмерзает и читает как бог на душу положит.",
+          "direction": "быстро, тараторит"
+        },
+        {
+          "id": "c01.tokha_ocr.004",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "А в реестре всё кириллицей. Ищешь машину — ищи оба написания. База.",
+          "direction": "хе в конце"
+        },
+        {
+          "id": "c01.tokha_ocr.005",
+          "speaker": "tokha",
+          "emotion": "neutral",
+          "text": "Я за стенкой, в серверной, почти живу. Если что — стучи. Только ночью не стучи, хе. Ночью я сплю.",
+          "direction": "слишком быстро, лишнее «хе» — едва заметная примета лжи"
+        }
+      ]
+    },
+    {
+      "id": "owner",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c01.owner.001",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Шпаков Георгий Ильич? Шпала! Скупка металла на Складской. Знаю этого клоуна ещё с патруля.",
+          "direction": "по рации, хмыкает"
+        },
+        {
+          "id": "c01.owner.002",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Режет он сам или берёт у кого — без разницы. Медь у него на весах. Еду за ним.",
+          "direction": "по рации, хлопает дверцей"
+        },
+        {
+          "id": "c01.owner.003",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ноль, мне нужна его машина на камере во все три ночи. С кривым номером тоже. Чтоб не отвертелся.",
+          "direction": "быстро, на ходу"
+        }
+      ]
+    },
+    {
+      "id": "shpala_in",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_in.001",
+          "speaker": "narrator",
+          "text": "Допросная на первом этаже. Ноль — за стеклом, в наушнике голос Даши. Планшет лежит у неё на столе."
+        },
+        {
+          "id": "c01.shpala_in.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Ноль, слышно? Я спрашиваю, ты шлёшь карточки на планшет. Врёт — бей фактом.",
+          "direction": "тихо, в гарнитуру"
+        },
+        {
+          "id": "c01.shpala_in.003",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Пошлёшь не то — он почует, что мы плаваем. Три промаха — и закроется. Поехали.",
+          "direction": "тихо, в гарнитуру"
+        }
+      ],
+      "next": "int_shpala"
+    },
+    {
+      "id": "int_shpala",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.int_shpala.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Георгий Ильич. Подстанция «Промзона-2». Медь, три ночи. Рассказывай.",
+          "direction": "ровно, садится напротив"
+        },
+        {
+          "id": "c01.int_shpala.002",
+          "speaker": "shpala",
+          "emotion": "neutral",
+          "text": "Какая медь, начальник? У меня приёмка, лицензия, весы поверены. Я человек торговый.",
+          "direction": "скороговорка, гнусаво; голос через стекло"
+        },
+        {
+          "id": "c01.int_shpala.003",
+          "speaker": "shpala",
+          "emotion": "neutral",
+          "text": "Сайгак я ещё в сентябре продал, начальник.",
+          "direction": "быстро, глядя в сторону"
+        },
+        {
+          "id": "c01.int_shpala.004",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Допустим. Ночь на первое. Где был?",
+          "direction": "коротко"
+        },
+        {
+          "id": "c01.int_shpala.005",
+          "speaker": "shpala",
+          "emotion": "neutral",
+          "text": "В ту ночь дома спал, век воли не видать.",
+          "direction": "скороговорка, крестится"
+        },
+        {
+          "id": "c01.int_shpala.006",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "А медь у тебя на весах откуда?",
+          "direction": "постукивает ручкой"
+        },
+        {
+          "id": "c01.int_shpala.007",
+          "speaker": "shpala",
+          "emotion": "neutral",
+          "text": "Медь — это не ко мне. Я по чёрному металлу: батареи, ванны. Медь — это к серьёзным людям.",
+          "direction": "чуть тише на последней фразе"
+        }
+      ],
+      "interrogation": {
+        "suspect": "shpala",
+        "interrogator": "dasha",
+        "mode": "standard",
+        "patience": 3,
+        "breakSteps": [
+          "neutral",
+          "scared",
+          "happy"
+        ],
+        "points": [
+          {
+            "line": "c01.int_shpala.003",
+            "press": "shpala_press_sold",
+            "present": {
+              "prompt": "Что опровергает «Сайгак я ещё в сентябре продал»?",
+              "correct": [
+                "ev.c01.vehicle"
+              ],
+              "cards": [
+                {
+                  "table": "vehicles",
+                  "all": [
+                    {
+                      "column": "plate",
+                      "eq": "К372ОК"
+                    },
+                    {
+                      "column": "owner_name",
+                      "contains": "Шпаков"
+                    }
+                  ]
+                }
+              ],
+              "success": "shpala_break_sold",
+              "failure": "shpala_miss"
+            }
+          },
+          {
+            "line": "c01.int_shpala.005",
+            "press": "shpala_press_home",
+            "present": {
+              "prompt": "Что опровергает «в ту ночь дома спал»?",
+              "correct": [
+                "ev.c01.cam12_x3"
+              ],
+              "cards": [
+                {
+                  "table": "plate_reads",
+                  "all": [
+                    {
+                      "column": "plate",
+                      "in": [
+                        "К372ОК",
+                        "K372OK"
+                      ]
+                    }
+                  ],
+                  "any": [
+                    {
+                      "column": "read_at",
+                      "between": [
+                        "2026-11-30 01:00:00",
+                        "2026-11-30 04:00:00"
+                      ]
+                    },
+                    {
+                      "column": "read_at",
+                      "between": [
+                        "2026-12-01 01:00:00",
+                        "2026-12-01 04:00:00"
+                      ]
+                    },
+                    {
+                      "column": "read_at",
+                      "between": [
+                        "2026-12-02 01:00:00",
+                        "2026-12-02 04:00:00"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "success": "shpala_break_cam",
+              "failure": "shpala_miss"
+            }
+          },
+          {
+            "line": "c01.int_shpala.007",
+            "press": "shpala_press_metal"
+          }
+        ],
+        "closedScene": "shpala_closed",
+        "doneScene": "shpala_confess",
+        "liveQuery": true
+      }
+    },
+    {
+      "id": "shpala_press_sold",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_press_sold.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Кому продал? Договор есть?",
+          "direction": "быстро"
+        },
+        {
+          "id": "c01.shpala_press_sold.002",
+          "speaker": "shpala",
+          "emotion": "neutral",
+          "text": "Мужику одному, приезжему. Договор был… в бардачке где-то, кажись.",
+          "direction": "скороговорка, мнётся"
+        },
+        {
+          "id": "c01.shpala_press_sold.003",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "В бардачке проданной машины. Логично. Ноль, что там в реестре?",
+          "direction": "в гарнитуру, тихо"
+        }
+      ]
+    },
+    {
+      "id": "shpala_press_home",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_press_home.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Кто подтвердит, что спал?",
+          "direction": "ровно"
+        },
+        {
+          "id": "c01.shpala_press_home.002",
+          "speaker": "shpala",
+          "emotion": "happy",
+          "text": "Телевизор подтвердит, начальник. Я с ним сплю, он у меня вместо жены.",
+          "direction": "смешок"
+        },
+        {
+          "id": "c01.shpala_press_home.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Телевизор не свидетель. А вот камера — свидетель. Ноль?",
+          "direction": "в гарнитуру"
+        }
+      ]
+    },
+    {
+      "id": "shpala_press_metal",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_press_metal.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "К каким серьёзным?",
+          "direction": "наклоняется вперёд"
+        },
+        {
+          "id": "c01.shpala_press_metal.002",
+          "speaker": "shpala",
+          "emotion": "scared",
+          "text": "К таким, про которых в протокол не пишут. Я жить хочу, начальник.",
+          "direction": "резко тише, без скороговорки"
+        },
+        {
+          "id": "c01.shpala_press_metal.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Испугался. Не нас. Запомни, Ноль.",
+          "direction": "в гарнитуру, шёпотом"
+        }
+      ]
+    },
+    {
+      "id": "shpala_break_sold",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_break_sold.001",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Реестр ГИБДД. Синий «САЙГАК», владелец — Шпаков Георгий Ильич. Графа «продан» пустая.",
+          "direction": "читает с планшета, раздельно"
+        },
+        {
+          "id": "c01.shpala_break_sold.002",
+          "speaker": "shpala",
+          "emotion": "scared",
+          "text": "Ну… не успел переоформить. Бюрократия, сами знаете.",
+          "direction": "сбивается, тише"
+        },
+        {
+          "id": "c01.shpala_break_sold.003",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Знаю. Поэтому машина до сих пор твоя.",
+          "direction": "спокойно"
+        }
+      ]
+    },
+    {
+      "id": "shpala_break_cam",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_break_cam.001",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Камера на выезде из Промзоны. Тридцатое — два сорок семь. Первое — два сорок одна. Второе — два пятьдесят две.",
+          "direction": "с планшета, раздельно, по одному"
+        },
+        {
+          "id": "c01.shpala_break_cam.002",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Твоя машина, на выезд, три ночи подряд. Первого камера даже буквы перепутала. А цифры — твои.",
+          "direction": "наседает"
+        },
+        {
+          "id": "c01.shpala_break_cam.003",
+          "speaker": "shpala",
+          "emotion": "scared",
+          "text": "Камера — это ж техника, начальник. Техника врёт…",
+          "direction": "без скороговорки, сглатывает"
+        },
+        {
+          "id": "c01.shpala_break_cam.004",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Три ночи подряд — и одинаково? Не смеши.",
+          "direction": "коротко"
+        }
+      ]
+    },
+    {
+      "id": "shpala_miss",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_miss.001",
+          "speaker": "shpala",
+          "emotion": "happy",
+          "text": "Это что, начальник? Это вообще не про меня.",
+          "direction": "смешок, с облегчением"
+        },
+        {
+          "id": "c01.shpala_miss.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Мимо, Ноль. Он почуял. Давай то, что бьёт в точку.",
+          "direction": "в гарнитуру, сквозь зубы"
+        }
+      ]
+    },
+    {
+      "id": "shpala_closed",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_closed.001",
+          "speaker": "shpala",
+          "emotion": "neutral",
+          "text": "Всё, начальник. Без адвоката — ни слова. Век воли не видать.",
+          "direction": "откидывается на стуле"
+        },
+        {
+          "id": "c01.shpala_closed.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Закрылся, сволочь. Ничего. Камера за нас всё скажет.",
+          "direction": "в гарнитуру, зло, но тихо"
+        },
+        {
+          "id": "c01.shpala_closed.003",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Оформляем по данным. Без его признания — дольше, но дожмём.",
+          "direction": "встаёт"
+        }
+      ]
+    },
+    {
+      "id": "shpala_confess",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c01.shpala_confess.001",
+          "speaker": "shpala",
+          "emotion": "happy",
+          "text": "Ладно, ладно, начальник! Резал. Не я один, но резал. Ночью, с тыла, где прожектор не бьёт.",
+          "direction": "раскалывается со смехом, скороговоркой"
+        },
+        {
+          "id": "c01.shpala_confess.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Куда девал?",
+          "direction": "сразу, не давая опомниться"
+        },
+        {
+          "id": "c01.shpala_confess.003",
+          "speaker": "shpala",
+          "emotion": "happy",
+          "text": "Медь — на приёмку. А охрана подстанции — «Щит». Им отстёгивали, чтоб не смотрели. Бурый лично брал.",
+          "direction": "весело, как анекдот"
+        },
+        {
+          "id": "c01.shpala_confess.004",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "И как он выглядит, этот Бурый?",
+          "direction": "медленно"
+        },
+        {
+          "id": "c01.shpala_confess.005",
+          "speaker": "shpala",
+          "emotion": "happy",
+          "text": "Обычный. Безымянный у него короче — лебёдка откусила. Кольцо не налезет.",
+          "direction": "со смехом"
+        },
+        {
+          "id": "c01.shpala_confess.006",
+          "speaker": "shpala",
+          "emotion": "scared",
+          "text": "Только вы это… про Бурого — не от меня. Мне ещё жить на этой улице.",
+          "direction": "резко перестаёт смеяться"
+        },
+        {
+          "id": "c01.shpala_confess.007",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ноль, слышно? «Щит». Подстанцию охраняют, а кабель режут. Красота.",
+          "direction": "в гарнитуру, тихо"
         }
       ]
     },
     {
       "id": "outro",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
       "lines": [
         {
           "id": "c01.outro.001",
           "speaker": "narrator",
+          "text": "Б0-03, без четверти полночь. Заключение подписано. Чай в подстаканнике давно остыл."
+        },
+        {
+          "id": "c01.outro.002",
+          "speaker": "ratnikov",
+          "emotion": "happy",
+          "text": "Ну-с, коллега. Первое дело — и сразу в точку. Медь нашлась, Шпаков оформлен.",
+          "direction": "тепло, с выдохом"
+        },
+        {
+          "id": "c01.outro.003",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Охрана подстанции — «Щит»… Бурый лично брал. Это Шпала сказал. Уже без протокола.",
+          "direction": "входит с мороза, жуёт жвачку"
+        },
+        {
+          "id": "c01.outro.004",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Частное охранное предприятие осуществляет охрану в установленном порядке. Медь — это медь, Даша.",
+          "direction": "книжный регистр; пауза полсекунды перед ответом — едва заметно"
+        },
+        {
+          "id": "c01.outro.005",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Так. Стоп. Три ночи режут под носом у охраны — и это в установленном порядке?",
+          "direction": "быстро"
+        },
+        {
+          "id": "c01.outro.006",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Дело закрыто, коллеги. Идите спать. Завтра будет новый день и новая медь.",
+          "direction": "устало, мягко"
+        },
+        {
+          "id": "c01.outro.007",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Запиши себе, Ноль. Где медь — там «Щит». Клюёт.",
+          "direction": "тихо, Нулю, когда Ратников выходит"
+        },
+        {
+          "id": "c01.outro.008",
+          "speaker": "narrator",
           "text": "Кабель больше не режут. Подстанция гудит ровно, как будто ничего и не было."
+        }
+      ]
+    },
+    {
+      "id": "star",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c01.star.001",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "Хе. Одним запросом, с группировкой? Это ж из будущего, короч. Имба.",
+          "direction": "из-за двери, быстро"
+        },
+        {
+          "id": "c01.star.002",
+          "speaker": "tokha",
+          "emotion": "uneasy",
+          "text": "Монитор у тебя яркий, из коридора видно. Я не подглядываю, если что.",
+          "direction": "тише, будто проговорился"
         }
       ]
     }
