@@ -6,6 +6,11 @@
   "title": "Минус сорок один",
   "subtitle": "Шахтный без тепла, со счёта умершей пропали деньги",
   "date": "2026-12-07 13:00",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-07 16:00"
+  },
+  "location": "ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03",
   "difficulty": "easy",
   "concepts": [
     "h.aggregates",
@@ -34,8 +39,462 @@
     "intercom_events",
     "delivery_orders"
   ],
-  "briefing": "06.12 при −41 °C район Шахтный девять часов сидел без тепла. 07.12 в 11:04 соцработница нашла мёртвой Пахомову Зинаиду Павловну, 79 лет (Шахтная, 12-31). Племянник говорит, что с её счёта пропали деньги.",
+  "briefing": "06.12.2026 при −41 °C район Шахтный девять часов сидел без тепла: «Глубина» впервые переводила нагрузку в новый зал. В подъезде 2 дома Шахтная, 12 перемёрз стояк, и в эту секцию тепло вернули только 07.12 в 10:00.\n\n07.12 в 11:04 соцработница Самойлова Т. Н. нашла мёртвой Пахомову Зинаиду Павловну, 79 лет (Шахтная, 12-31). Врач: переохлаждение и сердце, смерть около 23:00 06.12. Племянник, Пахомов Олег Викторович, принёс распечатку со счёта ACC-30518 и говорит, что оттуда пропали деньги.\n\nДопуск выдан: датчики квартир «Сияние.Дом» (heat_readings), платежи «Сияние.Pay» (transactions), домофоны «Сияние.Ключ» (intercom_events), заказы «Сияние.Доставки» (delivery_orders). Датчик её квартиры — flat_id 'ШХ-12-31', адрес — address_id 811.",
+  "starterSql": "SELECT * FROM heat_readings WHERE flat_id = 'ШХ-12-31' ORDER BY ts LIMIT 50;",
   "introScene": "intro",
-  "objectives": [],
+  "objectives": [
+    {
+      "id": "o2_1",
+      "order": 1,
+      "task": "Новое понятие — агрегат MIN: он сворачивает все подходящие строки в одно значение. Датчик квартиры Пахомовой — flat_id 'ШХ-12-31' в heat_readings. Когда там впервые стало ниже +12? Нужен самый ранний ts, где temp_c < 12.",
+      "concept": "h.aggregates",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Время найдено.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "В 14:00 датчик записал не температуру. Посмотрите эти строки целиком: temp_c там −999.",
+            "rule": { "type": "cell_value", "value": "2026-12-06 14:00:00" }
+          },
+          { "type": "cell_value", "value": "2026-12-06 19:40:00" },
+          { "type": "row_count", "expected": 1, "comparison": "lte" }
+        ]
+      },
+      "prediction": {
+        "question": "Сколько строк вернёт запрос с MIN(ts)?",
+        "options": [1, 46, 144],
+        "answer": 1,
+        "explanation": "Агрегат без GROUP BY сворачивает все подходящие строки в одну."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c02_o2_1.001",
+          "text": "У её квартиры свой датчик, голубчик, тридцать первая. Из всех строк, где ниже двенадцати, нужна самая ранняя. Одна."
+        },
+        {
+          "by": "mira",
+          "text": "MIN(столбец) возвращает наименьшее значение; для времени это самый ранний момент. Пример: SELECT MIN(reported_at) FROM incidents WHERE district = 'Шахтный'. См. «Агрегаты»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT MIN(__) FROM heat_readings WHERE flat_id = '_________' AND temp_c < __ AND temp_c > ____;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT MIN(ts) FROM heat_readings WHERE flat_id = 'ШХ-12-31' AND temp_c < 12; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "06.12, 19:40. Район получил тепло в семь вечера, а в её квартире настоящий холод только начинался: стояк перемёрз.",
+      "evidence": {
+        "id": "ev.c02.cold_1940",
+        "title": "Ниже +12 — с 19:40",
+        "text": "Датчик «Сияние.Дом» квартиры ШХ-12-31: впервые ниже +12 °C — 06.12.2026 в 19:40. Значения −999 в 14:00 и 14:20 — сбой датчика, а не температура.",
+        "kind": "record"
+      },
+      "sceneAfter": "sensor",
+      "solution": "SELECT MIN(ts) FROM heat_readings WHERE flat_id = 'ШХ-12-31' AND temp_c < 12 AND temp_c > -999;"
+    },
+    {
+      "id": "o2_2",
+      "order": 2,
+      "task": "Самая низкая температура в её квартире за эти сутки — одно число, MIN(temp_c).",
+      "concept": "w.sentinels",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Минимум найден.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "−999 — это не температура, а «нет данных». Отсейте эти строки в WHERE, до агрегата.",
+            "rule": { "type": "cell_value", "value": -999 }
+          },
+          { "type": "cell_value", "value": 4.1, "tolerance": 0.05 },
+          { "type": "row_count", "expected": 1, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c02_o2_2.001",
+          "text": "Так. Стоп. Тут иней на стекле изнутри. Сколько было в самом низу? Одной цифрой."
+        },
+        {
+          "by": "mira",
+          "text": "MIN(temp_c) — наименьшее значение столбца. Значение-заглушку отсекают условием в WHERE, до агрегата. Пример: SELECT MIN(confidence) FROM plate_reads WHERE confidence > 0. См. «Сентинелы»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT MIN(______) FROM heat_readings WHERE flat_id = 'ШХ-12-31' AND ______ <> ____;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT MIN(temp_c) FROM heat_readings WHERE flat_id = 'ШХ-12-31' AND temp_c <> 999; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "+4,1 °C, утром 07.12 в 09:40. Тепло в секцию вернули через двадцать минут.",
+      "evidence": {
+        "id": "ev.c02.min_temp",
+        "title": "+4,1 °C",
+        "text": "Минимум в квартире ШХ-12-31 — +4,1 °C, 07.12.2026 в 09:40. Тепло в секцию вернули в 10:00.",
+        "kind": "record"
+      },
+      "sceneAfter": "flat",
+      "solution": "SELECT MIN(temp_c) FROM heat_readings WHERE flat_id = 'ШХ-12-31' AND temp_c <> -999;"
+    },
+    {
+      "id": "o2_3",
+      "order": 3,
+      "task": "Теперь деньги, счёт ACC-30518 в transactions. GROUP BY counterparty делит строки на группы, по одной на контрагента; COUNT(*) считает строки в группе, а HAVING отбирает сами группы. Кто платил ей регулярно — не меньше 12 поступлений?",
+      "concept": "h.having",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Регулярные плательщики найдены.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "УК «Шахтный» заплатила один раз: это перерасчёт, а не регулярный платёж. Средняя сумма не говорит, как часто платили. Нужен порог по COUNT(*).",
+            "rule": { "type": "cell_value", "value": "УК «Шахтный»" }
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT counterparty FROM transactions WHERE account_id = 'ACC-30518' AND amount > 0 GROUP BY counterparty HAVING COUNT(*) >= 12"
+          }
+        ]
+      },
+      "prediction": {
+        "question": "Сколько строк вернёт группировка по контрагенту, пока без HAVING?",
+        "sql": "SELECT counterparty, COUNT(*) AS n FROM transactions WHERE account_id = 'ACC-30518' GROUP BY counterparty;",
+        "options": [1, 6, 192],
+        "answer": 6,
+        "explanation": "Одна строка на группу: шесть разных контрагентов — шесть строк, сколько бы платежей ни было внутри."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c02_o2_3.001",
+          "text": "Кто ей платил каждый месяц, голубчик? Посчитай по каждому, сколько раз. Дюжина и больше — уже не случайность."
+        },
+        {
+          "by": "mira",
+          "text": "GROUP BY столбец собирает строки в группы, COUNT(*) считает строки в каждой, HAVING оставляет нужные группы. Пример: SELECT district, COUNT(*) AS n FROM incidents GROUP BY district HAVING COUNT(*) >= 100. См. «HAVING»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT counterparty, COUNT(*) AS n FROM transactions WHERE account_id = '_________' AND amount > _ GROUP BY ____________ HAVING ________ >= __;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT counterparty, COUNT(*) AS n, ROUND(AVG(amount)) AS avg_sum FROM transactions WHERE account_id = 'ACC-30518' AND amount > 0 GROUP BY counterparty ORDER BY avg_sum DESC LIMIT 2; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Двое: СФР и «Фонд «Тёплый берег»». Пенсия — понятно. Фонд — 139 раз по 7 000 ₽.",
+      "evidence": {
+        "id": "ev.c02.fund",
+        "title": "Фонд «Тёплый берег»",
+        "text": "ACC-30518: «Фонд «Тёплый берег»» — 139 поступлений по 7 000 ₽, «матпомощь ветерану «Глубина-Строя»». Логотип того же фонда — на экране загрузки ЗЕРКАЛА.",
+        "kind": "document"
+      },
+      "sceneAfter": "fund",
+      "solution": "SELECT counterparty, COUNT(*) AS n, ROUND(AVG(amount)) AS avg_sum FROM transactions WHERE account_id = 'ACC-30518' AND amount > 0 GROUP BY counterparty HAVING COUNT(*) >= 12 ORDER BY n DESC;"
+    },
+    {
+      "id": "o2_4",
+      "order": 4,
+      "task": "Для каждого регулярного плательщика — первое и последнее поступление: MIN(ts) и MAX(ts) в той же группировке. Подпишите столбцы через AS.",
+      "concept": "h.group_by",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Первые и последние поступления найдены.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "07.09.2026 у фонда — это возврат, минус семь тысяч. Поступление — это amount > 0.",
+            "rule": { "type": "cell_value", "value": "2026-09-07 11:16:42" }
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT counterparty, MIN(ts), MAX(ts) FROM transactions WHERE account_id = 'ACC-30518' AND amount > 0 GROUP BY counterparty HAVING COUNT(*) >= 12"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c02_o2_4.001",
+          "text": "Так. Когда фонд начал ей платить и когда бросил? И пенсия — с какого года. Первое и последнее."
+        },
+        {
+          "by": "mira",
+          "text": "Агрегаты считаются внутри каждой группы: MIN и MAX по времени дают первую и последнюю запись. Пример: SELECT camera_id, MIN(read_at) AS first_read, MAX(read_at) AS last_read FROM plate_reads GROUP BY camera_id. См. «GROUP BY»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT counterparty, MIN(__) AS first_pay, MAX(__) AS last_pay FROM transactions WHERE account_id = 'ACC-30518' AND ______ > 0 GROUP BY counterparty HAVING COUNT(*) >= 12;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT counterparty, MIN(ts) AS first_pay, MAX(ts) AS last_pay FROM transactions WHERE account_id = 'ACC-30518' GROUP BY counterparty HAVING COUNT(*) >= 12; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Фонд платил с 05.03.2015 по 05.09.2026, потом вернул 7 000 «отказ получателя». СФР — с января 2023-го по 04.12.2026.",
+      "evidence": {
+        "id": "ev.c02.fund_span",
+        "title": "Фонд: 2015-03-05 — 2026-09-05",
+        "text": "«Тёплый берег» платил Пахомовой с 05.03.2015 по 05.09.2026, 07.09.2026 — возврат 7 000 ₽ «отказ получателя». Пенсия СФР идёт на этот счёт с 04.01.2023.",
+        "kind": "record"
+      },
+      "solution": "SELECT counterparty, COUNT(*) AS n, SUM(amount) AS total, MIN(ts) AS first_pay, MAX(ts) AS last_pay FROM transactions WHERE account_id = 'ACC-30518' AND amount > 0 GROUP BY counterparty HAVING COUNT(*) >= 12;"
+    },
+    {
+      "id": "o2_5",
+      "order": 5,
+      "task": "Врач: смерть около 23:00 06.12. Что списано с её счёта после этого? Расходы — amount < 0.",
+      "concept": "w.time",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Списания после смерти найдены.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "Аптека утром 06.12 — она ещё жива. Нужен момент смерти, а не дата.",
+            "rule": { "type": "cell_value", "value": "Аптека «Северная»" }
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT ts, amount, counterparty FROM transactions WHERE account_id = 'ACC-30518' AND amount < 0 AND ts >= '2026-12-06 23:00:00'"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c02_o2_5.001",
+          "text": "Ночью она уже ничего не покупала. Что ушло со счёта после одиннадцати вечера?"
+        },
+        {
+          "by": "mira",
+          "text": "Время сравнивают строкой ISO, с секундами: ts >= '2026-12-06 23:00:00'. Пример: SELECT * FROM incidents WHERE reported_at >= '2026-12-07 00:00:00' AND district = 'Шахтный'. См. «Время в ПБД»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ts, amount, counterparty FROM transactions WHERE account_id = 'ACC-30518' AND amount < _ AND ts >= '____-__-__ __:__:__';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT ts, amount, counterparty FROM transactions WHERE account_id = 'ACC-30518' AND amount < 0 AND ts >= '2026-12-06'; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Два списания. 06:41 — 38 000 ₽ по СБП, получатель «Пахомов О. В.». 12:20 — 340 ₽ в «Зоомагазине «Лапа»».",
+      "evidence": {
+        "id": "ev.c02.after_death",
+        "title": "Списания после смерти",
+        "text": "ACC-30518, 07.12.2026: 06:41 — СБП −38 000 ₽, «Пахомов О. В.», «перевод по номеру телефона»; 12:20 — карта −340 ₽, «Зоомагазин «Лапа»».",
+        "kind": "record"
+      },
+      "sceneAfter": "money",
+      "solution": "SELECT ts, amount, counterparty, channel, purpose FROM transactions WHERE account_id = 'ACC-30518' AND amount < 0 AND ts >= '2026-12-06 23:00:00';"
+    },
+    {
+      "id": "o2_6",
+      "order": 6,
+      "task": "Олег говорит, что у тёти неделю не был. «Сияние.Ключ» пишет каждое открытие подъезда: intercom_events, её адрес — address_id 811. Кто открывал её подъезд утром 07.12?",
+      "concept": "h.and",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT ts, key_owner, guest_name FROM intercom_events WHERE address_id = 811 AND ts >= '2026-12-07 00:00:00'"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c02_o2_6.001",
+          "text": "Так. Домофон не врёт, в отличие от племянника. Адрес восемьсот одиннадцать, утро седьмого."
+        },
+        {
+          "by": "mira",
+          "text": "Условия соединяет AND: адрес и время одновременно. Пример: SELECT * FROM incidents WHERE district = 'Гавань' AND reported_at >= '2026-12-01 00:00:00'. См. «И: AND»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ts, method, key_owner, guest_name FROM intercom_events WHERE address_id = ___ AND ts >= '__________ 00:00:00';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT ts, method, key_owner, guest_name FROM intercom_events WHERE address_id = 811 AND ts >= '07.12.2026'; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "06:30 — ключ жильца, владелец «Пахомов О. В.». 11:02 — гостевой код, Самойлова Т. Н. Неделю не был, значит.",
+      "evidence": {
+        "id": "ev.c02.intercom",
+        "title": "Домофон 06:30",
+        "text": "Шахтная, 12-31 (адрес 811), 07.12.2026: 06:30 — «ключ жильца», key_owner «Пахомов О. В.»; 11:02 — гостевой код, гость «Самойлова Т. Н.».",
+        "kind": "record"
+      },
+      "sceneAfter": "glass",
+      "solution": "SELECT ts, method, code, key_owner, guest_name FROM intercom_events WHERE address_id = 811 AND ts >= '2026-12-07 00:00:00';"
+    },
+    {
+      "id": "o2_1b",
+      "order": 11,
+      "optional": true,
+      "task": "Бонус. Сколько квартир подъезда видит «Сияние.Дом»? Строк много, квартир мало: посчитайте разные flat_id.",
+      "concept": "h.count_distinct",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Квартиры посчитаны.",
+        "rules": [
+          { "type": "cell_value", "value": 6 },
+          { "type": "row_count", "expected": 1, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "tokha",
+          "line": "hint.c02_o2_1b.001",
+          "text": "Датчиков там, короч, на один подъезд. Считай разные квартиры, а не строки, хе."
+        },
+        {
+          "by": "mira",
+          "text": "COUNT(DISTINCT столбец) считает разные значения, COUNT(*) — строки. Пример: SELECT COUNT(DISTINCT plate) FROM plate_reads WHERE camera_id = 12. См. «COUNT(DISTINCT)»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT COUNT(________ flat_id) FROM heat_readings;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT COUNT(flat_id) FROM heat_readings; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Шесть квартир второго подъезда. Ниже всех упала одна — тридцать первая.",
+      "evidence": {
+        "id": "ev.c02.six_flats",
+        "title": "Шесть датчиков",
+        "text": "«Сияние.Дом» видит 6 квартир подъезда 2 дома Шахтная, 12: показания каждые 20 минут с 06.12.2026 00:00.",
+        "kind": "record"
+      },
+      "solution": "SELECT COUNT(DISTINCT flat_id) AS flats FROM heat_readings;"
+    },
+    {
+      "id": "o2_6b",
+      "order": 12,
+      "optional": true,
+      "task": "★ В журнале её домофона мелькает гостевой код 7741. Когда им открыли именно её подъезд и на чьё имя?",
+      "concept": "h.and",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT ts, guest_name FROM intercom_events WHERE address_id = 811 AND code = '7741'"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c02_o2_6b.001",
+          "text": "Гостевые коды по городу гуляют, один и тот же — в разных домах. Нам нужен только её подъезд."
+        },
+        {
+          "by": "mira",
+          "text": "Код — текст, его сравнивают в кавычках, а адрес уточняют через AND. Пример: SELECT * FROM intercom_events WHERE method = 'гостевой код' AND ts >= '2026-12-01 00:00:00'. См. «И: AND»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ts, code, guest_name FROM intercom_events WHERE code = '____' AND address_id = ___;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT ts, code, guest_name FROM intercom_events WHERE code = '7741'; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "29.08.2026, 18:40 — гость «Вальц И.». Тот же код ещё дважды открывал двери в других домах.",
+      "evidence": {
+        "id": "ev.c02.guest_valts",
+        "title": "Гость «Вальц И.»",
+        "text": "Шахтная, 12-31: 29.08.2026 18:40 — гостевой код 7741, гость «Вальц И.». Тот же код — у адресов 640 (14.09) и 702 (02.10), без имени.",
+        "kind": "lead"
+      },
+      "sceneAfter": "guest",
+      "solution": "SELECT ts, address_id, code, guest_name FROM intercom_events WHERE code = '7741' AND address_id = 811;"
+    },
+    {
+      "id": "o2_7",
+      "order": 13,
+      "optional": true,
+      "task": "Алиби Олега: его заказы «Сияние.Доставки» утром 07.12 — delivery_orders, courier_name 'Пахомов О. В.'. По порядку, от раннего к позднему.",
+      "concept": "h.order_by",
+      "validation": {
+        "type": "rows_match",
+        "ordered": true,
+        "referenceQuery": "SELECT accepted_at, delivered_at FROM delivery_orders WHERE courier_name = 'Пахомов О. В.' AND accepted_at >= '2026-12-07 00:00:00' ORDER BY accepted_at"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c02_o2_7.001",
+          "text": "Он говорит — с пяти утра без перерыва. Глянь его заказы за утро. Где дырка, там и правда."
+        },
+        {
+          "by": "mira",
+          "text": "ORDER BY выстраивает строки по времени. Пример: SELECT accepted_at, courier_name FROM delivery_orders WHERE pickup_text = 'Кафе «Маяк»' ORDER BY accepted_at. См. «Сортировка»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT accepted_at, delivered_at, drop_text FROM delivery_orders WHERE courier_name = '_____________' AND accepted_at >= '2026-12-07 00:00:00' ORDER BY ___________;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT accepted_at, delivered_at, drop_text FROM delivery_orders WHERE courier_name = 'Пахомов О.В.' AND accepted_at >= '2026-12-07 00:00:00' ORDER BY accepted_at; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "06:24 — доставлен заказ на Шахтную, 10, в соседний дом. Следующий взят в 07:05. Сорок минут без заказов.",
+      "evidence": {
+        "id": "ev.c02.delivery_gap",
+        "title": "Дыра в алиби",
+        "text": "Курьер «Пахомов О. В.», 07.12.2026: принят 05:52 → доставлен 06:24, «Шахтная, 10» (соседний дом); следующий заказ принят в 07:05.",
+        "kind": "record"
+      },
+      "solution": "SELECT accepted_at, delivered_at, pickup_text, drop_text FROM delivery_orders WHERE courier_name = 'Пахомов О. В.' AND accepted_at >= '2026-12-07 00:00:00' ORDER BY accepted_at;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Ключом жильца {key} открыли её подъезд в {time};",
+      "после её смерти со счёта списано {sum} ₽ переводом на его номер."
+    ],
+    "blanks": [
+      {
+        "id": "key",
+        "kind": "text",
+        "options": ["Пахомов О. В.", "Самойлова Т. Н.", "Зоомагазин «Лапа»", "Фонд «Тёплый берег»"],
+        "answer": "Пахомов О. В."
+      },
+      {
+        "id": "time",
+        "kind": "datetime",
+        "precision": "minute",
+        "options": [
+          "2026-12-07 06:30:00",
+          "2026-12-07 06:41:00",
+          "2026-12-07 11:02:00",
+          "2026-12-07 12:20:00",
+          "2026-12-06 19:40:00"
+        ],
+        "answer": "2026-12-07 06:30:00"
+      },
+      {
+        "id": "sum",
+        "kind": "number",
+        "tolerance": 0.01,
+        "options": ["-38000", "-340", "7000", "139"],
+        "answer": "-38000"
+      }
+    ],
+    "batchSize": 3,
+    "successScene": "outro",
+    "failureLines": [
+      "Даша: Так. Стоп. Не сходится. Он сейчас адвоката потребует — давай без дыр.",
+      "Ратников: Ну-с, коллега. Перечитай. Цифры не торопятся.",
+      "Нина: Не сходится, голубчик. Время там до минуты, глянь ещё раз."
+    ]
+  },
   "outroScene": "outro"
 }
