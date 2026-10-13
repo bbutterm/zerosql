@@ -25,7 +25,7 @@
   ],
   "speakers": {
     "ratnikov": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "HXEfuLqUzecBcIVClKTm",
       "voice_settings": {
         "stability": 0.55,
         "similarity_boost": 0.8,
@@ -73,7 +73,7 @@
       }
     },
     "tokha": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "wQsRQ6s9rN6WA1JaJE8c",
       "voice_settings": {
         "stability": 0.35,
         "similarity_boost": 0.75,
@@ -121,7 +121,7 @@
       }
     },
     "valentina": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "e6yINiG1q6m1TKbDahmu",
       "voice_settings": {
         "stability": 0.75,
         "similarity_boost": 0.85,
@@ -137,7 +137,7 @@
       }
     },
     "granin": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "ZWpvvR3loIH9zHVse0A4",
       "voice_settings": {
         "stability": 0.45,
         "similarity_boost": 0.8,
@@ -153,7 +153,7 @@
       }
     },
     "burtsev": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "tTDDMHwzZOOMabSPtWzj",
       "voice_settings": {
         "stability": 0.8,
         "similarity_boost": 0.85,
@@ -169,7 +169,7 @@
       }
     },
     "alla": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "WQ8cXzKDlKGtzSGaQ5Rf",
       "voice_settings": {
         "stability": 0.45,
         "similarity_boost": 0.8,
@@ -185,7 +185,7 @@
       }
     },
     "shpala": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "AIfrQnUkTzcQGWeFpxgo",
       "voice_settings": {
         "stability": 0.35,
         "similarity_boost": 0.75,
@@ -201,7 +201,7 @@
       }
     },
     "oleg_pakhomov": {
-      "voice_id": "PENDING_SLOT",
+      "voice_id": "w4hdUArzEeyl7gt8Hso2",
       "voice_settings": {
         "stability": 0.4,
         "similarity_boost": 0.75,
