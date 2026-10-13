@@ -2,22 +2,294 @@
   "scenes": [
     {
       "id": "intro",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
       "lines": [
-        {
-          "id": "c02.intro.001",
-          "speaker": "narrator",
-          "text": "Шахтный, седьмое декабря. В подъезде иней на стенах, батареи только начали теплеть."
-        }
+        { "id": "c02.intro.001", "speaker": "narrator", "text": "7 декабря, 13:00. Б0-03. Батарея под столом еле тёплая, на ней сохнут чьи-то варежки." },
+        { "id": "c02.intro.002", "speaker": "narrator", "text": "На шкафу у Нины бормочет радио: предвыборные дебаты, прямой эфир." },
+        { "id": "c02.intro.003", "speaker": "granin", "emotion": "smug", "text": "Понимаешь, ни одного градуса впустую. «Глубина» греет город.", "direction": "из радиоприёмника; гремящий бас, пауза «на аплодисменты»" },
+        { "id": "c02.intro.004", "speaker": "granin", "emotion": "happy", "text": "Вчера был трудный день. Новый зал запускали. По-человечески трудно. Зато дальше — тепло, которое не кончается.", "direction": "из радио, раскатисто, отечески" },
+        { "id": "c02.intro.005", "speaker": "narrator", "text": "Ведущий начинает вопрос про Шахтный. Ратников, не глядя, протягивает руку и выключает радио." },
+        { "id": "c02.intro.006", "speaker": "ratnikov", "emotion": "tired", "text": "Ну-с, коллега. Шахтный. Вчера минус сорок один, девять часов без тепла.", "direction": "медленно, с выдохом; кутается в кардиган" },
+        { "id": "c02.intro.007", "speaker": "ratnikov", "emotion": "neutral", "text": "Бабушку нашли в квартире. Племянник пришёл с распечаткой: со счёта, говорит, пропали деньги." },
+        { "id": "c02.intro.008", "speaker": "ratnikov", "emotion": "uneasy", "text": "Посмотри деньги и закрывай. Мороз — не статья.", "direction": "отводит взгляд к выключенному радио; пауза перед второй фразой" },
+        { "id": "c02.intro.009", "speaker": "nina", "emotion": "neutral", "text": "Квартиры там «Сияние» слушает, голубчик. Датчик пишет каждые двадцать минут, как часы.", "direction": "напевно, с оканьем; стук пальцем по столу" },
+        { "id": "c02.intro.010", "speaker": "nina", "emotion": "thinking", "text": "Только датчик, бывает, ерунду пишет. Ты глаза не закрывай." },
+        { "id": "c02.intro.011", "speaker": "dasha", "emotion": "neutral", "text": "Так. Я на Шахтной. В подъезде иней по стенам. Батареи только теплеть начали.", "direction": "по телефону, на лестнице; дыхание сбивается от мороза" },
+        { "id": "c02.intro.012", "speaker": "dasha", "emotion": "determined", "text": "Квартира тридцать один. Найди мне, когда тут стало по-настоящему холодно.", "direction": "быстро, глотает окончания" }
+      ]
+    },
+    {
+      "id": "sensor",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c02.sensor.001", "speaker": "dasha", "emotion": "neutral", "text": "Девятнадцать сорок. Соседям в семь вечера тепло дали, а тут стояк перемёрз. Её секцию — только утром.", "direction": "по телефону, на ходу" },
+        { "id": "c02.sensor.002", "speaker": "dasha", "emotion": "smug", "text": "А минус девятьсот девяносто девять в два часа дня — это что? Тут не Антарктида." },
+        { "id": "c02.sensor.003", "speaker": "nina", "emotion": "neutral", "text": "Это датчик так говорит «не знаю», голубчик. Заглушка. Её в расчёт не берут.", "direction": "мягко, не отрываясь от бумаг" },
+        { "id": "c02.sensor.004", "speaker": "nina", "emotion": "thinking", "text": "Цифра, которая не цифра. Запомни, ещё не раз встретится." }
+      ]
+    },
+    {
+      "id": "flat",
+      "location": "pakhomova_apartment",
+      "music": "ice",
+      "outdoor": true,
+      "lines": [
+        { "id": "c02.flat.001", "speaker": "narrator", "text": "Шахтная, 12-31. Одно пальто на вешалке, второе — на хозяйке. Термометр на стене показывает +5." },
+        { "id": "c02.flat.002", "speaker": "dasha", "emotion": "neutral", "text": "Плюс четыре с копейками, без двадцати десять утра. Она легла в пальто. И в шапке.", "direction": "тихо, на выдохе, пар изо рта" },
+        { "id": "c02.flat.003", "speaker": "dasha", "emotion": "hurt", "text": "Кот живой. Под одеялом у неё грелся. Теперь орёт на всю кухню.", "direction": "пауза перед «кот»; голос садится" },
+        { "id": "c02.flat.004", "speaker": "dasha", "emotion": "determined", "text": "Ладно. Деньги. Племянник внизу в машине сидит, вейпом дымит. Ждёт, когда мы ему вора найдём." }
+      ]
+    },
+    {
+      "id": "fund",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c02.fund.001", "speaker": "narrator", "text": "«Фонд «Тёплый берег»». Тот же логотип — солнце над водой — был на экране загрузки ЗЕРКАЛА." },
+        { "id": "c02.fund.002", "speaker": "nina", "emotion": "thinking", "text": "Пахомова… Зинаида Павловна.", "direction": "медленно, вспоминая; палец замирает над столом" },
+        { "id": "c02.fund.003", "speaker": "nina", "emotion": "scared", "text": "Касса на «Глубина-Строе». Ох.", "direction": "тихо, почти себе; больше не стучит" },
+        { "id": "c02.fund.004", "speaker": "ratnikov", "emotion": "lie", "text": "Фонд оказывает помощь ветеранам предприятия в установленном порядке, коллега.", "direction": "полсекундная пауза перед ответом, книжный регистр (ложь)", "lie": true },
+        { "id": "c02.fund.005", "speaker": "ratnikov", "emotion": "uneasy", "text": "Не отвлекайся. Со счёта ушли деньги — вот дело.", "direction": "отворачивается к чайнику" },
+        { "id": "c02.fund.006", "speaker": "mira", "emotion": "neutral", "text": "Строку можно отметить как «странное». Блокнот аномалий хранит пометки до конца сезона.", "direction": "ровно, дружелюбно, одной интонацией" }
+      ]
+    },
+    {
+      "id": "money",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c02.money.001", "speaker": "dasha", "emotion": "angry", "text": "Тридцать восемь тысяч в шесть сорок одну. Она к тому времени часов восемь как… всё. Клюёт.", "direction": "резко, по телефону" },
+        { "id": "c02.money.002", "speaker": "dasha", "emotion": "neutral", "text": "Триста сорок в «Лапе» — это соцработница. Корм коту, тётиной картой. Карта на тумбочке лежала." },
+        { "id": "c02.money.003", "speaker": "dasha", "emotion": "hurt", "text": "Сама рассказала, ревёт. Кот орал, а у неё до зарплаты ни рубля." },
+        { "id": "c02.money.004", "speaker": "ratnikov", "emotion": "tired", "text": "Ну-с. Кота покормить — не кража. А вот перевод… Проверь, кто утром заходил в подъезд.", "direction": "устало, с паузами" }
+      ]
+    },
+    {
+      "id": "glass",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "next": "int_oleg",
+      "lines": [
+        { "id": "c02.glass.001", "speaker": "narrator", "text": "Допросная. Олег Пахомов сидит в куртке курьера и крутит в пальцах вейп. Даша напротив. Ноль — за стеклом." },
+        { "id": "c02.glass.002", "speaker": "ratnikov", "emotion": "neutral", "text": "Наушник у Даши, карточки — ей на планшет. Начнёт врать — пробивай.", "direction": "вполголоса, за стеклом" },
+        { "id": "c02.glass.003", "speaker": "dasha", "emotion": "determined", "text": "Так. Веду я. Ты кидай, что найдёшь. Запросы можно гонять прямо отсюда.", "direction": "в гарнитуру, быстро, почти шёпотом" }
+      ]
+    },
+    {
+      "id": "int_oleg",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "interrogation": {
+        "suspect": "oleg_pakhomov",
+        "interrogator": "dasha",
+        "mode": "standard",
+        "patience": 3,
+        "breakSteps": ["neutral", "angry", "angry", "scared", "scared"],
+        "lieTell": "«я вообще-то…» и обиженный нажим перед ложью",
+        "liveQuery": true,
+        "closedScene": "int_oleg_closed",
+        "doneScene": "int_oleg_done",
+        "points": [
+          {
+            "line": "c02.int_oleg.003",
+            "press": "int_oleg_press_week",
+            "present": {
+              "prompt": "Чем пробить «неделю не заходил»?",
+              "correct": ["ev.c02.intercom"],
+              "cards": [
+                {
+                  "table": "intercom_events",
+                  "all": [
+                    { "column": "key_owner", "eq": "Пахомов О. В." },
+                    { "column": "ts", "prefix": "2026-12-07 06:30" }
+                  ]
+                }
+              ],
+              "success": "int_oleg_break_key",
+              "failure": "int_oleg_miss"
+            }
+          },
+          {
+            "line": "c02.int_oleg.004",
+            "press": "int_oleg_press_orders",
+            "present": {
+              "prompt": "Чем пробить «возил без перерыва»?",
+              "correct": ["ev.c02.delivery_gap"],
+              "cards": [
+                { "table": "delivery_orders", "all": [{ "column": "delivered_at", "prefix": "2026-12-07 06:24" }] },
+                { "table": "delivery_orders", "all": [{ "column": "accepted_at", "prefix": "2026-12-07 07:05" }] }
+              ],
+              "success": "int_oleg_break_gap",
+              "failure": "int_oleg_miss"
+            }
+          },
+          {
+            "line": "c02.int_oleg.006",
+            "present": {
+              "prompt": "Чем пробить «с карты кто-то украл»?",
+              "correct": ["ev.c02.after_death"],
+              "cards": [
+                { "table": "transactions", "all": [{ "column": "amount", "eq": -38000 }] }
+              ],
+              "success": "int_oleg_break_sbp",
+              "failure": "int_oleg_miss"
+            }
+          },
+          {
+            "line": "c02.int_oleg.009",
+            "press": "int_oleg_press_call",
+            "present": {
+              "prompt": "Кто на самом деле позвонил первым?",
+              "correct": [],
+              "cards": [
+                { "table": "incidents", "all": [{ "column": "reported_at", "prefix": "2026-12-07 11:04" }] },
+                {
+                  "table": "intercom_events",
+                  "all": [
+                    { "column": "guest_name", "eq": "Самойлова Т. Н." },
+                    { "column": "ts", "prefix": "2026-12-07 11:02" }
+                  ]
+                }
+              ],
+              "success": "int_oleg_break_call",
+              "failure": "int_oleg_miss"
+            }
+          }
+        ]
+      },
+      "lines": [
+        { "id": "c02.int_oleg.001", "speaker": "dasha", "emotion": "neutral", "text": "Олег Викторович. Соболезную. Пара вопросов — и свободны.", "direction": "ровно, без нажима" },
+        { "id": "c02.int_oleg.002", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Я вообще-то сам пришёл. С заявлением. Это у тёти деньги украли, если что.", "direction": "через фильтр «за стеклом»; торопливо, обиженно" },
+        { "id": "c02.int_oleg.003", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Я к тёте неделю не заходил.", "direction": "быстро, глядя в стол", "lie": true },
+        { "id": "c02.int_oleg.004", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Я с пяти утра заказы возил, без перерыва.", "direction": "с обиженным нажимом", "lie": true },
+        { "id": "c02.int_oleg.005", "speaker": "dasha", "emotion": "smug", "text": "Без перерыва. Запомню." },
+        { "id": "c02.int_oleg.006", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "С карты кто-то украл.", "direction": "слишком быстро, перебивает", "lie": true },
+        { "id": "c02.int_oleg.007", "speaker": "dasha", "emotion": "neutral", "text": "Кто-то — это кто?" },
+        { "id": "c02.int_oleg.008", "speaker": "oleg_pakhomov", "emotion": "angry", "text": "Мошенники! Им стариков развести — как два пальца. Вы что, новости не смотрите?" },
+        { "id": "c02.int_oleg.009", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Я вообще-то скорую вызывал.", "direction": "«я вообще-то» — примета лжи; голос вверх", "lie": true }
+      ]
+    },
+    {
+      "id": "int_oleg_press_week",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_press_week.001", "speaker": "dasha", "emotion": "neutral", "text": "Совсем не заходили? Ни разу?" },
+        { "id": "c02.int_oleg_press_week.002", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Ну… в том месяце был. Двадцать третьего, что ли. Давно это.", "direction": "тянет время, крутит вейп" }
+      ]
+    },
+    {
+      "id": "int_oleg_press_orders",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_press_orders.001", "speaker": "dasha", "emotion": "neutral", "text": "Где были в шесть утра?" },
+        { "id": "c02.int_oleg_press_orders.002", "speaker": "oleg_pakhomov", "emotion": "angry", "text": "Где-где… по району. Шахтный, Горняцкая. Я их не запоминаю, у меня приложение." },
+        { "id": "c02.int_oleg_press_orders.003", "speaker": "dasha", "emotion": "determined", "text": "Ноль. Его заказы за утро — прямо сейчас. Редактор открыт.", "direction": "в гарнитуру, шёпотом" }
+      ]
+    },
+    {
+      "id": "int_oleg_press_call",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_press_call.001", "speaker": "dasha", "emotion": "neutral", "text": "Во сколько вызывали? С какого номера?" },
+        { "id": "c02.int_oleg_press_call.002", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Ну… может, не скорую. В диспетчерскую. Или собирался. Я вообще-то в шоке был.", "direction": "сбивается, «я вообще-то» — снова ложь" }
+      ]
+    },
+    {
+      "id": "int_oleg_break_key",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_break_key.001", "speaker": "dasha", "emotion": "smug", "text": "Шесть тридцать утра. Ключ жильца. Владелец — Пахомов О. В. Ваш ключ.", "direction": "кладёт планшет на стол экраном к нему" },
+        { "id": "c02.int_oleg_break_key.002", "speaker": "oleg_pakhomov", "emotion": "angry", "text": "Ну заходил! На минуту! Проверить, как она там!", "direction": "срывается на крик" },
+        { "id": "c02.int_oleg_break_key.003", "speaker": "dasha", "emotion": "neutral", "text": "Проверили?" }
+      ]
+    },
+    {
+      "id": "int_oleg_break_gap",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_break_gap.001", "speaker": "dasha", "emotion": "neutral", "text": "Шесть двадцать четыре — сдали заказ на Шахтной, десять. Соседний дом. Следующий взяли в семь ноль пять." },
+        { "id": "c02.int_oleg_break_gap.002", "speaker": "dasha", "emotion": "angry", "text": "Сорок минут. Где были сорок минут, Олег Викторович?" },
+        { "id": "c02.int_oleg_break_gap.003", "speaker": "oleg_pakhomov", "emotion": "angry", "text": "Грелся! В подъезде! На улице минус сорок, вы сами попробуйте!" }
+      ]
+    },
+    {
+      "id": "int_oleg_break_sbp",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_break_sbp.001", "speaker": "dasha", "emotion": "neutral", "text": "Шесть сорок одна. Тридцать восемь тысяч, перевод по номеру телефона. Получатель — вы." },
+        { "id": "c02.int_oleg_break_sbp.002", "speaker": "dasha", "emotion": "smug", "text": "Мошенники, говорите. Клюёт." },
+        { "id": "c02.int_oleg_break_sbp.003", "speaker": "oleg_pakhomov", "emotion": "scared", "text": "Она… она обещала. На зубы. Ещё летом обещала, честно.", "direction": "голос садится, быстро-быстро" }
+      ]
+    },
+    {
+      "id": "int_oleg_break_call",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_break_call.001", "speaker": "dasha", "emotion": "neutral", "text": "Первый звонок — одиннадцать ноль четыре. Соцработница Самойлова. До неё — никто." },
+        { "id": "c02.int_oleg_break_call.002", "speaker": "oleg_pakhomov", "emotion": "scared", "text": "Я… я не знал, кому звонить. Правда не знал." }
+      ]
+    },
+    {
+      "id": "int_oleg_miss",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_miss.001", "speaker": "dasha", "emotion": "angry", "text": "Так. Стоп. Это мимо. Он уже ухмыляется.", "direction": "в гарнитуру, сквозь зубы" },
+        { "id": "c02.int_oleg_miss.002", "speaker": "oleg_pakhomov", "emotion": "neutral", "text": "Я вообще-то тут потерпевший, если что." }
+      ]
+    },
+    {
+      "id": "int_oleg_closed",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_closed.001", "speaker": "oleg_pakhomov", "emotion": "angry", "text": "Всё. Без адвоката я больше ни слова. Я вообще-то права знаю.", "direction": "отодвигает стул, скрещивает руки" },
+        { "id": "c02.int_oleg_closed.002", "speaker": "dasha", "emotion": "angry", "text": "Закрылся. Чёрт с ним. Цифры за нас скажут — дособирай протокол.", "direction": "в гарнитуру, зло" }
+      ]
+    },
+    {
+      "id": "int_oleg_done",
+      "location": "interrogation_glass",
+      "music": "interrogation",
+      "lines": [
+        { "id": "c02.int_oleg_done.001", "speaker": "oleg_pakhomov", "emotion": "scared", "text": "Она уже холодная была…", "direction": "долгая пауза перед фразой; почти шёпот" },
+        { "id": "c02.int_oleg_done.002", "speaker": "oleg_pakhomov", "emotion": "scared", "text": "Деньги ей больше не нужны были.", "direction": "тихо, оправдываясь сам перед собой" },
+        { "id": "c02.int_oleg_done.003", "speaker": "narrator", "text": "Вейп падает на пол и катится под стол. Никто его не поднимает." },
+        { "id": "c02.int_oleg_done.004", "speaker": "dasha", "emotion": "angry", "text": "А кот? Коту тоже ничего не нужно было?", "direction": "очень тихо, без крика" },
+        { "id": "c02.int_oleg_done.005", "speaker": "dasha", "emotion": "determined", "text": "Пиши протокол, Ноль. Я с ним ещё посижу.", "direction": "в гарнитуру, устало" }
+      ]
+    },
+    {
+      "id": "guest",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c02.guest.001", "speaker": "narrator", "text": "29.08.2026, 18:40. Гостевой код 7741. Гость — «Вальц И.»." },
+        { "id": "c02.guest.002", "speaker": "nina", "emotion": "scared", "text": "Вальц… Мало ли Вальцев, голубчик.", "direction": "слишком быстро; палец перестаёт стучать" },
+        { "id": "c02.guest.003", "speaker": "nina", "emotion": "neutral", "text": "Это всё не по описи. Ты своё пиши.", "direction": "отворачивается к картотеке" }
       ]
     },
     {
       "id": "outro",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
       "lines": [
-        {
-          "id": "c02.outro.001",
-          "speaker": "narrator",
-          "text": "В квартире на Шахтной снова тепло. Хозяйке оно уже не нужно."
-        }
+        { "id": "c02.outro.001", "speaker": "mira", "emotion": "neutral", "text": "Сверено. Три позиции.", "direction": "ровно, одной интонацией" },
+        { "id": "c02.outro.002", "speaker": "dasha", "emotion": "neutral", "text": "Оформила. Кража со счёта. Плюс оставление в опасности, если прокурор не ленивый.", "direction": "по телефону, на ходу" },
+        { "id": "c02.outro.003", "speaker": "ratnikov", "emotion": "uneasy", "text": "Закрывай, коллега. Её никто не убивал. Её просто перестали греть.", "direction": "после паузы, глядя в сторону; очень тихо последнюю фразу" },
+        { "id": "c02.outro.004", "speaker": "nina", "emotion": "sad", "text": "Кота, говорят, соцработница к себе возьмёт. Хоть так.", "direction": "тихо, складывая бумаги" },
+        { "id": "c02.outro.005", "speaker": "narrator", "text": "Нина включает радио. Дебаты ещё идут." },
+        { "id": "c02.outro.006", "speaker": "granin", "emotion": "smug", "text": "Понимаешь, холод — это временно. А «Глубина» — навсегда.", "direction": "из радиоприёмника, бас, с улыбкой в голосе" },
+        { "id": "c02.outro.007", "speaker": "narrator", "text": "В квартире на Шахтной снова тепло. Хозяйке оно уже не нужно." }
       ]
     }
   ]
