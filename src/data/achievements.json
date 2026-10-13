@@ -1,0 +1,22 @@
+[
+  {
+    "id": "ach.watchman",
+    "title": "Сторож",
+    "description": "«Мёртвая душа»: выполнить дополнительную задачу про логин без хозяина.",
+    "kind": "all_optional",
+    "param": "case-04-mertvaya-dusha"
+  },
+  {
+    "id": "ach.acrostic",
+    "title": "Акростих",
+    "description": "Закрыть дело «Копирка» без подсказок.",
+    "kind": "case_no_hints",
+    "param": "case-10-kopirka"
+  },
+  {
+    "id": "ach.no_safety",
+    "title": "Без страховки",
+    "description": "Закрыть любое дело без подсказок.",
+    "kind": "case_no_hints"
+  }
+]

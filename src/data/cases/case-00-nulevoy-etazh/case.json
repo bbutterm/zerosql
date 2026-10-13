@@ -1,0 +1,38 @@
+{
+  "id": "case-00-nulevoy-etazh",
+  "order": 0,
+  "act": 1,
+  "code": "Пролог",
+  "title": "Нулевой этаж",
+  "subtitle": "Восьмилетний мальчик не вернулся из музыкальной школы",
+  "date": "2026-12-02 18:05",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-02 18:35"
+  },
+  "difficulty": "tutorial",
+  "concepts": [
+    "h.select",
+    "h.columns",
+    "h.limit",
+    "h.where",
+    "h.compare",
+    "h.and",
+    "h.order_by",
+    "w.time"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps"
+  ],
+  "newTables": [
+    "incidents",
+    "staff",
+    "transit_taps"
+  ],
+  "briefing": "02.12.2026, 17:05. Мать сообщила: Миша Лаптев, 8 лет, не вернулся из музыкальной школы, откуда вышел в 16:00. На улице −34 °C, патрульная машина ждёт адрес.",
+  "introScene": "intro",
+  "objectives": [],
+  "outroScene": "outro"
+}

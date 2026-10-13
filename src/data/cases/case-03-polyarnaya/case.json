@@ -1,0 +1,42 @@
+{
+  "id": "case-03-polyarnaya",
+  "order": 3,
+  "act": 1,
+  "code": "Дело № 03",
+  "title": "Наезд на Полярной",
+  "subtitle": "Сорок первый звонок по закрытому делу",
+  "date": "2026-12-09 15:00",
+  "difficulty": "medium",
+  "concepts": [
+    "h.inner_join",
+    "h.table_alias",
+    "h.order_multi",
+    "w.kusp"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies"
+  ],
+  "newTables": [
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies"
+  ],
+  "briefing": "18.11 в 23:10 на Полярной улице сбит пешеход. Дело закрыто: «угон, виновный не установлен». По нему в сорок первый раз звонят в отдел.",
+  "introScene": "intro",
+  "objectives": [],
+  "outroScene": "outro"
+}

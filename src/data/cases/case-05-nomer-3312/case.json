@@ -1,0 +1,53 @@
+{
+  "id": "case-05-nomer-3312",
+  "order": 5,
+  "act": 2,
+  "code": "Дело № 05",
+  "title": "Номер 3312",
+  "subtitle": "Ночная заливка журнала «Сокола» за 2015 год",
+  "date": "2026-12-15 02:40",
+  "minutesPerQuery": 1,
+  "difficulty": "medium",
+  "concepts": [
+    "h.subquery_in",
+    "h.scalar_subquery",
+    "h.correlated",
+    "h.exists",
+    "h.not_in_null",
+    "h.case",
+    "w.registry"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log",
+    "doc_registry",
+    "cases",
+    "statements"
+  ],
+  "newTables": [
+    "doc_registry",
+    "cases",
+    "statements"
+  ],
+  "briefing": "Ночью через staging-контур в ПБД заливают журнал регистрации «Сокола» за I квартал 2015 года. Нужно проверить, что нумерация не рвётся, пока «Сокол» не погасили.",
+  "introScene": "intro",
+  "objectives": [],
+  "outroScene": "outro"
+}

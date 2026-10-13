@@ -1,0 +1,52 @@
+{
+  "id": "case-04-mertvaya-dusha",
+  "order": 4,
+  "act": 1,
+  "code": "Дело № 04",
+  "title": "Мёртвая душа",
+  "subtitle": "Проверка миграции: сироты и рассинхроны",
+  "date": "2026-12-11 10:00",
+  "difficulty": "medium",
+  "concepts": [
+    "h.left_join",
+    "h.anti_join",
+    "h.join_chain",
+    "h.coalesce",
+    "h.null_logic",
+    "h.count_col",
+    "w.mirror",
+    "w.audit_order"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log"
+  ],
+  "newTables": [
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log"
+  ],
+  "briefing": "Перед финализацией миграции ИТ-отдел требует проверить качество данных: найти сирот, дубли и рассинхроны. Доступ к журналу аудита выдан на время проверки.",
+  "introScene": "intro",
+  "objectives": [],
+  "outroScene": "outro"
+}

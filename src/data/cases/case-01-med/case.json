@@ -1,0 +1,36 @@
+{
+  "id": "case-01-med",
+  "order": 1,
+  "act": 1,
+  "code": "Дело № 01",
+  "title": "Медь",
+  "subtitle": "Три ночи подряд срезают кабель на подстанции",
+  "date": "2026-12-03 21:30",
+  "difficulty": "easy",
+  "concepts": [
+    "h.or_parens",
+    "h.in",
+    "h.between",
+    "h.like",
+    "h.is_null",
+    "h.distinct",
+    "w.plates"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles"
+  ],
+  "newTables": [
+    "cameras",
+    "plate_reads",
+    "vehicles"
+  ],
+  "briefing": "Три ночи подряд, 30.11, 01.12 и 02.12, на ПС «Промзона-2» срезают медный кабель. Подстанция питает новый зал «Глубины». Сторож видел «Сайгак», в номере «вроде 372».",
+  "introScene": "intro",
+  "objectives": [],
+  "outroScene": "outro"
+}

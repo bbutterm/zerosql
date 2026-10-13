@@ -1,0 +1,41 @@
+{
+  "id": "case-02-minus-41",
+  "order": 2,
+  "act": 1,
+  "code": "Дело № 02",
+  "title": "Минус сорок один",
+  "subtitle": "Шахтный без тепла, со счёта умершей пропали деньги",
+  "date": "2026-12-07 13:00",
+  "difficulty": "easy",
+  "concepts": [
+    "h.aggregates",
+    "h.round",
+    "h.alias",
+    "h.group_by",
+    "h.having",
+    "h.count_distinct",
+    "w.sentinels"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders"
+  ],
+  "newTables": [
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders"
+  ],
+  "briefing": "06.12 при −41 °C район Шахтный девять часов сидел без тепла. 07.12 в 11:04 соцработница нашла мёртвой Пахомову Зинаиду Павловну, 79 лет (Шахтная, 12-31). Племянник говорит, что с её счёта пропали деньги.",
+  "introScene": "intro",
+  "objectives": [],
+  "outroScene": "outro"
+}
