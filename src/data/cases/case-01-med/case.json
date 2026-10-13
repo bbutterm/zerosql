@@ -6,6 +6,11 @@
   "title": "Медь",
   "subtitle": "Три ночи подряд срезают кабель на подстанции",
   "date": "2026-12-03 21:30",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-03 23:59"
+  },
+  "location": "Промзона, ПС «Промзона-2»",
   "difficulty": "easy",
   "concepts": [
     "h.or_parens",
@@ -29,8 +34,312 @@
     "plate_reads",
     "vehicles"
   ],
-  "briefing": "Три ночи подряд, 30.11, 01.12 и 02.12, на ПС «Промзона-2» срезают медный кабель. Подстанция питает новый зал «Глубины». Сторож видел «Сайгак», в номере «вроде 372».",
+  "briefing": "03.12.2026, 21:30. Три ночи подряд — 30.11, 01.12 и 02.12 — на подстанции «Промзона-2» срезают медный кабель. Подстанция питает новый зал «Глубины», корпорация звонит начальству. Сторож видел синий фургон «Сайгак», в номере «вроде 372». Открыт доступ к «Дорсети»: камеры (cameras), проезды (plate_reads) и реестр машин (vehicles).",
+  "starterSql": "-- Кражи последних дней. Допиши фильтр по описанию и по датам.\nSELECT id, reported_at, kind, district, description\nFROM incidents\nWHERE kind = 'кража'\nORDER BY reported_at DESC\nLIMIT 10;",
   "introScene": "intro",
-  "objectives": [],
-  "outroScene": "outro"
+  "objectives": [
+    {
+      "id": "o1_1",
+      "order": 1,
+      "task": "Кражи кабеля за три ночи. Отбери в incidents кражи (kind = 'кража'), где в описании есть «кабел» — description LIKE '%кабел%', — заявленные с 30.11 по 02.12 включительно: reported_at BETWEEN '2026-11-30 00:00:00' AND '…'.",
+      "concept": "h.between",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT reported_at FROM incidents WHERE kind = 'кража' AND description LIKE '%кабел%' AND reported_at BETWEEN '2026-11-30 00:00:00' AND '2026-12-02 23:59:59'"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c01_o1_1.001",
+          "text": "Медь режут ночью, а заявляют утром, когда свет моргнёт. Ищи кражи, где в описании «кабель». Три дня: тридцатое, первое, второе."
+        },
+        {
+          "by": "mira",
+          "text": "LIKE сравнивает текст с образцом: % — сколько угодно любых символов, _ — ровно один. BETWEEN a AND b — от a до b включительно. Пример на другой таблице: SELECT full_name, hired_at FROM staff WHERE full_name LIKE 'Ш%' AND hired_at BETWEEN '2020-01-01' AND '2024-12-31';"
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT reported_at, description FROM incidents WHERE kind = '_____' AND description LIKE '%_____%' AND reported_at BETWEEN '2026-11-30 00:00:00' AND '____-__-__ __:__:__';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка, голубчик. Ошибка в ней одна — Ирочка так проверяла, кто думает, а кто списывает: SELECT reported_at, description FROM incidents WHERE kind = 'кража' AND description LIKE '%кабел%' AND reported_at BETWEEN '2026-11-30' AND '2026-12-02';"
+        }
+      ],
+      "success": "Три заявления подстанции: 30.11 в 08:20, 01.12 в 08:05, 02.12 в 08:15. Режут ночью, находят утром.",
+      "evidence": {
+        "id": "ev.c01.thefts",
+        "title": "Три кражи кабеля",
+        "kind": "record",
+        "text": "КУСП 4688, 4703, 4717. 30.11 08:20, 01.12 08:05, 02.12 08:15: «Срезан медный кабель, ПС «Промзона-2»». Заявитель — подстанция."
+      },
+      "sceneAfter": "substation",
+      "solution": "SELECT id, kusp_no, reported_at, address_text, description\nFROM incidents\nWHERE kind = 'кража'\n  AND description LIKE '%кабел%'\n  AND reported_at BETWEEN '2026-11-30 00:00:00' AND '2026-12-02 23:59:59'\nORDER BY reported_at;"
+    },
+    {
+      "id": "o1_2",
+      "order": 2,
+      "task": "Сторож видел «вроде 372». Какие номера с «372» видела камера 12 в эти три ночи с 01:00 до 04:00? Три окна по времени соедини через OR и возьми в скобки, повторы убери через DISTINCT.",
+      "concept": "h.or_parens",
+      "validation": {
+        "type": "column_values",
+        "columns": [
+          "plate"
+        ],
+        "values": [
+          "К372ОК",
+          "K372OK",
+          "Е372ВХ"
+        ],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "tokha",
+          "line": "hint.c01_o1_2.001",
+          "text": "Хе, «вроде триста семьдесят два» — это не номер, это паттерн, короч. Камера двенадцать, на выезде. Три ночи, с часу до четырёх."
+        },
+        {
+          "by": "mira",
+          "text": "AND связывает сильнее, чем OR: a AND b OR c читается как (a AND b) OR c. Окна по времени — в скобки: camera_id = 12 AND (окно1 OR окно2 OR окно3). DISTINCT убирает повторы. Пример на другой таблице: SELECT DISTINCT dept FROM staff WHERE (rank = 'майор' OR rank = 'подполковник') AND fired_at IS NULL;"
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT DISTINCT plate FROM plate_reads WHERE camera_id = __ AND plate LIKE '%___%' AND (read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00' OR read_at BETWEEN '____-__-__ __:__:__' AND '____-__-__ __:__:__' OR read_at BETWEEN '____-__-__ __:__:__' AND '____-__-__ __:__:__');"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка. Одна ошибка, голубчик, как всегда: SELECT DISTINCT plate FROM plate_reads WHERE camera_id = 12 AND plate LIKE '%372%' AND read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00' OR read_at BETWEEN '2026-12-01 01:00:00' AND '2026-12-01 04:00:00' OR read_at BETWEEN '2026-12-02 01:00:00' AND '2026-12-02 04:00:00';"
+        }
+      ],
+      "success": "Камера 12 видела три номера: К372ОК, его двойник K372OK с латинскими буквами и Е372ВХ.",
+      "evidence": {
+        "id": "ev.c01.cam12_372",
+        "title": "Номера с «372» на камере 12",
+        "kind": "record",
+        "text": "Ночи 30.11–02.12, с 01:00 до 04:00: К372ОК, K372OK (латиница, уверенность 0,68), Е372ВХ (01.12, 03:30)."
+      },
+      "sceneAfter": "tokha_ocr",
+      "solution": "SELECT DISTINCT plate\nFROM plate_reads\nWHERE camera_id = 12\n  AND plate LIKE '%372%'\n  AND (\n    read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00'\n    OR read_at BETWEEN '2026-12-01 01:00:00' AND '2026-12-01 04:00:00'\n    OR read_at BETWEEN '2026-12-02 01:00:00' AND '2026-12-02 04:00:00'\n  );"
+    },
+    {
+      "id": "o1_3",
+      "order": 3,
+      "task": "Чьи это машины? Сверь номера с камеры с реестром vehicles через plate IN (…). Нужен «Сайгак» — марку в реестре пишут по-разному, поэтому LIKE, — и не снятый с учёта: deregistered_at IS NULL. Покажи владельца и графу sold_at.",
+      "concept": "h.is_null",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Владелец найден.",
+        "rules": [
+          {
+            "type": "cell_value",
+            "value": "К372ОК"
+          },
+          {
+            "type": "cell_value",
+            "value": "Шпаков Георгий Ильич"
+          },
+          {
+            "type": "not",
+            "rule": {
+              "type": "cell_value",
+              "value": "М537ТН"
+            },
+            "message": "М537ТН сняли с учёта в 2024 году: эта машина по улицам не ездит."
+          },
+          {
+            "type": "not",
+            "rule": {
+              "type": "cell_value",
+              "value": "Е372ВХ"
+            },
+            "message": "Е372ВХ — белая «Вега Гранд», а сторож видел «Сайгак»."
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c01_o1_3.001",
+          "text": "Номера есть — теперь хозяева. Только «Сайгаки» в реестре пишут как попало. И ржавьё, снятое с учёта, мне не нужно."
+        },
+        {
+          "by": "mira",
+          "text": "IN ('a', 'b') — то же, что = 'a' OR = 'b'. Знак = сравнивает точно: 'САЙГАК' и 'Сайгак' — разные строки, LIKE '%сайгак%' найдёт обе. Пустая графа — NULL: её ищут через IS NULL, а = NULL не находит ничего. Пример на другой таблице: SELECT full_name, login, fired_at FROM staff WHERE login IN ('l.ratnikov', 'd.kim') AND fired_at IS NULL;"
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT plate, make, owner_name, sold_at, deregistered_at FROM vehicles WHERE plate IN ('______', '______', '______') AND make LIKE '%______%' AND deregistered_at IS ____;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка. Ищи ошибку, голубчик, она одна: SELECT plate, make, owner_name, sold_at, deregistered_at FROM vehicles WHERE plate IN ('К372ОК', 'K372OK', 'Е372ВХ') AND make = 'Сайгак' AND deregistered_at IS NULL;"
+        }
+      ],
+      "success": "К372ОК — синий «САЙГАК», владелец Шпаков Георгий Ильич. В графе sold_at пусто: машину никто не продавал. K372OK в реестре нет — это та же машина, прочитанная криво.",
+      "evidence": {
+        "id": "ev.c01.vehicle",
+        "title": "Реестр: К372ОК",
+        "kind": "record",
+        "text": "Синий «САЙГАК» 2016 года. Владелец — Шпаков Георгий Ильич, на учёте с 14.06.2019. sold_at — NULL: не продавался. С учёта не снят."
+      },
+      "sceneAfter": "owner",
+      "solution": "SELECT plate, make, color, owner_name, registered_at, sold_at, deregistered_at\nFROM vehicles\nWHERE plate IN ('К372ОК', 'K372OK', 'Е372ВХ')\n  AND make LIKE '%сайгак%'\n  AND deregistered_at IS NULL;"
+    },
+    {
+      "id": "o1_4",
+      "order": 4,
+      "task": "Все проезды этой машины через камеру 12 в эти три ночи, с 01:00 до 04:00, — включая криво считанные. Номер и его латинский двойник — в один IN.",
+      "concept": "h.in",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT plate, read_at FROM plate_reads WHERE camera_id = 12 AND plate IN ('К372ОК', 'K372OK') AND (read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00' OR read_at BETWEEN '2026-12-01 01:00:00' AND '2026-12-01 04:00:00' OR read_at BETWEEN '2026-12-02 01:00:00' AND '2026-12-02 04:00:00')"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c01_o1_4.001",
+          "text": "Мне нужна его машина на камере во все три ночи. Чтоб не отвертелся. И кривой номер тоже его, не забудь."
+        },
+        {
+          "by": "mira",
+          "text": "IN перечисляет допустимые значения: plate IN ('…', '…'). Латинская K и кириллическая К — разные символы, поэтому в списке нужны оба написания. Окна по времени — в скобках через OR. Пример на другой таблице: SELECT full_name, workstation FROM staff WHERE workstation IN ('WS-03', 'WS-07');"
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT read_at, plate FROM plate_reads WHERE camera_id = 12 AND plate IN ('______', '______') AND (read_at BETWEEN … OR read_at BETWEEN … OR read_at BETWEEN …);"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка. Одна ошибка, голубчик, и та — в буквах: SELECT read_at, plate FROM plate_reads WHERE camera_id = 12 AND plate = 'К372ОК' AND (read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00' OR read_at BETWEEN '2026-12-01 01:00:00' AND '2026-12-01 04:00:00' OR read_at BETWEEN '2026-12-02 01:00:00' AND '2026-12-02 04:00:00');"
+        }
+      ],
+      "success": "Три ночи — три проезда на выезд из Промзоны: 30.11 в 02:47, 01.12 в 02:41 (латиницей), 02.12 в 02:52.",
+      "evidence": {
+        "id": "ev.c01.cam12_x3",
+        "title": "Камера 12 ×3",
+        "kind": "record",
+        "text": "Камера 12 «Промзона — выезд (Энергетиков)», на выезд: 30.11 02:47 К372ОК, 01.12 02:41 K372OK, 02.12 02:52 К372ОК."
+      },
+      "sceneAfter": "shpala_in",
+      "solution": "SELECT read_at, plate, direction, confidence\nFROM plate_reads\nWHERE camera_id = 12\n  AND plate IN ('К372ОК', 'K372OK')\n  AND (\n    read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00'\n    OR read_at BETWEEN '2026-12-01 01:00:00' AND '2026-12-01 04:00:00'\n    OR read_at BETWEEN '2026-12-02 01:00:00' AND '2026-12-02 04:00:00'\n  )\nORDER BY read_at;"
+    },
+    {
+      "id": "o1_4b",
+      "order": 5,
+      "optional": true,
+      "task": "★ Одним запросом: какой номер камера 12 видела во всех трёх ночных окнах — с учётом криво считанных? Нужны номер и число ночей, одной строкой.",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Один номер на все три ночи.",
+        "rules": [
+          {
+            "type": "row_count",
+            "expected": 1,
+            "comparison": "eq"
+          },
+          {
+            "type": "cell_value",
+            "value": 3
+          },
+          {
+            "type": "any_of",
+            "successMessage": "Номер найден.",
+            "rules": [
+              {
+                "type": "cell_value",
+                "value": "К372ОК"
+              },
+              {
+                "type": "cell_value",
+                "value": "K372OK"
+              }
+            ]
+          },
+          {
+            "type": "not",
+            "rule": {
+              "type": "cell_value",
+              "value": "Р037АА"
+            },
+            "message": "Р037АА — хлебовоз: он проезжает в пять утра, вне окна."
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "tokha",
+          "line": "hint.c01_o1_4b.001",
+          "text": "Одним запросом? Хе. Тут без группировки никак, а её у нас ещё не проходили. Но если очень хочется — база."
+        },
+        {
+          "by": "mira",
+          "text": "Понятия следующих дел: GROUP BY собирает строки в группы, COUNT(DISTINCT …) считает разные значения в группе, HAVING отбирает группы. replace(plate, 'K', 'К') меняет латинскую букву на кириллическую, date(read_at) — дата без времени."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT replace(replace(plate, 'K', 'К'), 'O', 'О') AS plate, COUNT(DISTINCT date(read_at)) AS nights FROM plate_reads WHERE camera_id = 12 AND (три окна) GROUP BY 1 HAVING COUNT(DISTINCT date(read_at)) = __;"
+        }
+      ],
+      "success": "Один номер на все три ночи — К372ОК, если не верить буквам камеры. Без группировки такое не посчитать: это уже из будущего.",
+      "evidence": {
+        "id": "ev.c01.three_nights",
+        "title": "Один номер — три ночи",
+        "kind": "record",
+        "text": "К372ОК на камере 12 во всех трёх ночных окнах, с учётом латинского двойника K372OK."
+      },
+      "sceneAfter": "star",
+      "solution": "SELECT replace(replace(plate, 'K', 'К'), 'O', 'О') AS plate,\n       COUNT(DISTINCT date(read_at)) AS nights\nFROM plate_reads\nWHERE camera_id = 12\n  AND (\n    read_at BETWEEN '2026-11-30 01:00:00' AND '2026-11-30 04:00:00'\n    OR read_at BETWEEN '2026-12-01 01:00:00' AND '2026-12-01 04:00:00'\n    OR read_at BETWEEN '2026-12-02 01:00:00' AND '2026-12-02 04:00:00'\n  )\nGROUP BY 1\nHAVING COUNT(DISTINCT date(read_at)) = 3;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Кабель с подстанции вывозили на машине {plate}, владелец — {owner}.",
+      "Первая ночь: машина прошла камеру 12 в {first_night}."
+    ],
+    "blanks": [
+      {
+        "id": "plate",
+        "kind": "text",
+        "options": [
+          "К372ОК",
+          "K372OK",
+          "Е372ВХ",
+          "М537ТН",
+          "Р037АА"
+        ],
+        "answer": "К372ОК"
+      },
+      {
+        "id": "owner",
+        "kind": "text",
+        "options": [
+          "Шпаков Георгий Ильич",
+          "УК «Шахтный»",
+          "АНО «Медсанчасть Створ»",
+          "Гасанов Рамиз Эльдарович"
+        ],
+        "answer": "Шпаков Георгий Ильич"
+      },
+      {
+        "id": "first_night",
+        "kind": "datetime",
+        "precision": "minute",
+        "options": [
+          "2026-11-30 02:47:00",
+          "2026-12-01 02:41:00",
+          "2026-12-02 02:52:00",
+          "2026-11-30 08:20:00",
+          "2026-12-01 03:30:00"
+        ],
+        "answer": "2026-11-30 02:47:00"
+      }
+    ],
+    "successScene": "outro",
+    "failureLines": [
+      "Не сходится. Перечитай свои же результаты: номер, хозяин, время — всё там.",
+      "Так. Стоп. Что-то не клюёт. Ещё раз, по порядку.",
+      "Ну-с, коллега, без спешки. Сверка любит точность."
+    ]
+  }
 }
