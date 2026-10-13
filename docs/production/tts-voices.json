@@ -1,5 +1,5 @@
 {
-  "$comment": "Рабочие настройки TTS. voice_id не секрет; ключ API берётся из переменной окружения. Голоса: Voice Design, вариант 1 (кастинг можно поменять).",
+  "$comment": "Рабочие настройки TTS (eleven_v4_turbo). Голоса — по кастингу владельца (casting.variant). voice_id не секрет; ключ API — только из переменной окружения. PENDING_SLOT: голос ещё не создан (лимит операций с голосами на тарифе) — создаётся из casting.generated_voice_id.",
   "provider": "elevenlabs",
   "api": {
     "base_url": "https://api.elevenlabs.io",
@@ -25,7 +25,7 @@
   ],
   "speakers": {
     "ratnikov": {
-      "voice_id": "7tOQ982PCLCkTSHW6jqd",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.55,
         "similarity_boost": 0.8,
@@ -34,10 +34,14 @@
         "speed": 0.92
       },
       "design_prompt": "A 58-year-old Russian man, warm husky baritone, slow and tired, frequent pauses and quiet exhales through the nose, gentle irony, a tea-drinking police veteran who is always cold. Low-mid pitch, soft rasp, close intimate microphone, native Russian speaker. Calm, fatherly, carrying old guilt.",
-      "preview_text": "Ну-с, коллега. Чай остыл, на улице минус тридцать четыре, а у нас медь. Классика."
+      "preview_text": "Ну-с, коллега. Чай остыл, на улице минус тридцать четыре, а у нас медь. Классика.",
+      "casting": {
+        "variant": 2,
+        "generated_voice_id": "HXEfuLqUzecBcIVClKTm"
+      }
     },
     "dasha": {
-      "voice_id": "iiA1xkGihkJ9WVHScmCk",
+      "voice_id": "j1myVhussokUCPjkgUij",
       "voice_settings": {
         "stability": 0.4,
         "similarity_boost": 0.8,
@@ -46,10 +50,14 @@
         "speed": 1.08
       },
       "design_prompt": "A 25-year-old Russian woman, fast clipped alto, sharp and dry, swallows word endings, short breaths, a street-smart police operative chewing gum, quick deadpan humor, never theatrical. Mid-low female pitch, slight rasp from cold air, close microphone, native Russian speaker.",
-      "preview_text": "Так. Стоп. Камера двенадцать врёт на четыре минуты, я сама сверяла. Клюёт."
+      "preview_text": "Так. Стоп. Камера двенадцать врёт на четыре минуты, я сама сверяла. Клюёт.",
+      "casting": {
+        "variant": 3,
+        "generated_voice_id": "j1myVhussokUCPjkgUij"
+      }
     },
     "nina": {
-      "voice_id": "L12jINhH2FnQcxbJUS5G",
+      "voice_id": "GRW0Jpcj5fELiPLm9gqP",
       "voice_settings": {
         "stability": 0.6,
         "similarity_boost": 0.8,
@@ -58,10 +66,14 @@
         "speed": 0.95
       },
       "design_prompt": "A 67-year-old Russian woman from the far north, soft sing-song voice between soprano and alto, rounded unreduced 'o' vowels of the northern dialect, motherly and sharp-tongued old office typist, unhurried, a warm smile in the voice. Native Russian speaker.",
-      "preview_text": "Голубчик, это всё не по описи. Папку положи, где лежала, а сушки бери: сушки по описи не числятся."
+      "preview_text": "Голубчик, это всё не по описи. Папку положи, где лежала, а сушки бери: сушки по описи не числятся.",
+      "casting": {
+        "variant": 2,
+        "generated_voice_id": "GRW0Jpcj5fELiPLm9gqP"
+      }
     },
     "tokha": {
-      "voice_id": "LNmOaEwTZRA1znL1Klk1",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.35,
         "similarity_boost": 0.75,
@@ -70,10 +82,14 @@
         "speed": 1.12
       },
       "design_prompt": "A 24-year-old Russian man, high fast tenor, nervous and talkative, a short nervous 'heh' laugh, internet slang, friendly and eager to please, slightly nasal from sleepless nights, a young geeky sysadmin. Native Russian speaker, close microphone.",
-      "preview_text": "Короч, база такая: сервер старый, но живой. Ночью греет лучше батареи, хе."
+      "preview_text": "Короч, база такая: сервер старый, но живой. Ночью греет лучше батареи, хе.",
+      "casting": {
+        "variant": 2,
+        "generated_voice_id": "wQsRQ6s9rN6WA1JaJE8c"
+      }
     },
     "melnik": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "EiWT1afhgNcgzub8ENm1",
       "voice_settings": {
         "stability": 0.7,
         "similarity_boost": 0.85,
@@ -82,10 +98,14 @@
         "speed": 1.0
       },
       "design_prompt": "A 41-year-old Russian man, crisp nasal baritone, precise corporate diction, slightly condescending, office anglicisms, measured mid tempo, clean and polished, no warmth. Native Russian speaker, studio-clean recording.",
-      "preview_text": "Коллеги, синхронизируемся. Сироты, дубли, рассинхрон: к пятнице закрываем, это KPI отдела."
+      "preview_text": "Коллеги, синхронизируемся. Сироты, дубли, рассинхрон: к пятнице закрываем, это KPI отдела.",
+      "casting": {
+        "variant": 3,
+        "generated_voice_id": "EiWT1afhgNcgzub8ENm1"
+      }
     },
     "irina": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "jLVuIWWTTy0FZkFvMEhP",
       "voice_settings": {
         "stability": 0.5,
         "similarity_boost": 0.85,
@@ -94,10 +114,14 @@
         "speed": 0.94
       },
       "design_prompt": "A 29-year-old Russian woman, intimate mezzo-soprano recorded late at night, a half-whisper very close to the microphone, methodical and witty, short exhales instead of laughter, lonely and brave, a little tired. Native Russian speaker, soft consonants.",
-      "preview_text": "Запись. Третье ноября. Ладно. Дальше. Если считать по строкам, ночью здесь кто-то есть."
+      "preview_text": "Запись. Третье ноября. Ладно. Дальше. Если считать по строкам, ночью здесь кто-то есть.",
+      "casting": {
+        "variant": 2,
+        "generated_voice_id": "jLVuIWWTTy0FZkFvMEhP"
+      }
     },
     "valentina": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.75,
         "similarity_boost": 0.85,
@@ -106,10 +130,14 @@
         "speed": 0.93
       },
       "design_prompt": "A 58-year-old Russian woman, dry clear alto of a literature teacher, perfect articulation, quiet and controlled, no warmth left, slow even tempo, grief held completely inside. Native Russian speaker.",
-      "preview_text": "Я звоню в сорок первый раз. Вы хотели сказать: дело закрыто. Я знаю."
+      "preview_text": "Я звоню в сорок первый раз. Вы хотели сказать: дело закрыто. Я знаю.",
+      "casting": {
+        "variant": 2,
+        "generated_voice_id": "e6yINiG1q6m1TKbDahmu"
+      }
     },
     "granin": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.45,
         "similarity_boost": 0.8,
@@ -118,10 +146,14 @@
         "speed": 0.9
       },
       "design_prompt": "A 59-year-old Russian man, booming theatrical bass, the rolling resonant voice of a populist politician, pauses for applause, patronizing warmth, a big chest voice, slow grand delivery, rich low end. Native Russian speaker.",
-      "preview_text": "Понимаешь, тепло — это не градусы. Это люди. Я этот город грею по-человечески, а не по смете."
+      "preview_text": "Понимаешь, тепло — это не градусы. Это люди. Я этот город грею по-человечески, а не по смете.",
+      "casting": {
+        "variant": 3,
+        "generated_voice_id": "ZWpvvR3loIH9zHVse0A4"
+      }
     },
     "burtsev": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.8,
         "similarity_boost": 0.85,
@@ -130,10 +162,14 @@
         "speed": 0.8
       },
       "design_prompt": "A 54-year-old Russian man, very quiet, almost a whisper, very slow, few words, a flat calm low voice that never rises, polite and menacing, breathy, close microphone. Native Russian speaker.",
-      "preview_text": "Не надо. Я заявил сразу. Спросите дежурного."
+      "preview_text": "Не надо. Я заявил сразу. Спросите дежурного.",
+      "casting": {
+        "variant": 1,
+        "generated_voice_id": "tTDDMHwzZOOMabSPtWzj"
+      }
     },
     "alla": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.45,
         "similarity_boost": 0.8,
@@ -142,10 +178,14 @@
         "speed": 1.06
       },
       "design_prompt": "A 49-year-old Russian woman, smoky husky contralto of a long-time smoker, fast and sarcastic, a sharp journalist, cynical on top and sad underneath, low female pitch, slight vocal fry. Native Russian speaker.",
-      "preview_text": "Без комментариев — тоже комментарий. Пишите что хотите, я своё написала одиннадцать лет назад."
+      "preview_text": "Без комментариев — тоже комментарий. Пишите что хотите, я своё написала одиннадцать лет назад.",
+      "casting": {
+        "variant": 1,
+        "generated_voice_id": "WQ8cXzKDlKGtzSGaQ5Rf"
+      }
     },
     "shpala": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.35,
         "similarity_boost": 0.75,
@@ -154,10 +194,14 @@
         "speed": 1.15
       },
       "design_prompt": "A 47-year-old Russian man, high nasal voice, rapid patter, a street-wise small-time crook with light criminal slang, wheedling and jokey, thin reedy tone. Native Russian speaker.",
-      "preview_text": "Век воли не видать, начальник, медь не моя. Сайгак я ещё в сентябре продал, бумажка есть."
+      "preview_text": "Век воли не видать, начальник, медь не моя. Сайгак я ещё в сентябре продал, бумажка есть.",
+      "casting": {
+        "variant": 1,
+        "generated_voice_id": "AIfrQnUkTzcQGWeFpxgo"
+      }
     },
     "oleg_pakhomov": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "PENDING_SLOT",
       "voice_settings": {
         "stability": 0.4,
         "similarity_boost": 0.75,
@@ -166,10 +210,14 @@
         "speed": 1.08
       },
       "design_prompt": "A 36-year-old Russian man, hurried whiny voice, offended and defensive, slightly breathless, soft flabby tone, mid-high pitch, petty. Native Russian speaker.",
-      "preview_text": "Я вообще-то к тёте неделю не заходил. У меня смены, вы на меня не вешайте."
+      "preview_text": "Я вообще-то к тёте неделю не заходил. У меня смены, вы на меня не вешайте.",
+      "casting": {
+        "variant": 2,
+        "generated_voice_id": "w4hdUArzEeyl7gt8Hso2"
+      }
     },
     "mira": {
-      "voice_id": "REPLACE_WITH_VOICE_ID",
+      "voice_id": "vqXn0MaMxUlzqzGE4cp8",
       "voice_settings": {
         "stability": 0.95,
         "similarity_boost": 0.9,
@@ -178,7 +226,11 @@
         "speed": 1.0
       },
       "design_prompt": "A synthetic female voice assistant, even and smooth, slightly too friendly, perfectly flat intonation, every sentence in the same pleasant tone regardless of content, crisp digital clarity, no breaths, Russian language, corporate voice assistant.",
-      "preview_text": "Найдено строк: ноль. Проверьте условие WHERE и повторите запрос."
+      "preview_text": "Найдено строк: ноль. Проверьте условие WHERE и повторите запрос.",
+      "casting": {
+        "variant": 3,
+        "generated_voice_id": "vqXn0MaMxUlzqzGE4cp8"
+      }
     }
   }
 }
