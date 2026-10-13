@@ -568,7 +568,9 @@ export function portraitPrompt(ch, s) {
   const framing = s.framing === "id" ? FRAMING_ID_PHOTO : framingPortrait(ch.turn);
   return join2(s.character ?? ch.en, s.en, variantOf(s.slot) ? OUTDOOR : "", framing, STYLE_PORTRAIT);
 }
-export const portraitNegative = (ch) => [NEGATIVE_PORTRAIT, ch.negative].filter(Boolean).join(", ");
+/** Склейка списков негатива без повторов */
+const mergeTerms = (...lists) => [...new Set(lists.filter(Boolean).join(", ").split(/,\s*/).filter(Boolean))].join(", ");
+export const portraitNegative = (ch) => mergeTerms(NEGATIVE_PORTRAIT, ch.negative);
 
 /** Лист-референс показывает одного человека трижды: «второй человек» и «дубликат» из негатива убираются */
 export const refSheetNegative = (ch) =>
@@ -583,7 +585,7 @@ export function backgroundPrompt(loc) {
 }
 export function backgroundNegative(loc) {
   const base = loc.people ? NEGATIVE_BACKGROUND.replace("people, figures, faces, crowd, ", "") : NEGATIVE_BACKGROUND;
-  return [base, loc.negative].filter(Boolean).join(", ");
+  return mergeTerms(base, loc.negative);
 }
 
 /** Канонические слоты портретов §11.1: [{ character, slot, emotion, variant, tier, rank }] */
@@ -624,7 +626,13 @@ export function promptRows() {
         tierLabel(s.tier, s.rank),
         s.ru,
         variant ? `Вариант \`outdoor\` для эмоции ${emotionOf(s.slot)}: делать правкой от ${emotionOf(s.slot)}.webp того же персонажа.` : "",
-        s.slot === "neutral" ? "Якорь: от него генерируются все остальные эмоции." : `Делать от якоря ${ch.id}/neutral (референс/правка).`,
+        s.framing === "id"
+          ? "Особый кадр (фото из личного дела): от него ничего не генерируется."
+          : ch.slots.some((x) => x.framing === "id")
+            ? `Делать от листа-референса art-src/refs/${ch.id}_sheet.png; лицо сверять с ${ch.id}/neutral.`
+            : s.slot === "neutral"
+              ? "Якорь: от него генерируются все остальные эмоции."
+              : `Делать от якоря ${ch.id}/neutral (референс/правка).`,
         `Генерация ${PORTRAIT.gen.join("×")}, мастер ${PORTRAIT.master.join("×")} с фоном #1A2442, в игру — WebP с альфой.`,
         ch.id === "burtsev" ? "Кисть — paint-over обязателен (этюд art-src/refs/burtsev_hand.png)." : "",
       ].filter(Boolean).join(" ");
