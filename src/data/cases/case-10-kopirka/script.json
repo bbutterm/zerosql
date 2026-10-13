@@ -1,22 +1,913 @@
 {
   "scenes": [
     {
-      "id": "intro",
+      "id": "cold_open",
+      "location": "basement_b0_03_morning",
+      "music": "twist_low",
       "lines": [
         {
-          "id": "c10.intro.001",
+          "id": "c10.cold_open.001",
           "speaker": "narrator",
-          "text": "Последнее утро года. Терминал вежливо сообщает о плановом обслуживании."
+          "text": "Тридцать первое декабря, девять утра. Над столом гирлянда, которую никто не вешал. На столе — приказ."
+        },
+        {
+          "id": "c10.cold_open.002",
+          "speaker": "melnik",
+          "emotion": "angry",
+          "text": "Коллеги, синхронизируемся. Двадцать восьмого под логином nol правили улики в ПБД.",
+          "direction": "чётко, чуть в нос; стоит над столом, не садится"
+        },
+        {
+          "id": "c10.cold_open.003",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Удалена карточка из описи. Сдвинут документ три-три-один-три. Показание по Сазонову — «отозвано»."
+        },
+        {
+          "id": "c10.cold_open.004",
+          "speaker": "melnik",
+          "emotion": "smug",
+          "text": "С этой минуты — отстранение до выяснения. Терминал — только для объяснений. Это не эскалация, это регламент."
+        },
+        {
+          "id": "c10.cold_open.005",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Так. Стоп. Двадцать восьмого Ноль весь день у меня на глазах. За этим столом.",
+          "direction": "быстро, перебивая"
+        },
+        {
+          "id": "c10.cold_open.006",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Глаза — не лог, Дарья Сергеевна. Аудит говорит: nol. Аудит не врёт."
+        },
+        {
+          "id": "c10.cold_open.007",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Аудит не врёт. Врёт тот, кто за ним стоит. Ноль, докажи ему. Его же журналами."
+        },
+        {
+          "id": "c10.cold_open.008",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Время у них, голубчик, а не у тебя. Сличи часы: где твой запрос, а где их правка.",
+          "direction": "из дверей, с кружкой; мягко, окая"
+        },
+        {
+          "id": "c10.cold_open.009",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Доступ ограничен: чтение. Хорошего дня.",
+          "direction": "ровно, чуть слишком дружелюбно"
+        }
+      ]
+    },
+    {
+      "id": "pairs",
+      "location": "basement_b0_03_morning",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.pairs.001",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Клюёт. Твой запрос — и через полминуты правка. С WS-07. Каждый раз."
+        },
+        {
+          "id": "c10.pairs.002",
+          "speaker": "melnik",
+          "emotion": "angry",
+          "text": "Это корреляция, а не алиби. Запустить запрос и сбегать в серверную — минута."
+        },
+        {
+          "id": "c10.pairs.003",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "За тридцать секунд в Б0 и обратно? Ну-ну. Тогда пропуск покажи."
+        },
+        {
+          "id": "c10.pairs.004",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Хорошо. СКУД. Если B-9000 хоть раз открывал серверную — разговор окончен."
+        }
+      ]
+    },
+    {
+      "id": "alibi",
+      "location": "basement_b0_03_morning",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.alibi.001",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Найдено строк: ноль."
+        },
+        {
+          "id": "c10.alibi.002",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Ноль строк. Ноль в серверной — ни разу. Красиво легло, а?"
+        },
+        {
+          "id": "c10.alibi.003",
+          "speaker": "melnik",
+          "emotion": "scared",
+          "text": "Скрипт ждал, пока ты что-нибудь запустишь. Чтобы правки легли в твой сеанс.",
+          "direction": "тише, глядя в экран"
+        },
+        {
+          "id": "c10.alibi.004",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Коллеги, синхронизируемся. ИТ откатывает правки по аудиту и снимает агента с WS-07."
+        },
+        {
+          "id": "c10.alibi.005",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Отстранение считаю неактуальным. Работай."
+        },
+        {
+          "id": "c10.alibi.006",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "«Извините» — тоже слово. Это я так, для протокола."
+        }
+      ]
+    },
+    {
+      "id": "alibi_ally",
+      "location": "basement_b0_03_morning",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.alibi_ally.001",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Найдено строк: ноль."
+        },
+        {
+          "id": "c10.alibi_ally.002",
+          "speaker": "melnik",
+          "emotion": "smug",
+          "text": "Убедительно. Пока.",
+          "direction": "сухо, без паузы; он помнит, чем ему грозят"
+        },
+        {
+          "id": "c10.alibi_ally.003",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "ИТ откатывает правки по аудиту и снимает агента с WS-07. Приказ я подпишу."
+        },
+        {
+          "id": "c10.alibi_ally.004",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Подпишет он. Вчера бы так подписывал."
+        }
+      ]
+    },
+    {
+      "id": "agent_tokha",
+      "location": "server_room_b0_11",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.agent_tokha.001",
+          "speaker": "tokha",
+          "emotion": "ashamed",
+          "text": "Агент — мой. Снять раньше не мог: они бы сразу поняли.",
+          "direction": "не поднимая глаз; без смешка"
+        },
+        {
+          "id": "c10.agent_tokha.002",
+          "speaker": "tokha",
+          "emotion": "uneasy",
+          "text": "Короч, он сидел тихо и ждал твоих запросов. Хе. Прям как я."
+        },
+        {
+          "id": "c10.agent_tokha.003",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Потом посчитаемся. Снимай."
+        }
+      ]
+    },
+    {
+      "id": "maintenance",
+      "location": "basement_b0_03_day",
+      "music": "twist_low",
+      "lines": [
+        {
+          "id": "c10.maintenance.001",
+          "speaker": "narrator",
+          "text": "В 10:30 экран мигает. Строка состояния ЗЕРКАЛА меняет цвет на ровный, больничный."
+        },
+        {
+          "id": "c10.maintenance.002",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Плановое обслуживание. Данные не изменяются.",
+          "direction": "та же интонация, что и всегда"
+        },
+        {
+          "id": "c10.maintenance.003",
+          "speaker": "narrator",
+          "text": "Чек «Кипятка» с двумя чашками чабреца. Ночные проходы Лыкова. Платёж «Щита» на триста тысяч. Строки тают одна за другой."
+        },
+        {
+          "id": "c10.maintenance.004",
+          "speaker": "dasha",
+          "emotion": "scared",
+          "text": "Так. Стоп. Они чистят. Прямо сейчас, при нас."
+        },
+        {
+          "id": "c10.maintenance.005",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Плановое обслуживание. Данные не изменяются."
+        },
+        {
+          "id": "c10.maintenance.006",
+          "speaker": "narrator",
+          "text": "Карточки на доске бледнеют. На каждой — штамп «РАСХОЖДЕНИЕ»."
+        },
+        {
+          "id": "c10.maintenance.007",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Нужен носитель, до которого «Сияние» не дотянется. Бумага. Или что там у Нины в коробке."
+        }
+      ],
+      "next": "archive"
+    },
+    {
+      "id": "archive",
+      "location": "archive_nina",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.archive.001",
+          "speaker": "narrator",
+          "text": "Архив. Сушки, батарея, рыжий Фикус. На краю стола — жестяная коробка из-под датского печенья."
+        },
+        {
+          "id": "c10.archive.002",
+          "speaker": "nina",
+          "emotion": "scared",
+          "text": "Какой диск, голубчик? Нет никакого диска. По описи не числится.",
+          "direction": "слишком быстро; палец стучит по столу"
+        },
+        {
+          "id": "c10.archive.003",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Нина Фёдоровна. Они стирают. Всё, что мы нашли."
+        },
+        {
+          "id": "c10.archive.004",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "А я, думаешь, не вижу? Я сорок пять лет вижу, как стирают."
+        },
+        {
+          "id": "c10.archive.005",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Ирочка просила: не первому, кто спросит. Первым-то кто угодно спросит."
+        },
+        {
+          "id": "c10.archive.006",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Она в ночь на семнадцатое фамилии правила. Десять опечаток, в час ночи. Зачем, а?"
+        },
+        {
+          "id": "c10.archive.007",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Она всегда с главного начинала. С первой буквы. Мама её так читать учила."
+        }
+      ]
+    },
+    {
+      "id": "abracadabra",
+      "location": "archive_nina",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.abracadabra.001",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "О, акростих? Ща. Склеиваю первые буквы. По порядку, по id."
+        },
+        {
+          "id": "c10.abracadabra.002",
+          "speaker": "narrator",
+          "text": "На экране: НИСПУИРОСН."
+        },
+        {
+          "id": "c10.abracadabra.003",
+          "speaker": "tokha",
+          "emotion": "uneasy",
+          "text": "Абракадабра какая-то, хе."
+        },
+        {
+          "id": "c10.abracadabra.004",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "По порядку, Антоша, — это по какому? Она ночью писала, а не по номерам."
+        },
+        {
+          "id": "c10.abracadabra.005",
+          "speaker": "tokha",
+          "emotion": "neutral",
+          "text": "Короч… id — порядок репликации. Станция офлайн была, пачкой влилось. Жиза."
+        }
+      ]
+    },
+    {
+      "id": "tin",
+      "location": "archive_nina",
+      "music": "dream_lantern",
+      "lines": [
+        {
+          "id": "c10.tin.001",
+          "speaker": "narrator",
+          "text": "На экране: СПРОСИНИНУ."
+        },
+        {
+          "id": "c10.tin.002",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Ирочка велела — только тому, кто её прочтёт.",
+          "direction": "тихо, почти себе"
+        },
+        {
+          "id": "c10.tin.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "«Спроси Нину». Это она мне, голубчик. Знала, что я трусиха."
+        },
+        {
+          "id": "c10.tin.004",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Знала, что вы просто так не отдадите."
+        },
+        {
+          "id": "c10.tin.005",
+          "speaker": "nina",
+          "emotion": "ashamed",
+          "text": "Не отдала бы. Я и Лёве не отдала. Никому не отдала."
+        },
+        {
+          "id": "c10.tin.006",
+          "speaker": "narrator",
+          "text": "Нина постукивает пальцем по столу. Раз. Два. Три."
+        },
+        {
+          "id": "c10.tin.007",
+          "speaker": "nina",
+          "emotion": "angry",
+          "text": "Вот же упрямая девка…",
+          "direction": "с нежностью, сквозь слёзы; на выдохе"
+        },
+        {
+          "id": "c10.tin.008",
+          "speaker": "narrator",
+          "text": "Фикус недовольно спрыгивает с коробки: спал на ней, как на печке. Под крышкой — пожелтевшая копирка и диск с наклейкой «Сокол. 30.09.2016»."
+        },
+        {
+          "id": "c10.tin.009",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Последний ночной бэкап. По описи не числится. И копирка — четыре объяснения. Я печатала."
+        },
+        {
+          "id": "c10.tin.010",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Береги, голубчик. Он восемь лет под котом пролежал — тёплый."
+        }
+      ]
+    },
+    {
+      "id": "import_tokha",
+      "location": "server_room_b0_11",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.import_tokha.001",
+          "speaker": "tokha",
+          "emotion": "neutral",
+          "text": "Давай сюда. «Сияние» берёт носители только в staging. Залью в sokol_stage, сверху — вьюхи на чтение."
+        },
+        {
+          "id": "c10.import_tokha.002",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "Чисто, без дублей. Ридер свой, не ихний. База."
+        },
+        {
+          "id": "c10.import_tokha.003",
+          "speaker": "narrator",
+          "text": "В схеме появляются arch16_persons, arch16_statements, arch16_registry. Архив-2016."
+        }
+      ],
+      "next": "eleventh"
+    },
+    {
+      "id": "import_melnik",
+      "location": "server_room_b0_11",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.import_melnik.001",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Носитель — через меня. Регламент: внешние носители только в staging-контур."
+        },
+        {
+          "id": "c10.import_melnik.002",
+          "speaker": "melnik",
+          "emotion": "smug",
+          "text": "Импорт штатным ридером «Сокола». По срокам укладываемся."
+        },
+        {
+          "id": "c10.import_melnik.003",
+          "speaker": "narrator",
+          "text": "Полоса загрузки ползёт рывками. Ридер старый: кое-где строки ложатся дважды."
+        },
+        {
+          "id": "c10.import_melnik.004",
+          "speaker": "narrator",
+          "text": "В схеме появляются arch16_persons, arch16_statements, arch16_registry. Архив-2016."
+        }
+      ],
+      "next": "eleventh"
+    },
+    {
+      "id": "import_nina",
+      "location": "archive_nina",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.import_nina.001",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Мельника нету, Антоши нету. Ну-ка, голубчик, подвинься. Я этим ридером ещё в пятнадцатом работала."
+        },
+        {
+          "id": "c10.import_nina.002",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Он, правда, строки двоит. Как старый ксерокс. Ничего, пересчитаем."
+        },
+        {
+          "id": "c10.import_nina.003",
+          "speaker": "narrator",
+          "text": "В схеме появляются arch16_persons, arch16_statements, arch16_registry. Архив-2016."
+        }
+      ],
+      "next": "eleventh"
+    },
+    {
+      "id": "eleventh",
+      "location": "basement_b0_03_day",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.eleventh.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Куда легло?"
+        },
+        {
+          "id": "c10.eleventh.002",
+          "speaker": "narrator",
+          "text": "sokol_stage_registry, sokol_stage_statements, sokol_stage_persons. Те самые таблицы из migration_jobs. Одиннадцатого января — DROP."
+        },
+        {
+          "id": "c10.eleventh.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Значит, одиннадцатого и его сотрут. Вместе со всем «Соколом».",
+          "direction": "глядя в расписание; устало"
+        },
+        {
+          "id": "c10.eleventh.004",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Значит, до одиннадцатого надо успеть. Работаем."
+        }
+      ]
+    },
+    {
+      "id": "dupes",
+      "location": "basement_b0_03_day",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.dupes.001",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Тысяча сто. Ровно столько я и подшивала. А тридцать семь — это ридер заикается."
+        },
+        {
+          "id": "c10.dupes.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Двойников выкинули. Теперь — что пропало."
+        }
+      ]
+    },
+    {
+      "id": "reading",
+      "location": "basement_b0_03_day",
+      "music": "shore_silence",
+      "lines": [
+        {
+          "id": "c10.reading.001",
+          "speaker": "narrator",
+          "text": "Одиннадцать строк. Девятая — дело 15-0219, номер 3312. «Ким Д. С., 13 л.»."
+        },
+        {
+          "id": "c10.reading.002",
+          "speaker": "dasha",
+          "emotion": "scared",
+          "text": "…Это я."
+        },
+        {
+          "id": "c10.reading.003",
+          "speaker": "nina",
+          "emotion": "ashamed",
+          "text": "Я печатала. Ночью, двадцатого. Ты в валенках сидела, на табуретке."
+        },
+        {
+          "id": "c10.reading.004",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Дайте. Я сама прочту."
+        },
+        {
+          "id": "c10.reading.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Объяснение. Ким Дарья Сергеевна, тринадцать лет. Принял майор Ратников Л. Б.",
+          "direction": "читает ровно, взрослым голосом, как протокол"
+        },
+        {
+          "id": "c10.reading.006",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "«Я проснулась, собака лаяла. Из окна видно причал».",
+          "direction": "читает ровно, взрослым голосом, как протокол"
+        },
+        {
+          "id": "c10.reading.007",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "«Там были две машины без фар. Одну столкнули в воду».",
+          "direction": "читает ровно, взрослым голосом, как протокол"
+        },
+        {
+          "id": "c10.reading.008",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "«Она сначала плавала, потом нет».",
+          "direction": "голос на секунду проседает, выравнивает"
+        },
+        {
+          "id": "c10.reading.009",
+          "speaker": "narrator",
+          "text": "Даша замолкает. Жвачка за щекой не двигается."
+        },
+        {
+          "id": "c10.reading.010",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "«Я разбудила папу. Потом дядя с усами пришёл к нам, держался за косяк».",
+          "direction": "читает ровно, взрослым голосом, как протокол"
+        },
+        {
+          "id": "c10.reading.011",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "«У него на пальце кусочка не было».",
+          "direction": "медленно"
+        },
+        {
+          "id": "c10.reading.012",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "«Он сказал папе — это прожектора».",
+          "direction": "читает ровно, взрослым голосом, как протокол"
+        },
+        {
+          "id": "c10.reading.013",
+          "speaker": "dasha",
+          "emotion": "broken",
+          "text": "«Это были не прожектора. Я не вру».",
+          "direction": "последние три слова — детской интонацией, сама того не желая"
+        },
+        {
+          "id": "c10.reading.014",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Эту строчку я два раза перебивала. Лёва велел — без «я не вру». А я оставила."
+        },
+        {
+          "id": "c10.reading.015",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "А дядя Лёва мне потом сказал: приснилось. И конфету дал. «Мишку на Севере»."
+        },
+        {
+          "id": "c10.reading.016",
+          "speaker": "dasha",
+          "emotion": "broken",
+          "text": "Одиннадцать лет. Одиннадцать лет я думала, что приснилось."
+        },
+        {
+          "id": "c10.reading.017",
+          "speaker": "narrator",
+          "text": "На мониторе — та же строка. Шрифт ЗЕРКАЛА ровный, как голос МИРЫ. Детские слова в нём выглядят чужими."
+        },
+        {
+          "id": "c10.reading.018",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Палец. Он держался за косяк. Я руку видела, под лампой. Не лицо — руку."
+        },
+        {
+          "id": "c10.reading.019",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Значит, приметы, голубчик. Их тоже можно сличить с диском."
+        },
+        {
+          "id": "c10.reading.020",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Он знал, что я не вру?",
+          "direction": "тихо, не Нине — Нолю"
+        }
+      ],
+      "choices": [
+        {
+          "id": "knew",
+          "text": "Знал.",
+          "say": "Знал, Даша. Поэтому и вынул лист из журнала.",
+          "goto": "reading_knew",
+          "flag": "dasha_truth=knew"
+        },
+        {
+          "id": "feared",
+          "text": "Он боялся.",
+          "say": "Он боялся. У него «знать» и «бояться» давно одно и то же.",
+          "goto": "reading_feared",
+          "flag": "dasha_truth=feared"
+        }
+      ]
+    },
+    {
+      "id": "reading_knew",
+      "location": "basement_b0_03_day",
+      "music": "shore_silence",
+      "lines": [
+        {
+          "id": "c10.reading_knew.001",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Знал. Ну да. Взрослые всегда знают."
+        },
+        {
+          "id": "c10.reading_knew.002",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ладно. Потом. Сейчас — приметы."
+        }
+      ]
+    },
+    {
+      "id": "reading_feared",
+      "location": "basement_b0_03_day",
+      "music": "shore_silence",
+      "lines": [
+        {
+          "id": "c10.reading_feared.001",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Боялся. Удобно. Бояться — это ведь не врать, да?"
+        },
+        {
+          "id": "c10.reading_feared.002",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ладно. Потом. Сейчас — приметы."
+        }
+      ]
+    },
+    {
+      "id": "finger",
+      "location": "basement_b0_03_day",
+      "music": "twist_low",
+      "lines": [
+        {
+          "id": "c10.finger.001",
+          "speaker": "narrator",
+          "text": "Двадцать семь строк. Через «!=» вышло бы двадцать одна. Шесть человек: примета была — стала NULL."
+        },
+        {
+          "id": "c10.finger.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Двадцать два-четырнадцать. Бурцев. «Отсутствует ногтевая фаланга 4-го пальца левой кисти»."
+        },
+        {
+          "id": "c10.finger.003",
+          "speaker": "nina",
+          "emotion": "scared",
+          "text": "И пятеро из его наряда. Всех одной ночью почистили."
+        },
+        {
+          "id": "c10.finger.004",
+          "speaker": "narrator",
+          "text": "На доске — портрет Бурцева с третьего дела. Левая кисть на первом плане. Безымянный палец короче остальных. Всё это время — на виду."
+        },
+        {
+          "id": "c10.finger.005",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Дядя с усами. Держался за косяк. Клюёт, Ноль. По-настоящему клюёт."
+        },
+        {
+          "id": "c10.finger.006",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Стёрли не примету, голубчик. Стёрли девочку, которая её видела."
+        }
+      ],
+      "next": "granin_call"
+    },
+    {
+      "id": "granin_call",
+      "location": "basement_b0_03_day",
+      "music": "twist_low",
+      "lines": [
+        {
+          "id": "c10.granin_call.001",
+          "speaker": "narrator",
+          "text": "Звонит городской. На определителе — приёмная «Сияния»."
+        },
+        {
+          "id": "c10.granin_call.002",
+          "speaker": "granin",
+          "emotion": "happy",
+          "text": "С наступающим тебя! Понимаешь, я по-человечески звоню. Без протокола.",
+          "direction": "гремящий бас, раскатисто; пауза «на аплодисменты»"
+        },
+        {
+          "id": "c10.granin_call.003",
+          "speaker": "granin",
+          "emotion": "smug",
+          "text": "Ты у нас по гранту. По договору. Пункт четыре-два помнишь? Финализация — на тебе."
+        },
+        {
+          "id": "c10.granin_call.004",
+          "speaker": "granin",
+          "emotion": "neutral",
+          "text": "Понимаешь, по-человечески: подпиши финализацию — и пункт четыре-два исчезнет. Долги тоже."
+        },
+        {
+          "id": "c10.granin_call.005",
+          "speaker": "granin",
+          "emotion": "smug",
+          "text": "Образовательный кредит, «Северный кредит», четыреста двенадцать тысяч. Для города — мелочь."
+        },
+        {
+          "id": "c10.granin_call.006",
+          "speaker": "granin",
+          "emotion": "cold",
+          "text": "Одиннадцатого, в тринадцать ноль-ноль. Подумай. Я умею ждать.",
+          "direction": "без раскатов, впервые тихо"
+        },
+        {
+          "id": "c10.granin_call.007",
+          "speaker": "narrator",
+          "text": "Гудки."
+        },
+        {
+          "id": "c10.granin_call.008",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Кто это был? …Так. Стоп. Не отвечай. По лицу вижу."
+        }
+      ]
+    },
+    {
+      "id": "forgeries",
+      "location": "basement_b0_03_day",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c10.forgeries.001",
+          "speaker": "narrator",
+          "text": "Три строки: 5203, 5204, 5207. В ПБД есть, на диске нет."
+        },
+        {
+          "id": "c10.forgeries.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Кравец Н. Н. «Видел Сазонова в аэропорту». Карточку завели двадцатого ноября, в 02:22. Через два дня после Ирины."
+        },
+        {
+          "id": "c10.forgeries.003",
+          "speaker": "nina",
+          "emotion": "angry",
+          "text": "Мёртвая душа, голубчик. Ни прописки, ни телефона, ни работы. Из воздуха слепили."
+        },
+        {
+          "id": "c10.forgeries.004",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Лапина — «грузил чемоданы». Умерла в девятнадцатом. Возразить не может."
+        },
+        {
+          "id": "c10.forgeries.005",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "А Зина Пахомова «деньги выдала лично». Зину я знала. Она сказала бы «под роспись»."
+        },
+        {
+          "id": "c10.forgeries.006",
+          "speaker": "narrator",
+          "text": "В журнале шестнадцатого года под 3320 — «запрос в ГИБДД», под 3322 — «рапорт о ДТП». Объяснений там не было никогда."
+        },
+        {
+          "id": "c10.forgeries.007",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Протокол. Пока «Сияние» и это не помыло."
         }
       ]
     },
     {
       "id": "outro",
+      "location": "archive_nina",
+      "music": "desk_low",
       "lines": [
         {
           "id": "c10.outro.001",
           "speaker": "narrator",
-          "text": "Последний день года кончается. В коробке из-под печенья больше нет того, что в ней лежало."
+          "text": "Штамп «СВЕРЕНО». За окном подвала темнеет. Последний вечер года."
+        },
+        {
+          "id": "c10.outro.002",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Диск — в коробку. Копирку — в коробку. Коробку — Фикусу. Под котом не ищут."
+        },
+        {
+          "id": "c10.outro.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Одиннадцатого они удалят staging. И всё, что на нём."
+        },
+        {
+          "id": "c10.outro.004",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Удалят. Если мы раньше не вернём на место. Одиннадцать объяснений, двадцать семь примет, три подделки."
+        },
+        {
+          "id": "c10.outro.005",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Вернуть в ПБД? Это ж запись. INSERT, UPDATE. Кто нам даст?"
+        },
+        {
+          "id": "c10.outro.006",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "А нам и не надо, чтобы давали. Нам надо, чтобы руки помнили."
+        },
+        {
+          "id": "c10.outro.007",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "А теперь, голубчик, порепетируем. Чтобы одиннадцатого руки не дрожали.",
+          "direction": "тепло, с хитринкой; финальная реплика дела"
+        },
+        {
+          "id": "c10.outro.008",
+          "speaker": "narrator",
+          "text": "Коробка из-под печенья опустела. Всё, что в ней лежало, теперь в базе. Пока."
         }
       ]
     }
