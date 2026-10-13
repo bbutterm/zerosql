@@ -1,45 +1,19 @@
 import type { Database } from "sql.js";
 import type { QueryResult } from "@/types/database";
-import type { ValidationRule, ValidationOutcome } from "@/types/mission";
+import type { ValidationRule, ValidationOutcome, CellValue } from "@/types/mission";
+import type { BlankKind, DatetimePrecision, ValidationContext } from "@/types/case";
 import { executeQuery } from "./database";
+import { normalizeCell, cellsEqual, valuesMatch } from "./values";
+import { cardMatches, isSourceCard } from "./board";
+
+// Нормализация живёт в values.ts; реэкспорт — для прежних импортов из validator
+export { normalizeCell, cellsEqual } from "./values";
+export type { ValidationContext } from "@/types/case";
 
 function normalizeRows(rows: unknown[][]): string[][] {
   return rows
     .map((row) => row.map(normalizeCell))
     .sort((a, b) => a.join("|").localeCompare(b.join("|")));
-}
-
-const NUMERIC_TEXT = /^-?\d+(?:\.\d+)?$/;
-const NULL_MARK = "\u2205";
-
-function canonicalNumber(n: number): string {
-  return String(Math.round(n * 100) / 100);
-}
-
-/**
- * Приводит ячейку к строке для сравнения: числа — с точностью до сотых
- * (и '47' == 47), строки — без регистра, пробелов по краям и различия е/ё.
- */
-export function normalizeCell(value: unknown): string {
-  if (value === null || value === undefined) return NULL_MARK;
-  if (typeof value === "number") return canonicalNumber(value);
-  if (value instanceof Uint8Array) return `blob:${value.length}`;
-  const text = String(value).trim();
-  if (NUMERIC_TEXT.test(text)) return canonicalNumber(Number(text));
-  return text.toLowerCase().replace(/ё/g, "е");
-}
-
-function asNumber(value: unknown): number | null {
-  if (typeof value === "number") return value;
-  if (typeof value === "string" && NUMERIC_TEXT.test(value.trim())) return Number(value.trim());
-  return null;
-}
-
-export function cellsEqual(a: unknown, b: unknown, tolerance = 0.01): boolean {
-  const na = asNumber(a);
-  const nb = asNumber(b);
-  if (na !== null && nb !== null) return Math.abs(na - nb) <= tolerance + 1e-9;
-  return normalizeCell(a) === normalizeCell(b);
 }
 
 function findColumns(result: QueryResult, names: string[] | undefined): number[] {
@@ -80,10 +54,55 @@ function referenceError(): ValidationOutcome {
   return { passed: false, message: "Ошибка в эталонном запросе. Сообщите разработчику." };
 }
 
+function matchOptions(rule: { tolerance?: number; precision?: DatetimePrecision }) {
+  return {
+    ...(rule.tolerance !== undefined ? { tolerance: rule.tolerance } : {}),
+    ...(rule.precision !== undefined ? { precision: rule.precision } : {}),
+  };
+}
+
+/** Есть ли среди значений совпадающее с ожидаемым по правилам типа пропуска */
+function someMatches(
+  kind: BlankKind,
+  expected: CellValue,
+  values: Iterable<string>,
+  rule: { tolerance?: number; precision?: DatetimePrecision }
+): boolean {
+  if (kind === "text" || kind === "person") {
+    const key = normalizeCell(expected);
+    for (const v of values) if (normalizeCell(v) === key) return true;
+    return false;
+  }
+  const options = matchOptions(rule);
+  for (const v of values) if (valuesMatch(kind, expected, v, options)) return true;
+  return false;
+}
+
+/** Существует ли представление (в main или temp) */
+function viewExists(db: Database, name: string): boolean {
+  const sql =
+    "SELECT 1 FROM sqlite_master WHERE type = 'view' AND lower(name) = lower(?) " +
+    "UNION ALL SELECT 1 FROM sqlite_temp_master WHERE type = 'view' AND lower(name) = lower(?) LIMIT 1";
+  const stmt = db.prepare(sql);
+  try {
+    stmt.bind([name, name]);
+    return stmt.step();
+  } finally {
+    stmt.free();
+  }
+}
+
+const quoteIdent = (name: string) => `"${name.replace(/"/g, '""')}"`;
+
+/**
+ * Проверяет результат запроса правилом. ctx — состояние стола для правил
+ * pin / seen / slot (без него они не проходят); остальным правилам не нужен.
+ */
 export function validate(
   rule: ValidationRule,
   result: QueryResult,
-  db: Database
+  db: Database,
+  ctx: ValidationContext = {}
 ): ValidationOutcome {
   if (result.error) {
     return { passed: false, message: "Запрос вернул ошибку. Проверьте синтаксис." };
@@ -229,7 +248,7 @@ export function validate(
 
     case "compound": {
       for (const subRule of rule.rules) {
-        const sub = validate(subRule, result, db);
+        const sub = validate(subRule, result, db, ctx);
         if (!sub.passed) {
           return sub;
         }
@@ -240,7 +259,7 @@ export function validate(
     case "any_of": {
       let lastFailMessage = "";
       for (const subRule of rule.rules) {
-        const sub = validate(subRule, result, db);
+        const sub = validate(subRule, result, db, ctx);
         if (sub.passed) {
           return { passed: true, message: rule.successMessage };
         }
@@ -370,10 +389,78 @@ export function validate(
     }
 
     case "not": {
-      const sub = validate(rule.rule, result, db);
+      const sub = validate(rule.rule, result, db, ctx);
       return sub.passed
         ? { passed: false, message: rule.message }
         : { passed: true, message: "Проверка пройдена." };
     }
+
+    case "table_state": {
+      const state = executeQuery(db, rule.query);
+      if (state.error) return referenceError();
+      const sub = validate(rule.rule, state, db, ctx);
+      return sub.passed
+        ? { passed: true, message: "Состояние базы — как нужно." }
+        : { passed: false, message: "Данные в базе пока не в нужном состоянии." };
+    }
+
+    case "view_match": {
+      if (!viewExists(db, rule.view)) {
+        return { passed: false, message: `Представления «${rule.view}» нет. Создайте его: CREATE VIEW ${rule.view} AS …` };
+      }
+      const view = executeQuery(db, `SELECT * FROM ${quoteIdent(rule.view)}`);
+      if (view.error) return { passed: false, message: `Представление «${rule.view}» не читается: ${view.error}` };
+      if (rule.referenceQuery) {
+        const rows = validate({ type: "rows_match", referenceQuery: rule.referenceQuery, ordered: rule.ordered }, view, db, ctx);
+        if (!rows.passed) return { passed: false, message: `В представлении «${rule.view}»: ${lowerFirst(rows.message)}` };
+      }
+      if (rule.rule) {
+        const sub = validate(rule.rule, view, db, ctx);
+        if (!sub.passed) return { passed: false, message: `В представлении «${rule.view}»: ${lowerFirst(sub.message)}` };
+      }
+      return { passed: true, message: `Представление «${rule.view}» собрано верно.` };
+    }
+
+    case "pin": {
+      const cards = (ctx.pins ?? []).filter((c) => (rule.includeGhosts || isSourceCard(c)) && cardMatches(c, rule.where));
+      const need = Math.max(1, Math.floor(rule.min ?? 1));
+      if (cards.length < need) {
+        return { passed: false, message: rule.message ?? `Нужных карточек на доске: ${cards.length} из ${need}.` };
+      }
+      if (rule.sources !== undefined) {
+        const classes = new Set(cards.map((c) => c.sourceClass).filter((s) => s !== undefined));
+        if (classes.size < rule.sources) {
+          return {
+            passed: false,
+            message: rule.message ?? `Независимых источников: ${classes.size} из ${rule.sources}.`,
+          };
+        }
+      }
+      return { passed: true, message: "Карточки на доске." };
+    }
+
+    case "seen": {
+      const seen = ctx.seen;
+      const found = !!seen && someMatches(rule.kind ?? "text", rule.value, seen, rule);
+      return found
+        ? { passed: true, message: "Значение уже встречалось в результатах." }
+        : { passed: false, message: rule.message ?? "Это значение ещё не встречалось в результатах." };
+    }
+
+    case "slot": {
+      const filled = ctx.slots?.[rule.slot];
+      if (filled === undefined || filled.trim() === "") {
+        return { passed: false, message: rule.message ?? "Слот не заполнен." };
+      }
+      const expected = Array.isArray(rule.value) ? rule.value : [rule.value];
+      const ok = expected.some((v) => someMatches(rule.kind ?? "text", v, [filled], rule));
+      return ok
+        ? { passed: true, message: "Слот заполнен верно." }
+        : { passed: false, message: rule.message ?? "В слоте не то значение." };
+    }
   }
+}
+
+function lowerFirst(text: string): string {
+  return text ? text[0].toLowerCase() + text.slice(1) : text;
 }

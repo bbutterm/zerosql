@@ -52,10 +52,10 @@ export const objective = (patch: Partial<CaseObjective> & Pick<CaseObjective, "i
 export const PROTOCOL: ProtocolDef = {
   statements: ["Деньги получил {payee} из города {city}.", "Сумма — {amount}, посредник — {broker}."],
   blanks: [
-    { id: "payee", options: ["Анна Лебедева", "Борис Ёлкин", "Вера Котова"], answer: "Борис Ёлкин" },
-    { id: "city", options: ["Северск", "Южный"], answer: "Северск" },
-    { id: "amount", options: ["80", "95.25", "120.5"], answer: "80" },
-    { id: "broker", options: ["Глеб Орлов", "Анна Лебедева"], answer: "Глеб Орлов", requireSeen: false },
+    { id: "payee", kind: "person", options: ["Анна Лебедева", "Борис Ёлкин", "Вера Котова"], answer: "Борис Ёлкин" },
+    { id: "city", kind: "text", options: ["Северск", "Южный"], answer: "Северск" },
+    { id: "amount", kind: "number", options: ["80", "95.25", "120.5"], answer: "80" },
+    { id: "broker", kind: "person", options: ["Глеб Орлов", "Анна Лебедева"], answer: "Глеб Орлов", requireSeen: false },
   ],
   successScene: "outro",
   failureLines: ["Не сходится.", "Ещё раз.", "Думай."],

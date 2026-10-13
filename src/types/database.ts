@@ -4,7 +4,13 @@ export interface SqlErrorHelp {
   suggestion?: string;
 }
 
-export type QueryErrorKind = "sql" | "locked_table" | "read_only";
+/**
+ * sql — ошибка SQLite; locked_table — таблица ещё закрыта по сюжету;
+ * read_only — запись или DDL вне белого списка дела; forbidden — команда
+ * запрещена всегда (ATTACH, PRAGMA кроме table_info/table_xinfo/foreign_key_list,
+ * квалификаторы main./temp., TEMP VIEW).
+ */
+export type QueryErrorKind = "sql" | "locked_table" | "read_only" | "forbidden";
 
 export interface QueryResult {
   columns: string[];

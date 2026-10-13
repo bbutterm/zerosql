@@ -33,3 +33,23 @@ export function findToken(sql: string, token: string): { from: number; to: numbe
   const line = sql.slice(0, m.index).split("\n").length;
   return { from: m.index, to: m.index + m[0].length, line };
 }
+
+/** Минимум от редактора, который нужен для отметки ошибки */
+interface ErrorMarkable {
+  markError?: (token: string, message: string) => number | null;
+  clearError?: () => void;
+}
+
+/**
+ * Отметить ошибку результата прямо в запросе: пунктир --alarm под словом и подсказка при наведении.
+ * Результат без ошибки (или отказ) снимает отметку.
+ */
+export function markResultError(editor: ErrorMarkable | null | undefined, result: QueryResult | null | undefined): void {
+  if (!editor) return;
+  const token = errorToken(result);
+  if (!token || !result) {
+    editor.clearError?.();
+    return;
+  }
+  editor.markError?.(token, result.errorHelp?.explanation ?? result.error ?? "Ошибка");
+}

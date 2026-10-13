@@ -163,7 +163,7 @@ export function SchemaPanel({
             const isNew = newTables.includes(table.name);
             const key = `t:${table.name}`;
             return (
-              <li key={key} role="treeitem" aria-level={1} aria-expanded={isExpanded} {...item(key)} className={focusRing}>
+              <li key={key} role="treeitem" aria-level={1} aria-expanded={isExpanded} aria-selected={key === activeKey} {...item(key)} className={focusRing}>
                 <div
                   onMouseEnter={isNew ? () => notice(table.name) : undefined}
                   className={cn(
@@ -201,7 +201,7 @@ export function SchemaPanel({
                         const fk = fkByColumn.get(`${table.name}.${col.name}`);
                         const ckey = `c:${table.name}.${col.name}`;
                         return (
-                          <li key={ckey} role="treeitem" aria-level={2} {...item(ckey)} className={focusRing}>
+                          <li key={ckey} role="treeitem" aria-level={2} aria-selected={ckey === activeKey} {...item(ckey)} className={focusRing}>
                             <div className={cn("zs-row", rowBox, "pl-9 hover:bg-scr-raise")}>
                               <span
                                 onClick={() => insert(col.name)}
@@ -240,6 +240,7 @@ export function SchemaPanel({
                 <li
                   role="treeitem"
                   aria-level={1}
+                  aria-selected={key === activeKey}
                   aria-disabled
                   aria-label={revealLockedNames ? `${table.name}: нет допуска` : "Засекреченная таблица: нет допуска"}
                   {...item(key)}
@@ -266,7 +267,7 @@ export function SchemaPanel({
               {relations.map((fk) => {
                 const key = `r:${fk.from}.${fk.fromColumn}`;
                 return (
-                  <li key={key} role="treeitem" aria-level={1} {...item(key)} className={focusRing}>
+                  <li key={key} role="treeitem" aria-level={1} aria-selected={key === activeKey} {...item(key)} className={focusRing}>
                     <div
                       onClick={() => insert(joinOf(fk))}
                       title={onInsert ? "Вставить JOIN по этой связи" : undefined}

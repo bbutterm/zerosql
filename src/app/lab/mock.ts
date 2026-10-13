@@ -1,10 +1,10 @@
 /**
- * Мок-данные для лаборатории компонентов (/lab).
- * Только для визуальной проверки: сюжет, имена и цифры — черновые.
+ * Сюжетные данные лаборатории компонентов (/lab): персонажи, сцены, улики, задания, бланк.
+ * Мир у них один — ночь в ЦОД из world.ts. Имена, пропуска и время здесь совпадают с журналом,
+ * а распечатки улик — это вывод их же sourceQuery (проверяет src/__tests__/lab/world.test.ts).
  */
 
 import type { CharacterDef, Scene } from "@/types/story";
-import type { ForeignKey, QueryResult, TableInfo } from "@/types/database";
 import type { HandbookEntry } from "@/types/case";
 import type {
   EvidenceCardData,
@@ -105,15 +105,21 @@ export const SCENES: Record<string, Scene> = {
         text: "Это нагрузка! Южане арендовали стойки под майнинг. Всё есть в отчётах.",
       },
     ],
+    // Варианты — это слова Ноль, а не команды меню
     choices: [
-      { id: "ask-shift", text: "Спросить Ахметова, кто ещё был на смене", goto: "present" },
+      { id: "ask-shift", text: "Кто ещё был на смене, Тимур?", goto: "present" },
       {
         id: "show-gate",
-        text: "Показать журнал: его карта открывала шлюз в 02:10",
+        text: "В 02:10 ваша карта открыла машинный зал. Где вы были до этого?",
         requires: ["ev-akhmetov-gate"],
         goto: "present",
       },
-      { id: "let-go", text: "Отпустить его. Сначала — данные", flag: "akhmetov_released" },
+      {
+        id: "let-go",
+        text: "Идите. Сначала я посмотрю данные.",
+        say: "Идите, Тимур. Сначала я посмотрю данные.",
+        flag: "akhmetov_released",
+      },
     ],
   },
   present: {
@@ -199,17 +205,17 @@ export const EVIDENCE: EvidenceCardData[] = [
     title: "Пропуск Рябова, 01:52",
     text: "Карта охранника Д. Рябова открыла северный шлюз ЦОД через пять минут после Лапина. По словам Ахметова, Рябов ушёл в полночь.",
     sourceQuery:
-      "SELECT * FROM access_log\nWHERE badge_id = 'B-0417'\n  AND entered_at > '2026-12-14 00:00';",
+      "SELECT id, badge_id, gate,\n       strftime('%H:%M', entered_at) AS entered\nFROM access_log\nWHERE entered_at BETWEEN '2026-12-14 01:45'\n                     AND '2026-12-14 02:15'\nORDER BY entered_at;",
     source: "access_log",
     queryNo: 14,
-    foundAt: "02:31",
+    foundAt: "02:36",
     at: "01:52",
     excerpt: {
-      columns: ["id", "badge_id", "gate", "entered_at"],
+      columns: ["id", "badge_id", "gate", "entered"],
       rows: [
-        [1077, "B-0233", "сев. шлюз", "01:47"],
-        [1078, "B-0417", "сев. шлюз", "01:52"],
-        [1079, "B-0519", "маш. зал", "02:10"],
+        [1059, "B-0233", "северный шлюз", "01:47"],
+        [1060, "B-0417", "северный шлюз", "01:52"],
+        [1061, "B-0519", "машинный зал", "02:10"],
       ],
       mark: [1, 1],
     },
@@ -219,20 +225,20 @@ export const EVIDENCE: EvidenceCardData[] = [
     id: "ev-cameras",
     kind: "lead",
     title: "Кто подписал заявку на камеры?",
-    text: "Камеры северного шлюза отключены с 01:30 до 03:00 по заявке. Подпись под заявкой неразборчива.",
+    text: "Камеры северного шлюза отключены с 02:11 до 03:00 по заявке. Подпись под заявкой неразборчива.",
     source: "реестр заявок ЦОД",
-    foundAt: "02:18",
-    at: "01:30",
+    foundAt: "02:37",
+    at: "02:11",
   },
   {
     id: "ev-heat",
     kind: "document",
     title: "Сводка теплосети",
-    text: "В ночь исчезновения сброс тёплой воды в залив вырос с 41 до 86 МВт. Плановых работ в журнале нет.",
+    text: "В ночь исчезновения сброс тёплой воды через клапан № 3 вырос с 41 до 86 МВт. Плановых работ в журнале нет.",
     sourceQuery: "SELECT measured_at, megawatts\nFROM heat_output\nORDER BY megawatts DESC LIMIT 3;",
     source: "ЦОД «Северный узел»",
     queryNo: 9,
-    foundAt: "02:05",
+    foundAt: "02:33",
     at: "02:00",
   },
   {
@@ -243,7 +249,7 @@ export const EVIDENCE: EvidenceCardData[] = [
     camera: "КАМ 07 СЕВ.ШЛЮЗ 14-12-2026 02:10:44",
     caption: "Северный шлюз, последний кадр перед отключением",
     source: "видеоархив ЦОД",
-    foundAt: "02:20",
+    foundAt: "02:38",
     at: "02:10",
   },
   {
@@ -253,7 +259,7 @@ export const EVIDENCE: EvidenceCardData[] = [
     text: "Кравец сфотографировала пар над полыньёй в 02:05. На льду у кромки виден луч фонаря.",
     caption: "пар над полыньёй, 02:05",
     source: "архив Л. Кравец",
-    foundAt: "01:58",
+    foundAt: "02:39",
     at: "02:05",
   },
   {
@@ -261,11 +267,11 @@ export const EVIDENCE: EvidenceCardData[] = [
     kind: "audio",
     title: "Звонок в 02:12",
     text: "— Открывай третий. — Сейчас? — Сейчас. Потом ветер, четырнадцать секунд тишины.",
-    duration: "00:14",
+    duration: "00:41",
     sourceQuery: "SELECT * FROM calls\nWHERE caller = '+7 914 220-31-07'\n  AND started_at LIKE '2026-12-14 02:%';",
     source: "calls",
     queryNo: 17,
-    foundAt: "01:44",
+    foundAt: "02:41",
     at: "02:12",
   },
   {
@@ -284,256 +290,24 @@ export const EXTRA_EVIDENCE: EvidenceCardData = {
   kind: "record",
   title: "Ручное открытие клапана 3",
   text: "В 01:58 клапан сброса № 3 переведён в ручной режим с терминала машинного зала.",
-  sourceQuery: "SELECT * FROM heat_output\nWHERE outlet = 'клапан-3'\n  AND measured_at BETWEEN '2026-12-14 01:50' AND '2026-12-14 02:10';",
+  sourceQuery:
+    "SELECT strftime('%H:%M', measured_at) AS measured,\n       outlet, megawatts\nFROM heat_output\nWHERE outlet = 'клапан-3'\n  AND measured_at BETWEEN '2026-12-14 01:55'\n                      AND '2026-12-14 01:58'\nORDER BY measured_at;",
   source: "heat_output",
   queryNo: 21,
-  foundAt: "02:50",
+  foundAt: "02:46",
   at: "01:58",
   excerpt: {
-    columns: ["measured_at", "outlet", "megawatts"],
+    columns: ["measured", "outlet", "megawatts"],
     rows: [
       ["01:55", "клапан-3", 41.2],
+      ["01:56", "клапан-3", 41.1],
+      ["01:57", "клапан-3", 41.2],
       ["01:58", "клапан-3", 86.4],
     ],
-    mark: [1, 2],
+    mark: [3, 2],
   },
   isNew: true,
 };
-
-/* ---------- Схема ---------- */
-
-const col = (name: string, type: string, pk = false, notnull = false) => ({ name, type, pk, notnull });
-
-export const SCHEMA: TableInfo[] = [
-  {
-    name: "residents",
-    columns: [
-      col("id", "INTEGER", true, true),
-      col("full_name", "TEXT", false, true),
-      col("born", "DATE"),
-      col("address", "TEXT"),
-      col("phone", "TEXT"),
-      col("employer", "TEXT"),
-    ],
-  },
-  {
-    name: "staff",
-    columns: [
-      col("id", "INTEGER", true, true),
-      col("resident_id", "INTEGER", false, true),
-      col("badge_id", "TEXT", false, true),
-      col("position", "TEXT"),
-      col("shift", "TEXT"),
-    ],
-  },
-  {
-    name: "access_log",
-    columns: [
-      col("id", "INTEGER", true, true),
-      col("badge_id", "TEXT", false, true),
-      col("gate", "TEXT", false, true),
-      col("entered_at", "TEXT", false, true),
-      col("exited_at", "TEXT"),
-    ],
-  },
-  {
-    name: "heat_output",
-    columns: [
-      col("id", "INTEGER", true, true),
-      col("measured_at", "TEXT", false, true),
-      col("megawatts", "REAL", false, true),
-      col("outlet", "TEXT"),
-    ],
-  },
-  {
-    name: "calls",
-    columns: [
-      col("id", "INTEGER", true, true),
-      col("caller", "TEXT", false, true),
-      col("callee", "TEXT", false, true),
-      col("started_at", "TEXT", false, true),
-      col("seconds", "INTEGER"),
-    ],
-  },
-  {
-    name: "vehicles",
-    columns: [
-      col("id", "INTEGER", true, true),
-      col("plate", "TEXT", false, true),
-      col("owner_id", "INTEGER"),
-      col("model", "TEXT"),
-    ],
-  },
-  {
-    name: "bank_transfers",
-    columns: [col("id", "INTEGER", true), col("from_account", "TEXT"), col("to_account", "TEXT"), col("amount", "REAL")],
-  },
-  {
-    name: "sealed_cases",
-    columns: [col("id", "INTEGER", true), col("title", "TEXT"), col("closed_at", "TEXT")],
-  },
-];
-
-export const FOREIGN_KEYS: ForeignKey[] = [
-  { from: "staff", fromColumn: "resident_id", to: "residents", toColumn: "id" },
-  { from: "access_log", fromColumn: "badge_id", to: "staff", toColumn: "badge_id" },
-  { from: "vehicles", fromColumn: "owner_id", to: "residents", toColumn: "id" },
-  { from: "bank_transfers", fromColumn: "from_account", to: "residents", toColumn: "id" },
-];
-
-export const UNLOCKED_TABLES = ["residents", "staff", "access_log", "heat_output", "calls", "vehicles"];
-
-export const TABLE_NOTES: Record<string, string> = {
-  residents: "Жители города: ФИО, адрес, телефон, работодатель.",
-  staff: "Сотрудники ЦОД и их пропуска.",
-  access_log: "Журнал пропусков: кто, где и когда прошёл.",
-  heat_output: "Телеметрия сброса тепла в залив.",
-  calls: "Звонки по городу (метаданные, без записи).",
-  vehicles: "Зарегистрированный транспорт.",
-};
-
-/* ---------- Результат запроса: ~40 строк с NULL и числами ---------- */
-
-const NAMES = [
-  "Игорь Лапин",
-  "Дмитрий Рябов",
-  "Тимур Ахметов",
-  "Олег Смирнов",
-  "Анна Ветрова",
-  "Сергей Голубев",
-  "Марина Ефимова",
-  "Павел Норкин",
-  "Ксения Белых",
-  "Руслан Хайруллин",
-  "Евгения Тарасова",
-  "Николай Зуев",
-];
-const GATES = ["северный шлюз", "главный вход", "погрузочная", "машинный зал"];
-const NOTES = [
-  null,
-  "плановый обход",
-  null,
-  "сопровождение подрядчика по замене теплообменника на линии №3, акт подписан задним числом",
-  null,
-  "без отметки поста",
-  "ремонт освещения у причала",
-];
-
-function seeded(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) % 4294967296;
-    return s / 4294967296;
-  };
-}
-
-function timeAt(minutesFromStart: number): string {
-  // старт: 2026-12-13 22:00
-  const total = 22 * 60 + minutesFromStart;
-  const day = total >= 24 * 60 ? 14 : 13;
-  const m = total % (24 * 60);
-  const hh = String(Math.floor(m / 60)).padStart(2, "0");
-  const mm = String(m % 60).padStart(2, "0");
-  return `2026-12-${day} ${hh}:${mm}`;
-}
-
-export const RESULT_ROWS: QueryResult = (() => {
-  const r = seeded(14);
-  const rows: unknown[][] = [];
-  let t = 0;
-  for (let i = 0; i < 42; i++) {
-    t += Math.floor(r() * 12) + 1;
-    const name = NAMES[Math.floor(r() * NAMES.length)];
-    const inside = Math.floor(r() * 140) + 3;
-    const stillInside = r() < 0.17;
-    const badge = `B-${String(200 + Math.floor(r() * 400)).padStart(4, "0")}`;
-    rows.push([
-      1040 + i,
-      name,
-      r() < 0.06 ? null : badge,
-      GATES[Math.floor(r() * GATES.length)],
-      timeAt(t),
-      stillInside ? null : timeAt(t + inside),
-      stillInside ? null : inside,
-      Math.round((-31 - r() * 9) * 10) / 10,
-      NOTES[Math.floor(r() * NOTES.length)],
-    ]);
-  }
-  return {
-    columns: ["id", "full_name", "badge_id", "gate", "entered_at", "exited_at", "minutes_inside", "temp_c", "note"],
-    rows,
-    rowCount: rows.length,
-    executionTimeMs: 3.4,
-    error: null,
-  };
-})();
-
-export const RESULT_EMPTY: QueryResult = {
-  columns: ["id", "full_name", "badge_id", "entered_at"],
-  rows: [],
-  rowCount: 0,
-  executionTimeMs: 0.8,
-  error: null,
-};
-
-export const RESULT_TRUNCATED: QueryResult = {
-  ...RESULT_ROWS,
-  rows: RESULT_ROWS.rows.slice(0, 12),
-  rowCount: 12480,
-  truncated: true,
-  executionTimeMs: 41.7,
-};
-
-export const RESULT_SQL_ERROR: QueryResult = {
-  columns: [],
-  rows: [],
-  rowCount: 0,
-  executionTimeMs: 0.3,
-  error: "no such column: full_nam",
-  errorKind: "sql",
-  errorHelp: {
-    title: "Нет такого столбца",
-    explanation: "Столбца «full_nam» нет ни в одной таблице запроса.",
-    suggestion: "Возможно, вы имели в виду «full_name»?",
-  },
-};
-
-export const RESULT_LOCKED: QueryResult = {
-  columns: [],
-  rows: [],
-  rowCount: 0,
-  executionTimeMs: 0,
-  error: "[ДОСТУП ЗАПРЕЩЁН] Таблица «bank_transfers» ещё не разблокирована.",
-  errorKind: "locked_table",
-  errorHelp: {
-    title: "Доступ закрыт",
-    explanation: "Таблица «bank_transfers» пока засекречена.",
-    suggestion: "Продолжайте расследование — доступ к новым данным откроется по ходу дела.",
-  },
-};
-
-export const RESULT_READ_ONLY: QueryResult = {
-  columns: [],
-  rows: [],
-  rowCount: 0,
-  executionTimeMs: 0,
-  error: "[ТОЛЬКО ЧТЕНИЕ] Команда DELETE недоступна: архив нельзя изменять.",
-  errorKind: "read_only",
-  errorHelp: {
-    title: "Архив только для чтения",
-    explanation: "Команды, меняющие данные или структуру (DELETE), в этом деле запрещены — улики нельзя трогать.",
-    suggestion: "Используйте SELECT, чтобы найти нужное. Если очень хочется — WITH … SELECT тоже можно.",
-  },
-};
-
-export const SAMPLE_SQL = `SELECT a.id, r.full_name, a.badge_id, a.gate,
-       a.entered_at, a.exited_at
-FROM access_log AS a
-JOIN staff s ON s.badge_id = a.badge_id
-JOIN residents r ON r.id = s.resident_id
-WHERE a.entered_at > '2026-12-14 01:47'
-  AND a.exited_at IS NULL -- кто не вышел?
-ORDER BY a.entered_at;`;
 
 /* ---------- Задачи ---------- */
 
@@ -552,21 +326,30 @@ export const OBJECTIVES: ObjectiveView[] = [
   },
   {
     id: "o3",
-    text: "Выясните, кто вошёл после Лапина и не вышел до утра",
+    text: "Выясните, кто вошёл после Лапина и ещё не вышел",
     detail: "Лапин вошёл в 01:47. Пустое время выхода в таблице — это NULL.",
     state: "active",
     hints: [
       {
         speaker: "sokolova",
+        at: "02:39",
+        cost: 0,
         text: "Нам нужны входы позже 01:47. Даты здесь — строки одного формата, их можно сравнивать напрямую.",
       },
       {
-        speaker: "akhmetov",
+        speaker: "sokolova",
+        at: "02:42",
+        cost: 40,
         text: "Если человек не вышел, в `exited_at` пусто. Это проверяется не через `= NULL`, а через `IS NULL`.",
       },
-      { speaker: "sokolova", text: "Соедини оба условия через AND: `entered_at > '2026-12-14 01:47'` и `exited_at IS NULL`." },
       {
         speaker: "sokolova",
+        cost: 40,
+        text: "Соедини оба условия через AND: `entered_at > '2026-12-14 01:47'` и `exited_at IS NULL`.",
+      },
+      {
+        speaker: "sokolova",
+        cost: 40,
         text: "Ладно, пиши: `SELECT * FROM access_log WHERE entered_at > '2026-12-14 01:47' AND exited_at IS NULL;`",
       },
     ],
@@ -580,8 +363,8 @@ export const OBJECTIVES: ObjectiveView[] = [
     state: "active",
     optional: true,
     hints: [
-      { speaker: "kravets", text: "Я снимала пар около двух ночи. Посмотрите, что было в `heat_output` тогда." },
-      { speaker: "kravets", text: "Отсортируйте по `megawatts` по убыванию и возьмите первую строку." },
+      { speaker: "kravets", cost: 0, text: "Я снимала пар около двух ночи. Посмотрите, что было в `heat_output` тогда." },
+      { speaker: "kravets", cost: 20, text: "Отсортируйте по `megawatts` по убыванию и возьмите первую строку." },
     ],
     hintsRevealed: 0,
   },
@@ -607,7 +390,7 @@ const PEOPLE = [
 export const PROTOCOL: ProtocolQuestionView[] = [
   {
     id: "q1",
-    text: "Последним в ЦОД вошёл {p-who} — в {p-when}, через северный шлюз.",
+    text: "Последним через северный шлюз вошёл {p-who} — в {p-when}.",
     blanks: [
       { id: "p-who", label: "фамилия, имя", options: PEOPLE },
       {
@@ -658,30 +441,30 @@ export const HANDBOOK: HandbookEntry[] = [
   {
     id: "where",
     title: "Отбор строк: WHERE",
-    summary: "WHERE оставляет только строки, для которых условие истинно.",
+    summary: "`WHERE` оставляет только строки, для которых условие истинно.",
     syntax: "SELECT столбцы FROM таблица\nWHERE условие;",
     example: "SELECT * FROM staff\nWHERE shift = 'ночь';",
-    pitfalls: ["Текст пишется в одинарных кавычках: 'ночь'. Двойные кавычки в SQLite — имена."],
+    pitfalls: ["Текст пишется в одинарных кавычках: `'ночь'`. Двойные кавычки в SQLite — имена."],
   },
   {
     id: "null",
     title: "Пустые значения: IS NULL",
-    summary: "NULL — это «неизвестно». Он не равен ничему, даже самому себе, поэтому = NULL не находит ничего.",
+    summary: "`NULL` — это «неизвестно». Он не равен ничему, даже самому себе, поэтому `= NULL` не находит ничего.",
     syntax: "WHERE столбец IS NULL",
     example: "SELECT * FROM access_log\nWHERE exited_at IS NULL;",
-    pitfalls: ["exited_at = NULL вернёт 0 строк без ошибки.", "Противоположное условие — IS NOT NULL."],
+    pitfalls: ["`exited_at = NULL` вернёт 0 строк без ошибки.", "Противоположное условие — `IS NOT NULL`."],
   },
   {
     id: "join",
     title: "Соединение таблиц: JOIN",
-    summary: "JOIN склеивает строки двух таблиц по общему ключу.",
+    summary: "`JOIN` склеивает строки двух таблиц по общему ключу.",
     syntax: "FROM a JOIN b ON b.ключ = a.ключ",
     example: "SELECT r.full_name, a.entered_at\nFROM access_log a\nJOIN staff s ON s.badge_id = a.badge_id\nJOIN residents r ON r.id = s.resident_id;",
   },
   {
     id: "order",
     title: "Сортировка: ORDER BY",
-    summary: "ORDER BY упорядочивает результат; DESC — по убыванию.",
+    summary: "`ORDER BY` упорядочивает результат, `DESC` — по убыванию.",
     syntax: "ORDER BY столбец [DESC]",
     example: "SELECT measured_at, megawatts\nFROM heat_output\nORDER BY megawatts DESC\nLIMIT 3;",
   },

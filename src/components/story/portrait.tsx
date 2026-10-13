@@ -13,7 +13,8 @@ import {
 
 export type PortraitSize = "dialogue" | "avatar" | "card";
 
-export const EMOTION_LABELS: Record<Emotion, string> = {
+/** Подписи эмоций для читалки экрана. Ключи — строки: набор эмоций в контенте растёт */
+export const EMOTION_LABELS: Record<string, string> = {
   neutral: "спокойно",
   happy: "радость",
   sad: "грусть",
@@ -24,7 +25,16 @@ export const EMOTION_LABELS: Record<Emotion, string> = {
   thinking: "раздумье",
   tired: "усталость",
   hurt: "боль",
+  uneasy: "тревога",
+  ashamed: "стыд",
+  broken: "надлом",
+  cold: "холодно",
+  shaken: "потрясение",
+  determined: "решимость",
+  lie: "ложь",
 };
+
+const emotionLabel = (e: Emotion): string => EMOTION_LABELS[e] ?? e;
 
 /** Год мира игры: из возраста персонажа вычисляется год рождения в учётной карточке */
 const WORLD_YEAR = 2026;
@@ -114,7 +124,7 @@ export function PortraitFrame({
         size === "card" ? "aspect-[3/4] w-full" : "size-full [container-type:size]",
         className
       )}
-      aria-label={character ? `${character.name}, ${EMOTION_LABELS[mood]}` : "Портрета нет"}
+      aria-label={character ? `${character.name}, ${emotionLabel(mood)}` : "Портрета нет"}
     >
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element -- портреты из public/, размер задаёт зона

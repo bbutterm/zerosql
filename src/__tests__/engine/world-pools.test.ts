@@ -39,10 +39,12 @@ describe("Rng", () => {
 });
 
 describe("даты", () => {
-  it("формат и разбор в UTC", () => {
+  it("формат и разбор в UTC: секунды пишутся всегда", () => {
     const d = parseDateTime("2026-10-03 23:10");
-    expect(formatDateTime(d)).toBe("2026-10-03 23:10");
-    expect(formatDateTime(addMinutes(d, 55))).toBe("2026-10-04 00:05");
+    expect(formatDateTime(d)).toBe("2026-10-03 23:10:00");
+    expect(formatDateTime(addMinutes(d, 55))).toBe("2026-10-04 00:05:00");
+    expect(formatDateTime(parseDateTime("2026-12-22 02:47:19"))).toBe("2026-12-22 02:47:19");
+    expect(() => parseDateTime("02.12.2026")).toThrow(RangeError);
   });
 });
 

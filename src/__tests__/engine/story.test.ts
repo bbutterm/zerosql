@@ -324,10 +324,10 @@ describe("validateCaseContent", () => {
     it("неразличимые варианты (ё/е, регистр, 80 и 80.0)", () => {
       const bad = withProtocol({
         blanks: [
-          { id: "payee", options: ["Борис Ёлкин", "борис елкин"], answer: "Борис Ёлкин" },
-          { id: "city", options: ["Северск"], answer: "Северск" },
-          { id: "amount", options: ["80", "80.0"], answer: "80" },
-          { id: "broker", options: ["Глеб Орлов"], answer: "Глеб Орлов" },
+          { id: "payee", kind: "person", options: ["Борис Ёлкин", "борис елкин"], answer: "Борис Ёлкин" },
+          { id: "city", kind: "text", options: ["Северск"], answer: "Северск" },
+          { id: "amount", kind: "number", options: ["80", "80.0"], answer: "80" },
+          { id: "broker", kind: "person", options: ["Глеб Орлов"], answer: "Глеб Орлов" },
         ],
       });
       const problems = problemsOf(bad);

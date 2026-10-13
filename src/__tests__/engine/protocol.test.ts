@@ -94,8 +94,8 @@ describe("scanSeenOptions", () => {
     const protocol: ProtocolDef = {
       ...PROTOCOL,
       blanks: [
-        { id: "a", options: ["Ёлкин"], answer: "Ёлкин" },
-        { id: "b", options: ["Елкин"], answer: "Елкин" },
+        { id: "a", kind: "person", options: ["Ёлкин"], answer: "Ёлкин" },
+        { id: "b", kind: "text", options: ["Елкин"], answer: "Елкин" },
       ],
     };
     expect(scanSeenOptions(protocol, result([["ЕЛКИН"]]))).toEqual(["Ёлкин", "Елкин"]);
@@ -239,7 +239,7 @@ describe("checkProtocol: пакетное подтверждение", () => {
   describe("размер пачки", () => {
     const five: ProtocolDef = {
       ...PROTOCOL,
-      blanks: ["a", "b", "c", "d", "e"].map((id) => ({ id, options: ["x", "y"], answer: "x" })),
+      blanks: ["a", "b", "c", "d", "e"].map((id) => ({ id, kind: "text" as const, options: ["x", "y"], answer: "x" })),
     };
     const answers = (right: number) =>
       Object.fromEntries(five.blanks.map((b, i) => [b.id, i < right ? "x" : "y"]));

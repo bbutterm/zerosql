@@ -1,4 +1,5 @@
 import type { QueryResult } from "./database";
+import type { BlankKind, CardPredicate, DatetimePrecision } from "./case";
 
 export interface Mission {
   id: string;
@@ -61,7 +62,50 @@ export type ValidationRule =
    */
   | { type: "rows_match"; referenceQuery: string; ordered?: boolean; aliases?: Record<string, string[]> }
   /** Инверсия правила — например, «в результате не должно быть ложного следа» */
-  | { type: "not"; rule: ValidationRule; message: string };
+  | { type: "not"; rule: ValidationRule; message: string }
+  /**
+   * Состояние базы после DML игрока: движок выполняет query (на том же снимке
+   * горизонта) и проверяет ЕГО результат правилом rule. Результат игрока не важен.
+   * Пример: `{ query: "SELECT COUNT(*) FROM arch16_statements a WHERE a.id NOT IN (SELECT id FROM statements)", rule: { type: "cell_value", value: 0 } }`.
+   */
+  | { type: "table_state"; query: string; rule: ValidationRule }
+  /**
+   * Содержимое представления игрока: view существует (CREATE VIEW) и его строки
+   * совпадают с referenceQuery (как rows_match) и/или проходят rule.
+   */
+  | { type: "view_match"; view: string; referenceQuery?: string; ordered?: boolean; rule?: ValidationRule }
+  /**
+   * На доске не меньше min карточек (по умолчанию 1), подходящих под предикат,
+   * из не меньше sources разных классов источников. Призраки, расхождения и
+   * подлоги не считаются, если не включить includeGhosts.
+   */
+  | {
+      type: "pin";
+      where: CardPredicate;
+      min?: number;
+      sources?: number;
+      includeGhosts?: boolean;
+      message?: string;
+    }
+  /** Значение есть в реестре увиденного (сравнение по правилам типа пропуска, по умолчанию text) */
+  | {
+      type: "seen";
+      value: CellValue;
+      kind?: BlankKind;
+      tolerance?: number;
+      precision?: DatetimePrecision;
+      message?: string;
+    }
+  /** Слот протокола или доски заполнен одним из значений (по правилам типа, по умолчанию text) */
+  | {
+      type: "slot";
+      slot: string;
+      value: CellValue | CellValue[];
+      kind?: BlankKind;
+      tolerance?: number;
+      precision?: DatetimePrecision;
+      message?: string;
+    };
 
 export interface ValidationOutcome {
   passed: boolean;

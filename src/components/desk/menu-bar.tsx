@@ -20,7 +20,13 @@ export type DeskMenuAction =
   | "wall"
   | "protocol"
   | "reference"
-  | "about";
+  | "about"
+  /** Журнал дел: выбор дела */
+  | "journal"
+  /** Начать текущее дело заново */
+  | "reset"
+  /** Повторить ориентировку по делу */
+  | "briefing";
 
 export interface DeskMenuItem {
   action: DeskMenuAction;
