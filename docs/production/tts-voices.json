@@ -20,7 +20,6 @@
     }
   },
   "skip_speakers": [
-    "narrator",
     "player"
   ],
   "speakers": {
@@ -230,6 +229,27 @@
       "casting": {
         "variant": 3,
         "generated_voice_id": "vqXn0MaMxUlzqzGE4cp8"
+      }
+    },
+    "narrator": {
+      "voice_id": "yFlApcPU7yqzaHjUR6lK",
+      "voiced_scenes": [
+        "intro",
+        "outro",
+        "cold_open"
+      ],
+      "voice_settings": {
+        "stability": 0.62,
+        "similarity_boost": 0.8,
+        "style": 0.1,
+        "use_speaker_boost": true,
+        "speed": 0.98
+      },
+      "design_prompt": "A 50-year-old Russian man, soft clear light baritone, calm documentary narrator late at night, even and unhurried, close intimate microphone, no theatrics, no irony, slight pause before the last word, standard Moscow pronunciation, native Russian speaker.",
+      "preview_text": "Подвал ГУ, кабинет Б-ноль-три. Третье декабря, половина десятого вечера. За стеной гудит серверная.",
+      "casting": {
+        "variant": "doc_2",
+        "generated_voice_id": "yFlApcPU7yqzaHjUR6lK"
       }
     }
   }

@@ -1,5 +1,5 @@
 ﻿id,name,file,export_px,tier,used_in_script,canon,exists
-basement_b0_03_evening,"Подвал Б0-03, вечер",public/backgrounds/basement_b0_03_evening.webp,1920x1080,P0 №2,yes,yes,no
+basement_b0_03_evening,"Подвал Б0-03, вечер",public/backgrounds/basement_b0_03_evening.webp,1920x1080,P0 №2,yes,yes,yes
 basement_b0_03_night,"Подвал Б0-03, ночь",public/backgrounds/basement_b0_03_night.webp,1920x1080,P0 №15,yes,yes,no
 archive_nina,Архив Нины,public/backgrounds/archive_nina.webp,1920x1080,P1,yes,yes,no
 server_room_b0_11,Серверная Б0-11,public/backgrounds/server_room_b0_11.webp,1920x1080,P1,yes,yes,no
