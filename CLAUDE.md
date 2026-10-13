@@ -1,98 +1,88 @@
-# ZeroSQL — Руководство для разработки
+# ZeroSQL: Полынья — руководство для разработки
 
 ## Что это
 
-Браузерный SQL-детектив. Игрок пишет SQL-запросы для расследования дел. Вся логика — клиентская: SQL.js (SQLite → WASM) работает в браузере, серверной части нет.
+Браузерный SQL-детектив «ZeroSQL: Полынья»: 13 дел (пролог, десять дел, интерлюдия, финал). Игрок пишет SQL к ведомственной системе «Зеркало». Вся логика клиентская: мир (~55 тыс. строк) генерируется детерминированно в браузере, sql.js (SQLite → WASM) работает в Web Worker, серверной части нет.
 
-## Ключевые правила
-
-### Engine Facade
-
-Ядро (`src/engine/`) доступно **только через фасад** `src/engine/index.ts`.
+## Слои и правило фасада
 
 ```
-✅ import { initEngine, executeSQL } from "@/engine"
-❌ import { executeQuery } from "@/engine/database"
-❌ import { createEngineClient } from "@/engine/runtime/client"
+UI (src/app, src/components)  →  стор (src/stores/game)  →  фасад @/engine  →  внутренности src/engine/*
 ```
 
-Ядро импортируют только сторы (`src/stores/game/*`, `src/stores/archive.ts`). UI-компоненты и маршруты работают через стор `@/stores/game`.
+- Код вне `src/engine` импортирует ядро **только** из `@/engine` (`src/engine/index.ts`). Исключение — тесты.
+- Компоненты ядро не импортируют вовсе: данные — из стора (`useGame`, `useGameView` + селекторы) или через пропсы.
+- Стор работает с ядром через `createEngineClient()` (`src/engine/runtime/`): режим `worker` в браузере, `in-process` в тестах. Остальные функции фасада — чистые вычисления (часы, события, протокол, очки), тесты и `/lab`.
 
-Исключение — тесты: они проверяют внутренние модули напрямую.
+```
+✅ import { createEngineClient, checkProtocol } from "@/engine"
+❌ import { generateWorld } from "@/engine/world/generate"
+❌ import { gameStore } from "@/stores/game" внутри src/engine
+```
 
-Проверка отсутствия прямых импортов:
+Проверка прямых импортов (должно быть пусто):
+
 ```bash
-grep -rnE "from \"@/engine/|from \"\.\./engine/|from \"\.\./\.\./engine/" src/ --include="*.ts" --include="*.tsx" | grep -v "^src/engine/" | grep -v "__tests__"
-# Должно быть пусто
-grep -rln "from \"@/engine\"" src/components src/app --include="*.ts" --include="*.tsx" | grep -v "^src/app/lab/"
-# Тоже пусто: экраны и компоненты ядро не импортируют (кроме /lab — витрины компонентов)
+grep -rnE "from ['\"](@/engine/|(\.\./)+engine/)" src --include=*.ts --include=*.tsx | grep -v "^src/engine/" | grep -v "^src/__tests__/"
 ```
 
-### Фасад — API (v2)
+## Ядро (src/engine)
 
-| Что | Где |
-|-----|-----|
-| `createEngineClient()` | Ядро в Web Worker: мир (кеш IndexedDB или генерация), `openCase`, `run` (политика, задачи, реестр, тайники, линтер, query_log), патчи, часы, журнал |
-| `executeSQL(db, sql, unlockedTables, opts)` | Проверка доступа + выполнение; ошибки — в `QueryResult.error`, не исключения |
-| `checkCaseProgress`, `scanSeen`, `checkProtocol`, `checkAccusation`, допрос, часы, оценка, звания | Чистые функции правил дела |
-| `createEmptyDatabase()`, `getSchema(db)`, `getForeignKeys(db)` | Пустая база и схема для лаборатории |
+| Модуль | Что делает |
+|--------|-----------|
+| `runtime/` | клиент ядра: воркер, сессия дела, журнал (воспроизведение базы), кеш мира в IndexedDB, таймаут 3 с |
+| `world/` | схема мира, генератор, посадки фактов по делам (`plants/`), шум (`noise/`), сюжетные патчи (`patches.ts`), горизонт (TEMP VIEW «будущих» строк) |
+| `execute`, `table-guard`, `sql-lint`, `sql-errors`, `sql-functions` | выполнение, доступ и запись по таблицам дела, линтер-реплики, разбор ошибок, Unicode-LIKE/lower |
+| `validator`, `case-runner` | правила задач (`column_values`, `rows_match`, `cell_value`, `pin`, `seen`, `slot`, `view_match`, `table_state`, `compound`, `any_of`, `not` …), задачи по порядку, условные (`when`) и дополнительные |
+| `protocol`, `board`, `interrogation` | протокол с пакетной сверкой, карточки и обвинение, допрос «Наушник» |
+| `live`, `clock`, `cron` | живые события, игровые часы и остановки, расписание zero (М6) |
+| `story`, `scoring`, `secrets`, `query-log` | целостность контента, оценка и звания, тайники, журнал запросов |
 
-### Поток данных
+Проверяется **результат** запроса, а не текст SQL. Основные задачи идут по `order`; дополнительные проверяются на каждом запросе.
+
+## Стор (src/stores/game)
+
+`store.ts` — фабрика `createGameStore()`, единственный владелец состояния: профиль, настройки, сезон (раскрытые дела, флаги, патчи и `query_log` прошлых дел, улики, тайники, отметки), активное дело (сцены, допрос, задачи, карточки, протокол, журнал ядра). Сохранение — localStorage (`zerosql.season.v2`, `persist.ts` с миграцией). База не сохраняется: дело собирается заново из мира, патчей и журнала. `selectors.ts` — производные виды для экранов, `rules.ts` — чистые правила, `endings.ts` — концовки.
+
+## Контент
 
 ```
-Экран (src/app/play, src/components/*) → стор @/stores/game (useGame / useGameView, действия)
-  → createEngineClient (worker) → база дела, проверка задач, реестр увиденного, тайники
-  ← Evaluation → стор: прогресс, сцены, реплики (barks), тосты, разбор
+src/data/
+  cases/case-NN-<slug>/case.json    задачи (solution обязателен), протокол, обвинения, события, часы
+  cases/case-NN-<slug>/script.json  сцены, выборы, предъявления, допросы
+  characters.json, handbook/cNN.json, secrets.json, achievements.json, endings.ts
 ```
 
-Маршруты: `/` — 18+, холодное открытие, окно входа; `/play` — журнал дел ⇄ стол ⇄ разбор ⇄ финал; `/archive` — свободный архив; `/lab` — витрина компонентов; `/game` → `/play`.
+- Новое дело — папка + две строки в `cases/index.ts`, тест `src/__tests__/cases/cNN.test.ts` (контракт — `docs/design/TECH_SPEC.md`, разд. 4–5).
+- Ответы протокола должны встречаться в результатах эталонов (`requireSeen`).
+- Ассеты: `public/voice/<lineId>.mp3`, `public/portraits/<id>/<emotion>.webp` (`<emotion>_outdoor.webp`), `public/backgrounds/<id>.webp`. Нет файла — заглушка.
 
-### Валидация миссий
+## Документы
 
-Система проверяет **результат запроса**, не текст SQL. 10 типов:
-- `row_count` — количество строк (eq/gte/lte)
-- `contains_columns` — наличие столбцов
-- `contains_value` — значение в столбце
-- `exact_match` — точное совпадение с reference-запросом
-- `requires_column` — столбец существует + опционально minRows
-- `contains_substring` — подстрока в любой строке столбца
-- `value_check` — числовое сравнение конкретной ячейки [row][col]
-- `compound` — все подправила должны пройти
-- `any_of` — хотя бы одно подправило проходит
-- `custom` — произвольная функция (только в TS-миссиях)
-
-Цели проверяются **последовательно** по полю `order`. За один запрос можно пройти максимум одну цель.
-
-### Контроль доступа к таблицам
-
-Каждое дело определяет `tables` (CaseDef). Table guard парсит SQL (FROM, JOIN, INTO, UPDATE) и блокирует обращения к закрытым таблицам. `sqlite_master` всегда доступна.
-
-## Структура проекта
-
-- `src/engine/` — ядро (фасад `index.ts`, правила дела, мир `world/`, рантайм `runtime/`)
-- `src/data/` — сезон: дела `cases/`, персонажи, методичка `handbook/`, достижения, тайники, тексты финала
-- `src/stores/game/` — стор v2 (Zustand, сохранение, селекторы, звуковая шина `sfx.ts`); `src/stores/archive.ts` — свободный архив
-- `src/app/play/` — экраны игры поверх стора; `src/components/` — презентационные компоненты (`'use client'`)
-- `src/types/` — TypeScript типы
-- `src/__tests__/` — тесты (v1-схема и сид остались только фикстурой `helpers/v1-*.ts` для тестов валидатора)
+`docs/design/` — `GAME_DESIGN.md` (библия, 380 КБ: читать точечно через grep), `TECH_SPEC.md` (контракт), `UI_ART_DIRECTION.md`, `EASTER_EGGS.md`. `docs/production/` — арт- и голосовая библии, манифесты (`npm run manifest`).
 
 ## Команды
 
 ```bash
-npm run dev        # Дев-сервер
-npm run build      # Продакшен-сборка
-npm run test:run   # все тесты
+npm run dev        # дев-сервер
+npm run build      # продакшен-сборка
+npm run test:run   # все тесты (1704)
 npm run lint       # ESLint
+npm run manifest   # манифесты ассетов в docs/production
+npm run qa -- --base-url http://localhost:3150 --shots-dir /tmp/qa   # сезон в браузере (Playwright)
 ```
 
-## Ограничения при изменениях
+Перед коммитом зелёными должны быть `npx tsc --noEmit -p .`, `npm run lint`, `npm run test:run`, `npm run build`. Коммиты — на английском; тексты игры и комментарии — на русском.
 
-- **Внутренние модули engine** (`database.ts`, `validator.ts`, ...) — менять можно, но фасад (`index.ts`) должен оставаться единственной точкой входа для внешних потребителей
-- **Типы** (`src/types/`) — реэкспортируются через фасад, расширять можно
-- **Дела** — папка `src/data/cases/case-NN-<slug>/` (`case.json` + `script.json`), обязательно писать тесты
-- **UI компоненты** — взаимодействуют только через Zustand стор, не импортируют из engine напрямую
-- **Тесты** — после любых изменений: `npm run test:run` (все должны быть зелёными)
+## Автопрохождение
 
-## Известные баги
+- `src/__tests__/store/season-playthrough.test.ts` — весь сезон через стор за секунды (входит в `test:run`).
+- `scripts/qa-playthrough.mjs` — то же в настоящем браузере через интерфейс; состояние читает из localStorage, действует кликами по `data-testid`. Списки «строк для допросов» (`CARD_SQL`, `ACCUSE_SQL`, `PIN_SQL`) в обоих файлах одинаковые — меняя контент допросов, обновите оба.
 
-1. **SQLite LIKE + кириллица**: case-insensitive работает только для ASCII. `'%груз%'` не найдёт `'Груз'`. Обходной путь в валидаторе — альтернативный паттерн `'%порт%'`.
+## Известные пробелы
+
+- Финальная доска (узлы N1–N9, запись пинов в `evidence_registry`) не реализована: флаг A и концовка «Первое солнце» недостижимы.
+- Отметки «Зоркий глаз», «Снайпер», «Ювелир», «Фикус», «Все десять» ждут механик, которых нет.
+- Нет блокнота аномалий, оценки изящества запроса и утренней сводки.
+- Озвучка только у пролога; портретов и фонов нет.
+- Экрана «Отправка пакета» (задача 11.7) нет: отправка — выбором в сценах финала.
