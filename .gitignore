@@ -1,3 +1,7 @@
 node_modules
 .next/
 *.tsbuildinfo
+voice-raw/
+voice-master/
+art-src/
+audio-src/
