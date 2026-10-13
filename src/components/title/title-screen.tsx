@@ -144,6 +144,7 @@ export function TitleScreen({
               <button
                 ref={submitRef}
                 type="submit"
+                data-testid="login-submit"
                 disabled={!current}
                 className={cn(screenButtonClass("primary", { disabled: !current }), "min-w-20")}
               >
@@ -242,7 +243,7 @@ export function AgeWarning({ onAccept, className }: { onAccept?: () => void; cla
         <p className="mt-3 ui-15 font-normal text-ink-1">
           Игра для взрослых. В&nbsp;ней есть смерть, насилие и&nbsp;ненормативная речь. Играть лучше в&nbsp;наушниках.
         </p>
-        <ScreenButton ref={ref} variant="secondary" onClick={onAccept} className="mt-6">
+        <ScreenButton ref={ref} variant="secondary" onClick={onAccept} className="mt-6" data-testid="age-ok">
           Понятно
         </ScreenButton>
       </div>
@@ -332,6 +333,7 @@ export function ColdOpen({
       tabIndex={-1}
       onKeyDown={() => onContinue?.()}
       onClick={() => onContinue?.()}
+      data-testid="cold-open"
       className={cn("relative h-dvh min-h-[480px] w-full overflow-hidden bg-room outline-none", className)}
     >
       {image ? (

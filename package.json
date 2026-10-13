@@ -11,7 +11,8 @@
     "lint": "eslint",
     "test": "vitest",
     "test:run": "vitest run",
-    "manifest": "node scripts/production-manifest.mjs"
+    "manifest": "node scripts/production-manifest.mjs",
+    "qa": "node scripts/qa-playthrough.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

@@ -433,6 +433,8 @@ export function DialoguePlayer({
       role={variant === "overlay" ? "dialog" : "region"}
       aria-modal={variant === "overlay" ? true : undefined}
       aria-label="Сцена"
+      data-testid="scene"
+      data-scene-id={scene.id}
       onKeyDown={onKeyDown}
       className={cn(
         "@container isolate overflow-hidden text-ink-1 outline-none",
@@ -539,6 +541,8 @@ export function DialoguePlayer({
                           <button
                             type="button"
                             aria-disabled={locked}
+                            data-testid="scene-choice"
+                            data-choice-id={choice.id}
                             onClick={() => pickChoice(choice)}
                             className={cn(
                               "group/choice grid w-full grid-cols-[28px_1fr] text-left font-serif text-[18px] leading-7 @max-3xl:min-h-11 @max-3xl:py-[9px] @max-3xl:text-[17px] @max-3xl:leading-[26px]",
@@ -585,6 +589,8 @@ export function DialoguePlayer({
                               <button
                                 type="button"
                                 aria-pressed={sel}
+                                data-testid="scene-present-item"
+                                data-item-id={card.id}
                                 onClick={() => selectEvidence(card.id)}
                                 className={cn(
                                   "group/ev grid h-10 w-full grid-cols-[16px_40px_48px_minmax(0,1fr)] items-baseline border-b border-line pt-2.5 text-left @max-3xl:h-11",
@@ -611,7 +617,7 @@ export function DialoguePlayer({
                       </ol>
                     )}
                     <div className="flex items-center gap-4">
-                      <ScreenButton variant="primary" disabled={!picked} onClick={presentPicked}>
+                      <ScreenButton variant="primary" disabled={!picked} onClick={presentPicked} data-testid="scene-present">
                         Предъявить
                       </ScreenButton>
                       {onCancelPresent && (
@@ -649,7 +655,7 @@ export function DialoguePlayer({
           >
             <Glyph name={muted ? "speaker-off" : "speaker"} size={12} />
           </button>
-          <button type="button" onClick={skip} title="Пропустить сцену (Esc)" className="ui-12 text-ink-3 hover:text-ink-1">
+          <button type="button" onClick={skip} title="Пропустить сцену (Esc)" data-testid="scene-skip" className="ui-12 text-ink-3 hover:text-ink-1">
             Пропустить сцену
           </button>
         </div>

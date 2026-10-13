@@ -327,7 +327,7 @@ export function ProtocolForm({
             <p className={cn("ui-12 max-lg:max-w-[64%]", pendingFilled < need ? "text-ink-2" : "text-ink-3")} aria-live="polite">
               {footnote ?? batchLine(pendingFilled, need, remaining)}
             </p>
-            <ScreenButton variant="primary" onClick={onSubmit} disabled={!canSubmit} className="min-w-24">
+            <ScreenButton variant="primary" onClick={onSubmit} disabled={!canSubmit} className="min-w-24" data-testid="protocol-submit">
               Сверить
             </ScreenButton>
           </div>
@@ -398,6 +398,7 @@ function Blank({
         >
           <Select.Trigger
             aria-label={blank.label}
+            data-blank-id={blank.id}
             className={cn(
               "relative h-6 border-b border-print-3 px-1 text-center font-serif text-[15px] leading-6 italic outline-none",
               // Касание 44 px на мобильном — невидимое поле вокруг пропуска
@@ -417,6 +418,7 @@ function Blank({
                     <Select.Item
                       key={opt.value}
                       value={opt.value}
+                      data-value={opt.value}
                       className="group/opt flex h-8 cursor-default items-baseline gap-3 px-4 font-serif text-[15px] leading-8 text-print outline-none select-none"
                     >
                       <Select.ItemText className="decoration-pencil decoration-1 underline-offset-4 group-data-highlighted/opt:underline group-data-selected/opt:underline">

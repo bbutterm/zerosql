@@ -603,7 +603,8 @@
         { "person": "Ратников Л. Б.", "scene": "accuse_ratnikov" }
       ],
       "wrongScene": "accuse_wrong",
-      "trustFlag": "dasha_trust"
+      "trustFlag": "dasha_trust",
+      "required": true
     }
   ],
   "outroScene": "outro"

@@ -453,7 +453,8 @@
     {
       "id": "zero_0312",
       "atTime": "2026-12-15 03:12:30",
-      "scene": "night_0312"
+      "scene": "night_0312",
+      "patch": "cron.fire"
     }
   ]
 }

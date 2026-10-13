@@ -10,9 +10,9 @@ import { CHARACTERS } from "./views";
 const SPEED: Record<string, number> = { slow: 22, normal: 38, fast: 70, instant: 2000 };
 
 /** Полоса в строке окна: отложенная сцена или допрос */
-function Resume({ label, onClick }: { label: string; onClick: () => void }) {
+function Resume({ label, onClick, testId }: { label: string; onClick: () => void; testId: string }) {
   return (
-    <button type="button" onClick={onClick} className="ui-13 text-sodium hover:underline hover:underline-offset-3">
+    <button type="button" onClick={onClick} data-testid={testId} className="ui-13 text-sodium hover:underline hover:underline-offset-3">
       {label}
     </button>
   );
@@ -47,7 +47,7 @@ export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string)
   let resume: ReactNode = null;
 
   if (stage && deferred === inst.n) {
-    resume = <Resume label="Сцена ждёт: вернуться" onClick={() => setDeferred(null)} />;
+    resume = <Resume label="Сцена ждёт: вернуться" onClick={() => setDeferred(null)} testId="resume-scene" />;
   } else if (stage) {
     overlay = (
       <DialoguePlayer
@@ -73,7 +73,7 @@ export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string)
       />
     );
   } else if (interro && away === interro.sceneId) {
-    resume = <Resume label="Допрос: вернуться" onClick={() => setAway(null)} />;
+    resume = <Resume label="Допрос: вернуться" onClick={() => setAway(null)} testId="resume-interrogation" />;
   } else if (interro) {
     const idef = interro.def;
     const mode = idef.mode ?? "standard";
@@ -93,15 +93,17 @@ export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string)
           lie: p.lie,
           canPress: Boolean(p.press),
           canPresent: Boolean(p.present),
+          ...(p.present?.requireAll ? { needsAll: p.present.correct.length + (p.present.cards?.length ?? 0) } : {}),
         }))}
         items={items}
         lieHighlight={settings.lieHighlight || profile.mode === "novice"}
         busy={busy}
         liveQuery={interro.liveQuery}
         onPress={(line) => void st().pressStatement(line)}
-        onPresent={(line, id) =>
-          void st().presentToSuspect(line, pins?.some((p) => p.id === id) ? { cardIds: [id] } : { evidenceIds: [id] })
-        }
+        onPresent={(line, ids) => {
+          const isPin = (id: string) => Boolean(pins?.some((p) => p.id === id));
+          void st().presentToSuspect(line, { cardIds: ids.filter(isPin), evidenceIds: ids.filter((id) => !isPin(id)) });
+        }}
         onLeave={() => setAway(interro.sceneId)}
       />
     );

@@ -176,7 +176,7 @@ export function CaseJournal({
             Закрыть
           </ScreenButton>
         )}
-        <ScreenButton variant="primary" disabled={!canOpen} onClick={() => current && onOpen(current.id)}>
+        <ScreenButton variant="primary" disabled={!canOpen} onClick={() => current && onOpen(current.id)} data-testid="journal-open">
           Открыть дело
         </ScreenButton>
       </footer>

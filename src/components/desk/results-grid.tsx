@@ -361,83 +361,86 @@ function DataTable({
         onKeyDown={onKeyDown}
         className="zs-scroll-strong relative min-h-0 flex-1 overflow-auto focus-visible:outline-offset-[-1px] lg:overflow-x-scroll"
       >
-        <table className="w-max min-w-full border-separate border-spacing-0 mono-13 text-ink-1">
-          <thead>
-            <tr>
-              <th
-                scope="col"
-                className="sticky top-0 left-0 z-20 h-7 w-10 min-w-10 border-r border-b border-r-line border-b-line-strong bg-scr-chrome"
-              >
-                <span className="sr-only">Номер строки</span>
-              </th>
-              {result.columns.map((col, i) => (
+        {/* Запрос без столбцов (INSERT, UPDATE, CREATE VIEW): шапки таблицы нет — только строка терминала */}
+        {cols > 0 && (
+          <table className="w-max min-w-full border-separate border-spacing-0 mono-13 text-ink-1">
+            <thead>
+              <tr>
                 <th
-                  key={`${col}-${i}`}
                   scope="col"
-                  data-col={i}
-                  className={cn(
-                    // w-px: столбец по ширине содержимого, как в настоящих таблицах данных; остаток — пустой столбец справа
-                    "sticky top-0 z-10 h-7 w-px border-b border-line-strong bg-scr-chrome px-3 mono-12 font-normal whitespace-nowrap text-ink-2",
-                    // Разделитель между заголовками — как ручка изменения ширины
-                    "after:pointer-events-none after:absolute after:top-[7px] after:right-0 after:h-3.5 after:w-px after:bg-line-strong",
-                    numeric[i] ? "text-right" : "text-left"
-                  )}
+                  className="sticky top-0 left-0 z-20 h-7 w-10 min-w-10 border-r border-b border-r-line border-b-line-strong bg-scr-chrome"
                 >
-                  {col}
+                  <span className="sr-only">Номер строки</span>
                 </th>
-              ))}
-              <th aria-hidden className="sticky top-0 z-10 h-7 border-b border-line-strong bg-scr-chrome" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, r) => {
-              const isPinned = pinned.has(r);
-              const rowSelected = sel?.r === r;
-              return (
-                <tr
-                  key={r}
-                  data-row={r}
-                  aria-selected={rowSelected || undefined}
-                  className={cn("group/row", isPinned ? "bg-sodium-wash" : "hover:bg-scr-raise")}
-                >
-                  <td
+                {result.columns.map((col, i) => (
+                  <th
+                    key={`${col}-${i}`}
+                    scope="col"
+                    data-col={i}
                     className={cn(
-                      "sticky left-0 z-[1] h-6 w-10 border-r border-b border-line pr-2 text-right align-middle mono-12 tnum max-lg:h-[22px]",
-                      isPinned
-                        ? "bg-sodium-wash text-sodium"
-                        : rowSelected
-                          ? "bg-scr-base text-ink-1 group-hover/row:bg-scr-raise"
-                          : "bg-scr-base text-ink-3 group-hover/row:bg-scr-raise"
+                      // w-px: столбец по ширине содержимого, как в настоящих таблицах данных; остаток — пустой столбец справа
+                      "sticky top-0 z-10 h-7 w-px border-b border-line-strong bg-scr-chrome px-3 mono-12 font-normal whitespace-nowrap text-ink-2",
+                      // Разделитель между заголовками — как ручка изменения ширины
+                      "after:pointer-events-none after:absolute after:top-[7px] after:right-0 after:h-3.5 after:w-px after:bg-line-strong",
+                      numeric[i] ? "text-right" : "text-left"
                     )}
                   >
-                    {r + 1}
-                  </td>
-                  {row.map((cell, c) => {
-                    const isNull = cell === null || cell === undefined;
-                    const selected = sel?.r === r && sel.c === c;
-                    const full = isNull ? "NULL" : String(cell);
-                    return (
-                      <td
-                        key={c}
-                        data-col={c}
-                        onClick={(e) => onCellClick(e, r, c)}
-                        title={full.length > 40 ? full : undefined}
-                        className={cn(
-                          "h-6 w-px border-b border-line px-3 align-middle whitespace-pre max-lg:h-[22px] max-lg:text-[12px] max-lg:leading-[22px]",
-                          numeric[c] && !isNull ? "text-right" : "text-left",
-                          selected && "outline outline-1 -outline-offset-1 outline-ink-2"
-                        )}
-                      >
-                        <CellValue value={cell} />
-                      </td>
-                    );
-                  })}
-                  <td aria-hidden className="border-b border-line" />
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    {col}
+                  </th>
+                ))}
+                <th aria-hidden className="sticky top-0 z-10 h-7 border-b border-line-strong bg-scr-chrome" />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, r) => {
+                const isPinned = pinned.has(r);
+                const rowSelected = sel?.r === r;
+                return (
+                  <tr
+                    key={r}
+                    data-row={r}
+                    aria-selected={rowSelected || undefined}
+                    className={cn("group/row", isPinned ? "bg-sodium-wash" : "hover:bg-scr-raise")}
+                  >
+                    <td
+                      className={cn(
+                        "sticky left-0 z-[1] h-6 w-10 border-r border-b border-line pr-2 text-right align-middle mono-12 tnum max-lg:h-[22px]",
+                        isPinned
+                          ? "bg-sodium-wash text-sodium"
+                          : rowSelected
+                            ? "bg-scr-base text-ink-1 group-hover/row:bg-scr-raise"
+                            : "bg-scr-base text-ink-3 group-hover/row:bg-scr-raise"
+                      )}
+                    >
+                      {r + 1}
+                    </td>
+                    {row.map((cell, c) => {
+                      const isNull = cell === null || cell === undefined;
+                      const selected = sel?.r === r && sel.c === c;
+                      const full = isNull ? "NULL" : String(cell);
+                      return (
+                        <td
+                          key={c}
+                          data-col={c}
+                          onClick={(e) => onCellClick(e, r, c)}
+                          title={full.length > 40 ? full : undefined}
+                          className={cn(
+                            "h-6 w-px border-b border-line px-3 align-middle whitespace-pre max-lg:h-[22px] max-lg:text-[12px] max-lg:leading-[22px]",
+                            numeric[c] && !isNull ? "text-right" : "text-left",
+                            selected && "outline outline-1 -outline-offset-1 outline-ink-2"
+                          )}
+                        >
+                          <CellValue value={cell} />
+                        </td>
+                      );
+                    })}
+                    <td aria-hidden className="border-b border-line" />
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
         {rows.length === 0 && (
           <div className="p-3">
             <TerminalLines lines={["Запрос выполнен. Строк: 0."]} />
@@ -457,6 +460,7 @@ function DataTable({
               <button
                 type="button"
                 tabIndex={-1}
+                data-testid="pin-row"
                 onClick={() => pin(sel.r)}
                 className={cn(screenButtonClass("text"), "ml-auto shrink-0 ui-12")}
               >

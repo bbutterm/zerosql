@@ -50,11 +50,11 @@ export function DebriefScreen({
   const main = d.objectives.filter((o) => !o.optional);
   const extra = d.objectives.filter((o) => o.optional);
   const primary = onEnding ? (
-    <ScreenButton variant="primary" onClick={onEnding}>
+    <ScreenButton variant="primary" onClick={onEnding} data-testid="debrief-ending">
       Финал
     </ScreenButton>
   ) : onNext ? (
-    <ScreenButton variant="primary" onClick={onNext}>
+    <ScreenButton variant="primary" onClick={onNext} data-testid="debrief-next">
       Следующее дело
     </ScreenButton>
   ) : null;
@@ -85,7 +85,7 @@ export function DebriefScreen({
       status={`оценка ${formatInt(d.score.points)}`}
       footer={
         <>
-          <ScreenButton variant={primary ? "secondary" : "primary"} onClick={onCalendar}>
+          <ScreenButton variant={primary ? "secondary" : "primary"} onClick={onCalendar} data-testid="debrief-calendar">
             Журнал дел
           </ScreenButton>
           {primary}
@@ -185,7 +185,7 @@ export function EndingScreen({
       status="11.01.2027 13:00"
       footer={
         <>
-          <ScreenButton variant={onArchive ? "secondary" : "primary"} onClick={onCalendar}>
+          <ScreenButton variant={onArchive ? "secondary" : "primary"} onClick={onCalendar} data-testid="ending-calendar">
             Журнал дел
           </ScreenButton>
           {onArchive && (

@@ -163,6 +163,17 @@ export {
 } from "./story";
 export type { LineIdParts } from "./story";
 
+/** Расписание zero (М6): какие задания cron срабатывают и с какими параметрами патча */
+export {
+  CRON_PATCH,
+  cronConditionHolds,
+  cronFiresAfterCase,
+  cronJob1Variant,
+  cronLiveParams,
+  firedCronJobs,
+  nextCronNight,
+} from "./cron";
+
 /**
  * Журнал запросов query_log. Писать ПОСЛЕ checkCaseProgress/checkSecrets:
  * иначе эталонные запросы к query_log увидят текущий запрос, а результат

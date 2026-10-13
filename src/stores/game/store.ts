@@ -19,7 +19,11 @@ import {
   checkAccusation,
   checkAchievements,
   checkProtocol,
+  CRON_PATCH,
   createEngineClient,
+  cronFiresAfterCase,
+  cronLiveParams,
+  firedCronJobs,
   dueEvents,
   getScene,
   isCaseObjectivesDone,
@@ -33,6 +37,7 @@ import {
   reopenInterrogation as engineReopen,
   scoreCase,
   startInterrogation,
+  STORY_PATCHES,
   type AccusationCheck,
   type AchievementDef,
   type CaseDef,
@@ -48,6 +53,7 @@ import {
   type RunContext,
   type Scene,
   type SecretDef,
+  type StoryPatchParams,
 } from "@/engine";
 import { achievements as seasonAchievements, cases as seasonCases, secrets as seasonSecrets } from "@/data";
 import { computeEnding } from "./endings";
@@ -213,6 +219,19 @@ function withFlag(s: CaseSession, spec: string): CaseSession {
   const after = applyFlag(before, spec);
   const changed = Object.fromEntries(Object.entries(after).filter(([k, v]) => before[k] !== v || !(k in before)));
   return { ...s, flags: { ...s.flags, ...changed } };
+}
+
+/**
+ * Параметры сюжетного патча: флаги ветвлений (кто импортирует диск, чьи правки
+ * откатаны) и — если патчу нужны — запросы игрока прошлых дел (c10.frame).
+ */
+function patchParams(s: CaseSession, d: CaseDef, id: string): StoryPatchParams {
+  const queries = STORY_PATCHES[id]?.needsQueries
+    ? s.priorLog.filter((e) => !e.denied).map((e) => ({ loggedAt: e.loggedAt, sql: e.sql }))
+    : undefined;
+  // Живое задание zero (Д5): номер задания и ветка текста по увиденному
+  const cron = id === CRON_PATCH ? cronLiveParams(d.order, s.seen) : null;
+  return { flags: effectiveFlags(s), ...(queries ? { queries } : {}), ...(cron ?? {}) };
 }
 
 /** Сдвиг числового флага (доверие) поверх флагов ранних дел */
@@ -497,9 +516,12 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
             for (const ev of due) {
               patchSession((x) => ({ ...x, firedEvents: pushUniq(x.firedEvents, ev.id) }));
               if (ev.patch) {
-                const applied = await engine().applyPatch(ev.patch);
+                const params = patchParams(get().session!, d, ev.patch);
+                const applied = await engine().applyPatch(ev.patch, params);
                 set({ schema: applied.schema, foreignKeys: applied.foreignKeys });
-                patchSession((x) => ({ ...x, clock: applied.clock, patches: [...x.patches, ev.patch!] }));
+                // В следующие дела патч переходит с теми же флагами и часами применения
+                const request = { id: ev.patch, params: { ...params, clock: applied.clock } };
+                patchSession((x) => ({ ...x, clock: applied.clock, patches: [...x.patches, request] }));
                 if (applied.rolledBack) bark("system", MIRA, ROLLBACK_LINE);
               }
               if (ev.clockTo) {
@@ -522,9 +544,17 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           const s = get().session;
           const d = def();
           if (!s || !d || s.phase === "debrief") return;
-          if (!d.protocol && s.closingScene === null && isCaseObjectivesDone(d, new Set(s.completed), effectiveFlags(s))) {
+          // Финал без протокола — только когда сюжет стоит: сцена, очередь или допрос могут
+          // ещё выставить флаг условной задачи (Д8: кода после допроса Тохи)
+          const resting = s.stage === null && s.queue.length === 0 && s.interrogation === null;
+          const accusing = (d.accusations ?? []).some((a) => a.required && !s.accusations[a.id]?.accepted);
+          if (!d.protocol && s.closingScene === null && resting && !accusing && isCaseObjectivesDone(d, new Set(s.completed), effectiveFlags(s))) {
             const closing = d.outroScene ?? "";
-            patchSession((x) => enqueueScenes({ ...x, closingScene: closing }, sceneCtx(x, d), [d.outroScene]));
+            // Финальная сцена уже доиграна по сюжету (Д8: кода → outro) — второй раз её не показываем
+            const played = closing !== "" && s.endedScenes.includes(closing);
+            patchSession((x) =>
+              played ? { ...x, closingScene: closing } : enqueueScenes({ ...x, closingScene: closing }, sceneCtx(x, d), [d.outroScene])
+            );
           }
           const after = get().session!;
           const idle = after.stage === null && after.queue.length === 0 && after.interrogation === null;
@@ -609,13 +639,20 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
             }
           }
 
+          // Ночь после дела: задания zero, чьё условие выполнено (М6), — патчи для следующих дел
+          const earlierPatches = cases.filter((c) => c.order < d.order).flatMap((c) => st.season.casePatches[c.id] ?? []);
+          const cron = cronFiresAfterCase(d.order, s.seen, firedCronJobs([...earlierPatches, ...s.patches]), s.clock).map((params) => ({
+            id: CRON_PATCH,
+            params,
+          }));
+
           const hour = now().getHours();
           set({
             season: {
               ...st.season,
               solved: solvedAll,
               caseFlags: { ...st.season.caseFlags, [d.id]: s.flags },
-              casePatches: { ...st.season.casePatches, [d.id]: s.patches },
+              casePatches: { ...st.season.casePatches, [d.id]: [...s.patches, ...cron] },
               caseQueryLog: { ...st.season.caseQueryLog, [d.id]: s.log },
               evidence: pushUniq(st.season.evidence, ...s.evidence),
               events: pushUniq(

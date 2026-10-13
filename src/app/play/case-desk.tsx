@@ -294,6 +294,7 @@ export function CaseDesk({
           return (
             <AccusationPanel
               key={a.id}
+              id={a.id}
               prompt={a.prompt}
               query={q}
               onQuery={(v) => setAccQuery((m) => ({ ...m, [a.id]: v }))}
@@ -397,7 +398,7 @@ export function CaseDesk({
         <span className="flex items-center gap-4">
           {resume}
           {reopenable.map((id) => (
-            <button key={id} type="button" className="ui-13 text-sodium hover:underline" onClick={() => act().reopenInterrogation(id)}>
+            <button key={id} type="button" data-testid="reopen-interrogation" className="ui-13 text-sodium hover:underline" onClick={() => act().reopenInterrogation(id)}>
               Вернуться к допросу
             </button>
           ))}
@@ -434,7 +435,7 @@ export function CaseDesk({
                 История
               </button>
               {canPinAll && (
-                <button type="button" className="ui-12 text-ink-3 hover:text-ink-1" onClick={pinAll}>
+                <button type="button" data-testid="pin-all" className="ui-12 text-ink-3 hover:text-ink-1" onClick={pinAll}>
                   Приобщить всё
                 </button>
               )}

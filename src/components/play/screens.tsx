@@ -126,7 +126,7 @@ export function OnboardingDialog({
               Отмена
             </ScreenButton>
           )}
-          <ScreenButton variant="primary" type="submit" disabled={!clean}>
+          <ScreenButton variant="primary" type="submit" disabled={!clean} data-testid="onboarding-done">
             Готово
           </ScreenButton>
         </footer>

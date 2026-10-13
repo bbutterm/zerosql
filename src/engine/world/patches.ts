@@ -49,6 +49,8 @@ export interface StoryPatchDef {
   everyCase?: boolean;
   /** Зависит от фактов дела, которые ещё не посажены: пока ничего не меняет */
   stub?: boolean;
+  /** Патчу нужны запросы игрока прошлых дел (ctx.queries): стор передаёт их из query_log */
+  needsQueries?: boolean;
   apply: (db: Database, ctx: StoryPatchContext) => number;
 }
 
@@ -250,7 +252,7 @@ export const STORY_PATCHES: Readonly<Record<string, StoryPatchDef>> = Object.fro
       },
     },
     {
-      id: "c10.frame", title: "Д10, старт: подставные правки 28.12 под nol с WS-07 через 20–40 с после запросов Д9", caseKey: "c10",
+      id: "c10.frame", title: "Д10, старт: подставные правки 28.12 под nol с WS-07 через 20–40 с после запросов Д9", caseKey: "c10", needsQueries: true,
       apply: (db, ctx) => {
         if (scalar(db, "SELECT COUNT(*) FROM main.audit_log WHERE login = ? AND workstation = ? AND ts LIKE '2026-12-28%'", [F.LOGIN.player, F.WORKSTATION.serverRoom]) !== 0) return 0;
         const queries = (ctx.queries ?? []).filter((q) => q.loggedAt.startsWith("2026-12-28"));

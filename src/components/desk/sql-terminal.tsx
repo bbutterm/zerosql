@@ -126,6 +126,7 @@ export function SqlTerminal({
             keys={keys}
             onClick={run}
             disabled={inactive}
+            data-testid="run-query"
             aria-disabled={!canRun}
             // Без квоты на мобильном кнопка всё равно справа
             className={cn("max-lg:min-w-28", !budget && "max-lg:ml-auto")}

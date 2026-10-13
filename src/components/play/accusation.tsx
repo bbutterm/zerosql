@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { EvidenceCardData } from "@/types/ui";
 import { ScreenButton, ScreenField } from "@/components/kit/screen";
 import { Glyph } from "@/components/kit/glyphs";
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
  * (id, логин, пропуск, номер машины). Ложное обвинение не заканчивает игру.
  */
 export function AccusationPanel({
+  id,
   prompt,
   query,
   onQuery,
@@ -25,6 +26,8 @@ export function AccusationPanel({
   busy = false,
   onAccuse,
 }: {
+  /** id обвинения в деле (для автотестов) */
+  id?: string;
   prompt: string;
   query: string;
   onQuery: (q: string) => void;
@@ -39,6 +42,8 @@ export function AccusationPanel({
   onAccuse: (person: string, cardIds: string[]) => void;
 }) {
   const [person, setPerson] = useState<string | null>(null);
+  // В деле бывает два обвинения: id поля поиска уникален для каждого
+  const fieldId = useId();
   const [chosen, setChosen] = useState<string[]>([]);
   const toggle = (id: string) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
   const ready = Boolean(person) && chosen.length >= minCards && !busy;
@@ -55,7 +60,7 @@ export function AccusationPanel({
   }
 
   return (
-    <section aria-label="Обвинение" className="border-t border-line px-4 py-4">
+    <section aria-label="Обвинение" data-testid="accusation" data-accusation-id={id} className="border-t border-line px-4 py-4">
       <p className="ui-15 font-semibold text-ink-1">Обвинение</p>
       <p className="mt-1 ui-14 text-ink-1">
         <RichText text={typo(prompt)} />
@@ -64,10 +69,10 @@ export function AccusationPanel({
 
       <div className="mt-3 grid gap-4 lg:grid-cols-2">
         <div className="min-w-0">
-          <label htmlFor="acc-q" className="ui-12 text-ink-3">
+          <label htmlFor={fieldId} className="ui-12 text-ink-3">
             Кто — из увиденного
           </label>
-          <ScreenField id="acc-q" value={query} onChange={(e) => onQuery(e.target.value)} placeholder="фамилия, логин, пропуск" className="mt-1 w-full" />
+          <ScreenField id={fieldId} data-testid="accusation-query" value={query} onChange={(e) => onQuery(e.target.value)} placeholder="фамилия, логин, пропуск" className="mt-1 w-full" />
           <ul role="listbox" aria-label="Увиденные значения" className="mt-1 max-h-48 overflow-auto">
             {people.length === 0 && <li className="py-1 ui-12 text-ink-3">Совпадений нет.</li>}
             {people.map((p) => (
@@ -76,6 +81,7 @@ export function AccusationPanel({
                 role="option"
                 aria-selected={person === p}
                 tabIndex={0}
+                data-value={p}
                 onClick={() => setPerson(p)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setPerson(p)}
                 className={cn("flex h-7 cursor-default items-center gap-2 px-2 mono-13 outline-none focus-visible:outline-1 focus-visible:outline-ink-1", person === p ? "bg-scr-select text-ink-1" : "text-ink-2 hover:bg-scr-raise")}
@@ -95,7 +101,7 @@ export function AccusationPanel({
             {cards.map((c) => (
               <li key={c.id}>
                 <label className="flex min-h-7 cursor-default items-center gap-2 px-2 hover:bg-scr-raise">
-                  <input type="checkbox" checked={chosen.includes(c.id)} onChange={() => toggle(c.id)} className="size-3.5 accent-[var(--color-ink-1)]" />
+                  <input type="checkbox" data-card-id={c.id} checked={chosen.includes(c.id)} onChange={() => toggle(c.id)} className="size-3.5 accent-[var(--color-ink-1)]" />
                   <span className="truncate ui-13 text-ink-1">{typo(c.title)}</span>
                   {c.source && <span className="ml-auto truncate ui-12 text-ink-3">{c.source}</span>}
                 </label>
@@ -105,7 +111,7 @@ export function AccusationPanel({
         </div>
       </div>
       <div className="mt-3 flex justify-end">
-        <ScreenButton variant="primary" disabled={!ready} onClick={() => person && onAccuse(person, chosen)}>
+        <ScreenButton variant="primary" disabled={!ready} onClick={() => person && onAccuse(person, chosen)} data-testid="accuse">
           Обвинить
         </ScreenButton>
       </div>
@@ -148,6 +154,8 @@ export function PredictionPrompt({
                 key={n}
                 variant="secondary"
                 disabled={Boolean(answered)}
+                data-testid="prediction-option"
+                data-value={n}
                 onClick={() => onAnswer(n)}
                 className={cn("min-w-10 mono-13 tnum", mine && (answered?.correct ? "border-ink-1 text-ink-1" : "border-alarm text-alarm"))}
               >

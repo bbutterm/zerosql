@@ -145,6 +145,8 @@ describe("контент дела", () => {
     const upTo84 = new Set(["o8_0", "o8_0b", "o8_1", "o8_2", "o8_3", "o8_4"]);
     expect(activeObjective(c08, upTo84, {})).toBeNull();
     expect(activeObjective(c08, upTo84, CODA)?.id).toBe("o8_5");
+    // Без принятого обвинения дело после 8.4 не закрывается: допрос и кода впереди
+    expect(c08.accusations?.[0]).toMatchObject({ id: "ghost", required: true, successScene: "int_tokha" });
   });
 
   it("у каждой задачи 3–4 подсказки голосами, уровень 4 — Ратников по телефону (Д8–Д9)", () => {
