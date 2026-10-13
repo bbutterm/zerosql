@@ -10,29 +10,354 @@
   "clock": {
     "cap": "2026-12-02 18:35"
   },
+  "location": "ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03",
   "difficulty": "tutorial",
-  "concepts": [
-    "h.select",
-    "h.columns",
-    "h.limit",
-    "h.where",
-    "h.compare",
-    "h.and",
-    "h.order_by",
-    "w.time"
-  ],
-  "tables": [
-    "incidents",
-    "staff",
-    "transit_taps"
-  ],
-  "newTables": [
-    "incidents",
-    "staff",
-    "transit_taps"
-  ],
-  "briefing": "02.12.2026, 17:05. Мать сообщила: Миша Лаптев, 8 лет, не вернулся из музыкальной школы, откуда вышел в 16:00. На улице −34 °C, патрульная машина ждёт адрес.",
+  "concepts": ["h.select", "h.columns", "h.limit", "h.where", "h.compare", "h.and", "h.order_by", "w.time"],
+  "tables": ["incidents", "staff", "transit_taps"],
+  "newTables": ["incidents", "staff", "transit_taps"],
+  "briefing": "КУСП 4725, 02.12.2026, 17:05. Заявитель — Лаптева Е. В.: сын Миша, 8 лет, не вернулся из музыкальной школы, откуда вышел в 16:00. Приметы: синий пуховик, рюкзак в виде кота. Телефона у ребёнка нет. На улице −34 °C. Экипаж ст. лейтенанта Ким Д. С. кружит по Старому городу и ждёт адрес.\n\nДопуск выдан: журнал происшествий (incidents), штат ГУ (staff), валидаторы автобусов за вечер (transit_taps).",
+  "starterSql": "SELECT * FROM incidents LIMIT 10;",
   "introScene": "intro",
-  "objectives": [],
-  "outroScene": "outro"
+  "objectives": [
+    {
+      "id": "p1",
+      "order": 1,
+      "task": "Нина: «Я набрала. Жми ▶». Выполнить готовый запрос — десять строк журнала происшествий: SELECT * FROM incidents LIMIT 10;",
+      "concept": "h.select",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Десять строк журнала.",
+        "rules": [
+          { "type": "row_count", "expected": 10, "comparison": "eq" },
+          { "type": "cell_value", "value": 7, "columns": ["id"] }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c00_p1.001",
+          "text": "Ничего писать не надо, голубчик. Я уж набрала — жми кнопку «Выполнить»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT — что показать, FROM — из какой таблицы, * — все столбцы, LIMIT 10 — первые десять строк. См. «Выборка: SELECT … FROM»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT * FROM _________ LIMIT __;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка, распечатка: SELECT * FORM incidents LIMIT 10; — одна ошибка там нарочно. Она всегда так: чтоб думали."
+        }
+      ],
+      "success": "Сверху не сегодняшний вечер, а висяки 2015 года из «Сокола».",
+      "evidence": {
+        "id": "ev.c00.sokol_hangers",
+        "title": "Висяки „Сокола“ сверху журнала",
+        "text": "Первые строки incidents — не вызовы 2 декабря, а висяки I квартала 2015 года из прежней системы «Сокол»: при миграции их залили первыми. Статус у всех — «приостановлено».",
+        "kind": "record"
+      },
+      "sceneAfter": "desk",
+      "solution": "SELECT * FROM incidents LIMIT 10;"
+    },
+    {
+      "id": "p2",
+      "order": 2,
+      "task": "Звёздочка * — это все тринадцать столбцов. Заменить её списком через запятую: время, район, тип и описание — reported_at, district, kind, description. LIMIT 10 оставить.",
+      "concept": "h.columns",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Четыре столбца.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "Лишние столбцы. Нужны только время, район, тип и описание: reported_at, district, kind, description.",
+            "rule": {
+              "type": "any_of",
+              "successMessage": "лишний столбец",
+              "rules": [
+                { "type": "contains_columns", "columns": ["kusp_no"] },
+                { "type": "contains_columns", "columns": ["address_text"] },
+                { "type": "contains_columns", "columns": ["vehicle_id"] },
+                { "type": "contains_columns", "columns": ["applicant_text"] },
+                { "type": "contains_columns", "columns": ["officer_staff_id"] },
+                { "type": "contains_columns", "columns": ["status"] },
+                { "type": "contains_columns", "columns": ["x_m"] },
+                { "type": "contains_columns", "columns": ["y_m"] }
+              ]
+            }
+          },
+          { "type": "contains_columns", "columns": ["reported_at", "district", "kind", "description"] },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT reported_at, district, kind, description FROM incidents ORDER BY id LIMIT 10"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c00_p2.001",
+          "text": "Даше всё подряд не нужно, голубчик. Время, район, тип, описание — вот их и перечисли, через запятую."
+        },
+        {
+          "by": "mira",
+          "text": "Вместо * — список столбцов через запятую, в нужном порядке: SELECT full_name, position FROM staff. После последнего столбца запятой нет. См. «Нужные столбцы»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ___________, ________, ____, ___________ FROM incidents LIMIT 10;"
+        },
+        {
+          "by": "nina",
+          "text": "Шпаргалка Ирочкина: SELECT reported_at, district, kind, description, FROM incidents LIMIT 10; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Четыре столбца вместо тринадцати. Время в журнале записано полностью, с секундами: 2015-02-19 23:20:00.",
+      "evidence": {
+        "id": "ev.c00.time_format",
+        "title": "Как ПБД пишет время",
+        "text": "Время в журнале — строка «ГГГГ-ММ-ДД ЧЧ:ММ:СС», местное, секунды всегда записаны: 2015-02-19 23:20:00. В условиях его пишут так же, в апострофах.",
+        "kind": "document"
+      },
+      "solution": "SELECT reported_at, district, kind, description FROM incidents LIMIT 10;"
+    },
+    {
+      "id": "p3",
+      "order": 3,
+      "task": "Всё за сегодня после 16:00. Дописать условие, время — в формате базы: SELECT * FROM incidents WHERE reported_at >= '____-__-__ __:__:__';",
+      "concept": "w.time",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Вечер 2 декабря.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT id FROM incidents WHERE reported_at >= '2026-12-02 16:00:00'"
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT description FROM incidents WHERE reported_at >= '2026-12-02 16:00:00'"
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT reported_at FROM incidents WHERE reported_at >= '2026-12-02 16:00:00'"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c00_p3.001",
+          "text": "Мне сегодня. После четырёх. Пацан вышел в шестнадцать ноль-ноль — всё, что раньше, мимо."
+        },
+        {
+          "by": "mira",
+          "text": "WHERE оставляет строки, где условие истинно; >= — «не раньше»: SELECT * FROM staff WHERE hired_at >= '2026-01-01'. Время в журнале — строка 'ГГГГ-ММ-ДД ЧЧ:ММ:СС', с секундами. См. «Время в ПБД: ISO, местное»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT * FROM incidents WHERE reported_at >= '____-__-__ 16:00:00';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT * FROM incidents WHERE reported_at >= '02.12.2026 16:00:00'; — одна ошибка. Сравни с тем, что в столбце лежит."
+        }
+      ],
+      "success": "Четырнадцать вызовов с 16:12 до 18:02 — вдвое больше, чем обычно за сутки. После 18:02 тишина.",
+      "evidence": {
+        "id": "ev.c00.evening_spike",
+        "title": "Вечер 2 декабря: 14 вызовов за два часа",
+        "text": "С 16:12 до 18:02 — четырнадцать вызовов при обычных семи в сутки. В 17:05 — заявление Лаптевой Е. В.: сын Миша, 8 лет, синий пуховик, рюкзак-кот. После 18:02 вызовов нет.",
+        "kind": "record"
+      },
+      "sceneAfter": "spike",
+      "solution": "SELECT * FROM incidents WHERE reported_at >= '2026-12-02 16:00:00';"
+    },
+    {
+      "id": "p4",
+      "order": 4,
+      "task": "Даше нужно «где и когда»: только сообщения граждан после 16:00, свежие сверху (ORDER BY … DESC). Нужны место (address_text) и время (reported_at). Запрос — с нуля.",
+      "concept": "h.order_by",
+      "validation": {
+        "type": "rows_match",
+        "ordered": true,
+        "referenceQuery": "SELECT reported_at, address_text FROM incidents WHERE reported_at >= '2026-12-02 16:00:00' AND kind = 'сообщение гражданина' ORDER BY reported_at DESC"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c00_p4.001",
+          "text": "Кражи и теплотрассу — мимо. Мне что люди видели: сообщения граждан. И свежее сверху, я не археолог."
+        },
+        {
+          "by": "mira",
+          "text": "Порядок — ORDER BY столбец DESC, сначала новые: SELECT full_name, hired_at FROM staff WHERE dept = 'ОЦР' ORDER BY hired_at DESC. Второе условие — через AND. См. «Сортировка: ORDER BY»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT reported_at, district, address_text, description FROM incidents WHERE reported_at >= '2026-12-02 16:00:00' AND kind = '____________________' ORDER BY reported_at ____;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина: SELECT reported_at, district, address_text, description FROM incidents WHERE reported_at >= '2026-12-02 16:00:00' AND kind = 'сообщение гражданина' ORDER BY reported_at; — одна ошибка. Посмотри, что окажется сверху."
+        }
+      ],
+      "success": "Шесть сообщений граждан. Свежее — 18:02.",
+      "evidence": {
+        "id": "ev.c00.citizen_reports",
+        "title": "Шесть сообщений граждан",
+        "text": "Сообщения граждан после 16:00, свежие сверху. Подросток на гаражах (Шахтный, 17:20) и мальчик «лет четырнадцати» у полыньи (Створ, 17:44) — не по возрасту. Водитель автобуса № 3 (17:31): мальчик ехал один.",
+        "kind": "record"
+      },
+      "sceneAfter": "radio",
+      "solution": "SELECT reported_at, district, address_text, description FROM incidents WHERE reported_at >= '2026-12-02 16:00:00' AND kind = 'сообщение гражданина' ORDER BY reported_at DESC;"
+    },
+    {
+      "id": "p5",
+      "order": 5,
+      "task": "В заключении есть графа «исполнитель». Найти себя в staff. Что известно: станция WS-03 (наклейка на мониторе), логин nol, пропуск B-9000.",
+      "concept": "h.where",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Строка исполнителя.",
+        "rules": [
+          { "type": "row_count", "expected": 10, "comparison": "lte" },
+          {
+            "type": "any_of",
+            "successMessage": "Это ты.",
+            "rules": [
+              { "type": "cell_value", "value": "nol", "columns": ["login"] },
+              { "type": "cell_value", "value": 9000, "columns": ["person_id"] },
+              { "type": "cell_value", "value": "ТБ-2026/117" },
+              {
+                "type": "column_values",
+                "mode": "superset",
+                "referenceQuery": "SELECT full_name FROM staff WHERE login = 'nol'"
+              },
+              { "type": "cell_value", "value": "B-9000" }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c00_p5.001",
+          "text": "Наклейку на мониторе видишь? Номер станции за тобой записан — по нему себя и найдёшь, голубчик."
+        },
+        {
+          "by": "mira",
+          "text": "Текст в условии — в прямых апострофах, иначе это имя столбца: SELECT * FROM incidents WHERE district = 'Гавань'. См. «Отбор строк: WHERE»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT * FROM staff WHERE workstation = '_____';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина: SELECT * FROM staff WHERE login = nol; — одна ошибка. Ирочка её тоже поначалу делала."
+        }
+      ],
+      "success": "Строка 151: «аналитик ОЦР (подрядчик)», договор ТБ-2026/117. Звания нет.",
+      "evidence": {
+        "id": "ev.c00.staff_151",
+        "title": "Строка 151: аналитик ОЦР (подрядчик)",
+        "text": "staff 151: «аналитик ОЦР (подрядчик)», ОЦР, станция WS-03, пропуск B-9000, принят 2026-12-02. Звания нет. В графе contract_no — договор ТБ-2026/117.",
+        "kind": "record"
+      },
+      "sceneAfter": "self",
+      "solution": "SELECT * FROM staff WHERE workstation = 'WS-03';"
+    },
+    {
+      "id": "p4b",
+      "order": 6,
+      "optional": true,
+      "task": "★ Карта школьника. Водитель автобуса № 3 сообщил, что мальчик ехал один. Проверить по валидаторам (transit_taps): была ли посадка по школьной карте мальчика.",
+      "concept": "h.and",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Карта мальчика.",
+        "rules": [
+          { "type": "row_count", "expected": 20, "comparison": "lte" },
+          {
+            "type": "any_of",
+            "successMessage": "Лаптев М. А.",
+            "rules": [
+              { "type": "cell_value", "value": "Ш-00417" },
+              { "type": "cell_value", "value": "Лаптев М. А." }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c00_p4b.001",
+          "text": "Водитель третьего говорит — пацан ехал один. Проверь, садился ли. У школьников карты именные."
+        },
+        {
+          "by": "mira",
+          "text": "Два признака сразу — через AND: SELECT * FROM incidents WHERE district = 'Гавань' AND kind = 'кража'. Текст сверяется буква в букву. См. «Два условия сразу: AND»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ts, card_no, holder_text, route, stop FROM transit_taps WHERE route = '_' AND card_kind = '________' ORDER BY ts;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина: SELECT ts, card_no, holder_text, route, stop FROM transit_taps WHERE route = '3' AND card_kind = 'Школьная' ORDER BY ts; — одна буква не та."
+        }
+      ],
+      "success": "Карта Ш-00417, Лаптев М. А.: посадка в 16:41 у музыкальной школы, автобус № 3. Водитель прав.",
+      "evidence": {
+        "id": "ev.c00.school_card",
+        "title": "Школьная карта Ш-00417",
+        "text": "Лаптев М. А. приложил школьную карту в 16:41 в автобусе № 3 на остановке «Музыкальная школа» — через сорок минут после конца занятий. Водитель из сообщения 17:31 прав: мальчик ехал один.",
+        "kind": "record"
+      },
+      "sceneAfter": "card",
+      "solution": "SELECT ts, card_no, holder_text, route, stop FROM transit_taps WHERE route = '3' AND card_kind = 'школьная' ORDER BY ts;"
+    }
+  ],
+  "protocol": {
+    "statements": ["Мальчик сейчас у {place}, сообщение получено {time}."],
+    "blanks": [
+      {
+        "id": "place",
+        "kind": "text",
+        "options": [
+          "ДК «Полярник»",
+          "Рынок, конечная маршрута № 3",
+          "Мостки у полыньи (Береговая)",
+          "Угольная, 4 (гаражи)",
+          "Музыкальная школа",
+          "Северная, 8"
+        ],
+        "answer": "ДК «Полярник»"
+      },
+      {
+        "id": "time",
+        "kind": "datetime",
+        "precision": "minute",
+        "options": [
+          "2026-12-02 18:02:00",
+          "2026-12-02 17:31:00",
+          "2026-12-02 17:44:00",
+          "2026-12-02 17:20:00",
+          "2026-12-02 17:05:00",
+          "2026-12-02 16:41:00"
+        ],
+        "answer": "2026-12-02 18:02:00"
+      }
+    ],
+    "batchSize": 2,
+    "successScene": "close",
+    "failureLines": [
+      "Даша (по рации): Так. Стоп. Не сходится. Перепроверь — у меня пацан на морозе.",
+      "Нина: Не сходится, голубчик. Глянь ещё раз, не торопись.",
+      "Даша (по рации): Не клюёт. Ещё раз — и быстрее."
+    ]
+  }
 }
