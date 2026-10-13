@@ -6,6 +6,9 @@
   "title": "Мёртвая душа",
   "subtitle": "Проверка миграции: сироты и рассинхроны",
   "date": "2026-12-11 10:00",
+  "minutesPerQuery": 1,
+  "clock": { "cap": "2026-12-11 13:00" },
+  "location": "ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03",
   "difficulty": "medium",
   "concepts": [
     "h.left_join",
@@ -38,15 +41,361 @@
     "zags_deaths",
     "query_log"
   ],
-  "newTables": [
-    "logins",
-    "workstations",
-    "audit_log",
-    "zags_deaths",
-    "query_log"
-  ],
-  "briefing": "Перед финализацией миграции ИТ-отдел требует проверить качество данных: найти сирот, дубли и рассинхроны. Доступ к журналу аудита выдан на время проверки.",
+  "newTables": ["logins", "workstations", "audit_log", "zags_deaths", "query_log"],
+  "briefing": "Служебная записка ИТ-отдела, 11.12.2026. Перед финализацией миграции «Сокол» → ПБД проверить качество данных: сироты (записи без пары), дубли, рассинхрон с ЗЕРКАЛОМ. Ответственный — майор Мельник К. И. Отчёт — к 13:00.\n\nДопуск на время проверки: учётные записи (logins), рабочие станции (workstations), журнал аудита (audit_log), реестр смертей ЗАГС из ЗЕРКАЛА (zags_deaths), журнал запросов (query_log). Только чтение.",
+  "starterSql": "SELECT id, full_name, person_id, login FROM staff LIMIT 10;",
   "introScene": "intro",
-  "objectives": [],
-  "outroScene": "outro"
+  "objectives": [
+    {
+      "id": "o4_1",
+      "order": 1,
+      "task": "Новое — LEFT JOIN. Найти сотрудников без карточки в persons: staff слева, persons справа по person_id, оставить строки, где карточки нет (p.id IS NULL).",
+      "concept": "h.left_join",
+      "prediction": {
+        "question": "Сколько строк вернёт LEFT JOIN, пока фильтра нет?",
+        "sql": "SELECT s.id, s.full_name, p.id FROM staff s LEFT JOIN persons p ON p.id = s.person_id;",
+        "options": [147, 151, 4],
+        "answer": 151,
+        "explanation": "Сто пятьдесят одна — столько же, сколько в staff. LEFT JOIN не теряет ни одной строки слева: у четырёх справа просто NULL."
+      },
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Четыре сироты в штатке.",
+        "rules": [
+          { "type": "rows_match", "referenceQuery": "SELECT s.person_id FROM staff s LEFT JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL" },
+          { "type": "rows_match", "referenceQuery": "SELECT s.full_name FROM staff s LEFT JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL" },
+          { "type": "rows_match", "referenceQuery": "SELECT s.login FROM staff s LEFT JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "tokha",
+          "line": "hint.c04_o4_1.001",
+          "text": "Штатку я сам импортировал, хе. Если где-то person_id кривой — карточки под ним просто нет. Ищи пустоту справа."
+        },
+        {
+          "by": "mira",
+          "text": "LEFT JOIN сохраняет каждую строку левой таблицы; где пары нет, столбцы правой — NULL: SELECT c.id, c.name, r.plate FROM cameras c LEFT JOIN plate_reads r ON r.camera_id = c.id WHERE r.id IS NULL. См. «LEFT JOIN: все строки слева»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT s.id, s.full_name, s.person_id FROM staff s LEFT JOIN persons p ON ___ = ___ WHERE ___ IS NULL;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины, на полях: SELECT s.id, s.full_name, s.person_id, s.position FROM staff s JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL; — одна ошибка. Обычный JOIN пустоту не отдаёт."
+        }
+      ],
+      "success": "Четыре сотрудника — и ни одной карточки. Номера в person_id длиннее, чем бывают: 14020, 27710, 30950, 33080. Будто к настоящему id приписали ноль.",
+      "evidence": {
+        "id": "ev.c04.import_typos",
+        "title": "Сироты штатки: 4 сотрудника без карточек",
+        "text": "staff 23, 57, 91, 133 ссылаются на persons 14020, 27710, 30950, 33080 — таких карточек нет. Настоящие: 1402, 2771, 3095, 3308. Опечатка импорта (лишний ноль).",
+        "kind": "record"
+      },
+      "sceneAfter": "typos",
+      "solution": "SELECT s.id, s.full_name, s.person_id, s.position FROM staff s LEFT JOIN persons p ON p.id = s.person_id WHERE p.id IS NULL;"
+    },
+    {
+      "id": "o4_2",
+      "order": 2,
+      "task": "Анти-джойн в обратную сторону: логины, за которыми нет сотрудника. logins слева, staff справа — кто остался без пары?",
+      "concept": "h.anti_join",
+      "validation": {
+        "type": "column_values",
+        "columns": ["login"],
+        "values": ["test1", "zero"],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "melnik",
+          "line": "hint.c04_o4_2.001",
+          "text": "Коллеги, учётка без владельца — это риск. Мне нужен список логинов, которые ни к кому не привязаны. Без лирики."
+        },
+        {
+          "by": "mira",
+          "text": "Анти-джойн: LEFT JOIN и проверка ключа правой таблицы на NULL. SELECT v.plate, v.owner_name FROM vehicles v LEFT JOIN persons p ON p.id = v.owner_person_id WHERE p.id IS NULL. См. «Анти-джойн: у кого пары нет»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT l.login, l.role, l.created_at, l.enabled, l.last_login_at FROM logins l LEFT JOIN staff s ON ___ = ___ WHERE ___ IS NULL;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT l.login, l.role, l.created_at, l.enabled, l.last_login_at FROM logins l LEFT JOIN staff s ON s.id = l.staff_id WHERE s.id = NULL; — одна ошибка. С пустотой знаком равенства не здороваются."
+        }
+      ],
+      "success": "Две сироты. test1 — тестовая учётка ИТ, отключена с февраля. И zero: служебная учётка «Сокола», создана 01.03.2015, включена. Последний вход — сегодня ночью, ровно в 03:12:00.",
+      "evidence": {
+        "id": "ev.c04.orphan_logins",
+        "title": "Логины без сотрудника: test1 и zero",
+        "text": "test1 — 'test', создан k.melnik 10.02.2025, отключён. zero — 'service', создан 'system' 01.03.2015, enabled = 1, last_login_at — прошлая ночь, 03:12:00.",
+        "kind": "record"
+      },
+      "sceneAfter": "zero",
+      "solution": "SELECT l.login, l.role, l.created_at, l.created_by, l.enabled, l.last_login_at FROM logins l LEFT JOIN staff s ON s.id = l.staff_id WHERE s.id IS NULL;"
+    },
+    {
+      "id": "o4_2b",
+      "order": 3,
+      "optional": true,
+      "task": "★ zero отключили ещё при «Соколе», а сейчас enabled = 1. Кто и когда его включил? Журнал аудита помнит каждую правку строки logins.",
+      "concept": "w.audit_order",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Сторож найден.",
+        "rules": [
+          { "type": "cell_value", "value": "2026-11-16 22:41:00" },
+          { "type": "cell_value", "value": "i.valts" },
+          { "type": "row_count", "expected": 10, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c04_o4_2b.001",
+          "text": "Включать да выключать — это ж тоже правка, голубчик. А правки у Мельника все в журнал пишутся."
+        },
+        {
+          "by": "mira",
+          "text": "В audit_log строка правки — это table_name, row_id, field, old_value → new_value. Пример: SELECT ts, login, field, old_value, new_value FROM audit_log WHERE table_name = 'staff' LIMIT 10. См. «Журнал аудита: id — не время»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ts, login, workstation, field, old_value, new_value FROM audit_log WHERE table_name = ___ AND row_id = ___;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT ts, login, workstation, field, old_value, new_value FROM audit_log WHERE table_name = 'logins' AND login = 'zero'; — одна ошибка. Кто правил и что правили — разные столбцы."
+        }
+      ],
+      "success": "16.11.2026, 22:41:00. WS-03 — этот самый стол. Логин i.valts, enabled 0 → 1. Сторожа включила Ирина. За двое суток до смерти.",
+      "evidence": {
+        "id": "ev.c04.zero_enabled",
+        "title": "Сторож: zero включён 16.11 22:41",
+        "text": "audit_log: 2026-11-16 22:41:00, i.valts, WS-03, UPDATE logins 'zero', enabled 0 → 1. За двое суток до смерти Вальц И. П.",
+        "kind": "record"
+      },
+      "sceneAfter": "watchman",
+      "solution": "SELECT id, ts, login, workstation, field, old_value, new_value FROM audit_log WHERE table_name = 'logins' AND row_id = 'zero';"
+    },
+    {
+      "id": "o4_3",
+      "order": 4,
+      "task": "Рассинхрон с ЗЕРКАЛОМ: кто из сотрудников умер раньше, чем его уволили? Дата смерти — из ЗАГС (zags_deaths), не из ПБД. Вывести логин, ФИО, должность, дату увольнения и дату смерти.",
+      "concept": "w.mirror",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT s.login, s.full_name, s.position, s.fired_at, z.died_at FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c04_o4_3.001",
+          "text": "Сверь-ка, голубчик, кадры с ЗАГСом. Бумага у нас, бывает, на полгода опаздывает."
+        },
+        {
+          "by": "mira",
+          "text": "В ПБД death_date заполнена не у всех: смерть берут из ЗАГС. JOIN склеивает строки по общему полю, и это не обязательно id: SELECT m.full_name_text, z.died_at FROM morgue_records m JOIN zags_deaths z ON z.person_id = m.person_id. См. «Как устроено ЗЕРКАЛО»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT s.login, s.full_name, s.position, s.fired_at, z.died_at FROM staff s JOIN zags_deaths z ON ___ = ___;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT s.login, s.full_name, s.position, s.fired_at, z.died_at FROM staff s JOIN zags_deaths z ON z.person_id = s.id; — одна ошибка. Номер в штатке — не номер человека."
+        }
+      ],
+      "success": "Двое. Громов П. А.: умер 02.06.2019, уволен через полгода — бумажная волокита. И Вальц И. П., аналитик ОЦР: умерла 18.11.2026 в 23:10:00. Уволена 19.11. Она не уволилась.",
+      "evidence": {
+        "id": "ev.c04.died_before_fired",
+        "title": "Уволены после смерти: Вальц И. П., Громов П. А.",
+        "text": "ЗАГС: Вальц И. П. (i.valts, аналитик ОЦР) умерла 2026-11-18 23:10:00, уволена 2026-11-19. Громов П. А. (p.gromov) умер 2019-06-02 04:30:00, уволен 2020-01-15.",
+        "kind": "document"
+      },
+      "sceneAfter": "dead",
+      "solution": "SELECT s.login, s.full_name, s.position, s.fired_at, z.died_at FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id WHERE s.fired_at > z.died_at;"
+    },
+    {
+      "id": "o4_4",
+      "order": 5,
+      "task": "Сколько действий выполнено под их логинами после смерти? Цепочка: staff → zags_deaths → LEFT JOIN audit_log. В ответе должны остаться оба — и тот, у кого действий ноль.",
+      "concept": "h.count_col",
+      "prediction": {
+        "question": "Условие на время перенесли из ON в WHERE. Сколько строк вернёт запрос?",
+        "sql": "SELECT s.login, COUNT(a.id) FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login WHERE a.ts > z.died_at GROUP BY s.login;",
+        "options": [2, 1, 0],
+        "answer": 1,
+        "explanation": "Одна. У Громова справа NULL, а NULL > дата — не истина. WHERE выкинул его раньше, чем COUNT успел насчитать ноль."
+      },
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT s.login, COUNT(a.id) AS actions FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login"
+      },
+      "hints": [
+        {
+          "by": "melnik",
+          "line": "hint.c04_o4_4.001",
+          "text": "Коллеги, метрика простая: действия под логином после даты смерти. Ноль — тоже метрика, его не теряем."
+        },
+        {
+          "by": "mira",
+          "text": "COUNT(*) считает строки, COUNT(столбец) — только непустые. После LEFT JOIN строка без пары — тоже строка: SELECT c.name, COUNT(*), COUNT(r.id) FROM cameras c LEFT JOIN plate_reads r ON r.camera_id = c.id GROUP BY c.id, c.name. См. «COUNT(*) против COUNT(столбец)»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT s.login, COUNT(___) FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND ___ GROUP BY s.login;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT s.login, COUNT(*) FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login; — одна ошибка. Сколько раз можно ничего не сделать?"
+        }
+      ],
+      "success": "p.gromov — ноль. i.valts — 214. Мёртвые не работают. Под её логином — работают.",
+      "evidence": {
+        "id": "ev.c04.actions_214",
+        "title": "214 действий после смерти",
+        "text": "audit_log к 11.12.2026: под логином i.valts после 2026-11-18 23:10:00 — 214 действий. Под p.gromov после 2019-06-02 04:30:00 — 0.",
+        "kind": "record"
+      },
+      "sceneAfter": "pale",
+      "solution": "SELECT s.login, s.full_name, z.died_at, COUNT(a.id) AS actions_after_death FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login, s.full_name, z.died_at;"
+    },
+    {
+      "id": "o4_4b",
+      "order": 6,
+      "optional": true,
+      "task": "★ Изящно: 4.3 и 4.4 одним запросом — логин, сколько действий после смерти и когда последнее. Где действий нет, пусть так и будет написано: «нет действий».",
+      "concept": "h.coalesce",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT s.login, COUNT(a.id) AS actions, COALESCE(MAX(a.ts), 'нет действий') AS last_action FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login"
+      },
+      "hints": [
+        {
+          "by": "melnik",
+          "line": "hint.c04_o4_4b.001",
+          "text": "В отчёт пустые ячейки не вставляю. NULL на слайде — это минус к карме, коллеги."
+        },
+        {
+          "by": "mira",
+          "text": "COALESCE(a, b) возвращает первое значение, которое не NULL: SELECT c.name, COALESCE(MAX(r.read_at), 'нет считываний') FROM cameras c LEFT JOIN plate_reads r ON r.camera_id = c.id GROUP BY c.id, c.name. См. «COALESCE / IFNULL»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT s.login, COUNT(a.id), COALESCE(MAX(___), ___) FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT s.login, COUNT(a.id), COALESCE(MAX(a.id), 'нет действий') FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login; — одна ошибка. Последнее — это когда, а не какое по счёту."
+        }
+      ],
+      "success": "Одна таблица на две строки: p.gromov — 0, «нет действий»; i.valts — 214, последнее 09.12 в 02:30:00. Такой отчёт Мельнику не стыдно положить на стол.",
+      "evidence": {
+        "id": "ev.c04.one_query",
+        "title": "Сводка одним запросом",
+        "text": "i.valts — 214 действий после смерти, последнее 2026-12-09 02:30:00. p.gromov — 0, «нет действий».",
+        "kind": "record"
+      },
+      "solution": "SELECT s.login, COUNT(a.id) AS actions, COALESCE(MAX(a.ts), 'нет действий') AS last_action FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id LEFT JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at GROUP BY s.login;"
+    },
+    {
+      "id": "o4_5",
+      "order": 7,
+      "task": "Что именно правили под её логином после смерти — и когда последний раз? Всё, кроме DELETE, по порядку времени: время, станция, действие, таблица, строка, поле, было, стало.",
+      "concept": "w.audit_order",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Тридцать четыре правки по часам.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "ordered": true,
+            "referenceQuery": "SELECT a.ts, a.action, a.row_id FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at WHERE a.action <> 'DELETE' ORDER BY a.ts"
+          },
+          {
+            "type": "rows_match",
+            "ordered": true,
+            "referenceQuery": "SELECT a.ts, a.action, a.row_id FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at WHERE a.action <> 'DELETE' ORDER BY a.ts DESC"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c04_o4_5.001",
+          "text": "Удаления потом посчитаешь, голубчик. Ты глянь, что она… что под ней правили. Было и стало — всё в журнале."
+        },
+        {
+          "by": "mira",
+          "text": "Порядок действий задаёт ts. id — порядок, в котором строки дошли до сервера: SELECT id, ts, login, action FROM audit_log WHERE workstation = 'WS-IT-01' ORDER BY ts DESC LIMIT 10. См. «Журнал аудита: id — не время»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT a.ts, a.workstation, a.action, a.table_name, a.row_id, a.field, a.old_value, a.new_value FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at WHERE s.login = ___ AND a.action <> ___ ORDER BY ___;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT a.ts, a.workstation, a.action, a.table_name, a.row_id, a.field, a.old_value, a.new_value FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at WHERE s.login = 'i.valts' AND a.action <> 'DELETE' ORDER BY a.id; — одна ошибка. Станции досылают строки пачками."
+        }
+      ],
+      "success": "Тридцать четыре правки, все с WS-07. 19.11 — обнулены особые приметы, первой — у 2214. 20.11, 02:14 — КУСП 4518: время заявления об угоне 23:52 → 22:40. 21.11 — из КУСП 4515 убрана 4127. Последнее действие — 09.12, 02:30:00, выгрузка.",
+      "evidence": {
+        "id": "ev.c04.kusp4518_rewrite",
+        "title": "КУСП 4518: 23:52 → 22:40",
+        "text": "audit_log, 2026-11-20 02:14:00, i.valts, WS-07: UPDATE incidents 1615 (КУСП 4518), reported_at '2026-11-18 23:52:00' → '2026-11-18 22:40:00'. Заявление об угоне «подано» за полчаса до наезда, а не через сорок минут после.",
+        "kind": "record"
+      },
+      "sceneAfter": "ws07",
+      "solution": "SELECT a.ts, a.workstation, a.action, a.table_name, a.row_id, a.field, a.old_value, a.new_value FROM staff s JOIN zags_deaths z ON z.person_id = s.person_id JOIN audit_log a ON a.login = s.login AND a.ts > z.died_at WHERE s.login = 'i.valts' AND a.action <> 'DELETE' ORDER BY a.ts;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Вальц И. П. — {position}.",
+      "После её смерти под логином {login} выполнено {actions} действий.",
+      "Время заявления об угоне изменено с {old_time} на {new_time}."
+    ],
+    "blanks": [
+      {
+        "id": "position",
+        "kind": "text",
+        "options": ["аналитик ОЦР", "инспектор группы учёта", "специалист группы учёта", "старший оперуполномоченный", "оперативный дежурный"],
+        "answer": "аналитик ОЦР"
+      },
+      {
+        "id": "login",
+        "kind": "text",
+        "options": ["i.valts", "p.gromov", "zero", "test1"],
+        "answer": "i.valts"
+      },
+      {
+        "id": "actions",
+        "kind": "number",
+        "options": ["214", "34", "0", "4"],
+        "answer": "214"
+      },
+      {
+        "id": "old_time",
+        "kind": "text",
+        "options": ["2026-11-18 23:52:00", "2026-11-18 22:40:00", "2026-11-18 23:10:00", "2026-12-09 02:30:00"],
+        "answer": "2026-11-18 23:52:00"
+      },
+      {
+        "id": "new_time",
+        "kind": "text",
+        "options": ["2026-11-18 22:40:00", "2026-11-18 23:52:00", "2026-11-18 23:10:00", "2026-12-09 02:30:00"],
+        "answer": "2026-11-18 22:40:00"
+      }
+    ],
+    "batchSize": 3,
+    "successScene": "talk",
+    "failureLines": [
+      "Мельник: Коллеги, не сходится. Перепроверьте выборку, отчёт не горит… пока.",
+      "Нина: Не сходится, голубчик. Ты по часам сверь, не по номерам.",
+      "МИРА: Не сходится. Позиции не названы."
+    ]
+  }
 }
