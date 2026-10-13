@@ -1,0 +1,55 @@
+{
+  "canonical_csv_row": {
+    "file_path": "art-src/refs/nina_sheet.png",
+    "character_or_location": "nina",
+    "emotion_or_variant": "ref_sheet",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Character reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Nina Shustova, a 67-year-old police archivist and former typist, small and round, a soft wrinkled face, very thick glasses that magnify her eyes, grey hair in a tight bun with a yellow pencil stuck through it, a mustard knitted vest (#D9A441) over a cream blouse, grey knitted fingerless mittens, a small old brooch, sharp motherly wit.",
+    "negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, loose hair, hair down, thin glasses, no glasses",
+    "notes_ru": "Рабочий лист-референс (анфас, 3/4, профиль, нейтральный свет). Не в игру. Делается до якоря."
+  },
+  "generation_tool": "built-in image_gen",
+  "native_image": "nina_sheet_native_1536x1024.png",
+  "native_dimensions": [
+    1536,
+    1024
+  ],
+  "final_csv_path": "art-src/refs/nina_sheet.png",
+  "export_path": "nina_sheet.png",
+  "export_dimensions": [
+    2304,
+    1536
+  ],
+  "export_method": "Pillow LANCZOS technical resize only, no content edits",
+  "full_effective_prompt": "Use case: stylized-concept. Asset type: production character turnaround reference sheet for ZeroSQL.\nRequested canvas size: 2304 x 1536 pixels, landscape.\nInput image 1 is STYLE AND TURNAROUND LAYOUT REFERENCE ONLY. Do not copy the man, his identity, age, gender, facial shape, hair, stubble, spectacles, or outfit. Create Nina, a completely different woman, exactly as described below. Keep the approved rough angular expressive oil-brush graphic-novel medium, matte paint, broken palette-knife marks and simplified planes, never photographic or polished.\n\nFULL CANONICAL CSV PROMPT_EN (preserve all):\nCharacter reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Nina Shustova, a 67-year-old police archivist and former typist, small and round, a soft wrinkled face, very thick glasses that magnify her eyes, grey hair in a tight bun with a yellow pencil stuck through it, a mustard knitted vest (#D9A441) over a cream blouse, grey knitted fingerless mittens, a small old brooch, sharp motherly wit.\n\nFULL CANONICAL CSV NEGATIVE_EN (avoid all):\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, loose hair, hair down, thin glasses, no glasses\n\nProduction clarity: exactly three consistent views of the same elderly woman, left frontal, center three-quarter, right true profile. Same head size and eye height across the three separate busts, entire bun and pencil inside canvas. Soft flat neutral studio light and plain #6E7378 grey, not portrait dramatic split lighting. Nina’s face must be broad soft round and wrinkled, with small round shoulders; lenses clearly very thick and magnifying eyes, grey tight bun and visible yellow pencil in all views. Mustard knit vest over cream blouse, small old brooch. Grey fingerless mitts may just enter at bottom of each upper-chest crop, but do not extend composition to full body. Do not import male face or male glasses from reference. No text or drawn divisions.",
+  "style_reference": "libfile_ff5b0f05cf18819180f56522eeae588a",
+  "style_reference_scope": "technique and turnaround layout only, not identity",
+  "visual_qa": {
+    "same_identity_three_views": true,
+    "front_three_quarter_profile": true,
+    "soft_round_wrinkled_elderly_face": true,
+    "very_thick_magnifying_glasses": true,
+    "grey_bun_yellow_pencil_all_views": true,
+    "mustard_knit_vest_cream_blouse": true,
+    "small_brooch_consistent": true,
+    "grey_fingerless_mitts_present_bottom": true,
+    "no_text_or_labels": true,
+    "matte_rough_oil_brush_style": true,
+    "grey_background_neutral_light": true
+  },
+  "qa_limitations": [
+    "Painterly loose wisps exist around otherwise tied tight bun.",
+    "Fingers partially cropped/overlapped at lower edge; no extra or fused digits visible.",
+    "Requested 2304x1536 was not native tool output; exported dimensions use technical resize."
+  ],
+  "sha256_export": "cdc7fba07e41d32b28f185cb9af026401ac5d4c2a668abff57115bab2fcd0455",
+  "sha256_native": "67a2494bd1852365af8b5dec02c2313da24294f37765d34b1bfdae74b00a23cd",
+  "publication_approval_state": "qa_reviewed_individual_approval_waived",
+  "library_backups": {
+    "nina_sheet.png": "libfile_269425b904888191997949d23da0f01e",
+    "nina_sheet_native_1536x1024.png": "libfile_0ec426fec3bc8191acece1b328b8ec3e",
+    "nina_sheet_prompt.txt": "libfile_e4b5f4d7644c8191a73a0cb8ef1cf932",
+    "nina_sheet_metadata.json": "libfile_4899eefd4f6481918dd51b2b37343f00"
+  }
+}

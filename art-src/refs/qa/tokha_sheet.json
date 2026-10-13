@@ -1,0 +1,53 @@
+{
+  "canonical_csv_row": {
+    "file_path": "art-src/refs/tokha_sheet.png",
+    "character_or_location": "tokha",
+    "emotion_or_variant": "ref_sheet",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Character reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Anton 'Tokha' Lykov, a 24-year-old junior sysadmin, very tall and skinny, a long pale face, sparse stubble, kind tired brown eyes with dark circles, dark hair in a low ponytail with loose strands, a black heated hoodie with thin green LED strips glowing along the seams (#7CFF6B), large over-ear headphones around his neck, bitten fingernails, a cheap thin silver ring on his right index finger.",
+    "negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, short hair, gold jewelry, brand logos, readable phone text",
+    "notes_ru": "Рабочий лист-референс (анфас, 3/4, профиль, нейтральный свет). Не в игру. Делается до якоря."
+  },
+  "generation_tool": "built-in image_gen",
+  "native_dimensions": [
+    1536,
+    1024
+  ],
+  "export_dimensions": [
+    2304,
+    1536
+  ],
+  "export_method": "Pillow LANCZOS technical resize only, no content edits",
+  "native_path": "tokha_sheet_native_1536x1024.png",
+  "final_path": "tokha_sheet.png",
+  "full_effective_prompt": "Use case: stylized-concept. Asset type: production character turnaround reference sheet for ZeroSQL.\nRequested canvas size: 2304 x 1536 pixels, landscape.\nInput image 1 is STYLE AND TURNAROUND LAYOUT REFERENCE ONLY. Do not copy the reference man or his identity. Create the entirely different character specified below. Keep the approved rough angular expressive oil-brush graphic-novel medium, matte paint, broken palette-knife marks and simplified planes, never photographic or polished.\n\nFULL CANONICAL CSV PROMPT_EN (preserve all):\nCharacter reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Anton 'Tokha' Lykov, a 24-year-old junior sysadmin, very tall and skinny, a long pale face, sparse stubble, kind tired brown eyes with dark circles, dark hair in a low ponytail with loose strands, a black heated hoodie with thin green LED strips glowing along the seams (#7CFF6B), large over-ear headphones around his neck, bitten fingernails, a cheap thin silver ring on his right index finger.\n\nFULL CANONICAL CSV NEGATIVE_EN (avoid all):\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, short hair, gold jewelry, brand logos, readable phone text\n\nProduction clarity: exactly three consistent views of the same character, left frontal, center three-quarter, right true profile. Same head size and eye height across the three separate busts. Entire head and hair inside canvas. Soft flat neutral studio light and plain #6E7378 grey, not portrait dramatic split lighting. No labels, text, borders or drawn divisions. Very long narrow pale young face, tall skinny proportions, brown kind tired eyes, sparse stubble and dark low ponytail. Black heated hoodie has only fine green LED piping; large headphones sit around neck. Keep clothing and head silhouette consistent. Hands can stay outside the head/upper-chest crop, so no need to add the ring outside crop.",
+  "style_reference": "libfile_ff5b0f05cf18819180f56522eeae588a",
+  "style_reference_scope": "paint technique and turnaround layout only, not male identity",
+  "visual_qa": {
+    "passed": [
+      "same identity in front, 3/4 and profile",
+      "very long narrow pale youthful face and skinny neck",
+      "kind tired brown eyes with dark circles",
+      "sparse stubble, dark low ponytail and loose strands",
+      "black hoodie with thin green seam strips",
+      "large headphones around neck consistent",
+      "hands entirely outside crop, no invented ring placement",
+      "no text or logos",
+      "rough matte oil style, neutral grey backdrop"
+    ],
+    "limitations": [
+      "Hand ring and bitten fingernails are not visible in this head/upper-chest reference.",
+      "Native output 1536x1024; final is technical resize to 2304x1536."
+    ]
+  },
+  "sha256_export": "63cd8293f0d7efa794d6527de0b585e243068a34e81787c4c9832cd0a7961ced",
+  "sha256_native": "46d893898e90385422c33806e31c7c17e6426db8cab4711e9535459ffc0089fa",
+  "publication_approval_state": "qa_reviewed_individual_approval_waived",
+  "library_backups": {
+    "tokha_sheet.png": "libfile_911a9a3e285881918285d111670bb23b",
+    "tokha_sheet_native_1536x1024.png": "libfile_d35981511284819197a53007f49008ca",
+    "tokha_sheet_prompt.txt": "libfile_cbe922d1d62c81919398417572d47f65",
+    "tokha_sheet_metadata.json": "libfile_b457801f1b5c81918c15403acf896579"
+  }
+}

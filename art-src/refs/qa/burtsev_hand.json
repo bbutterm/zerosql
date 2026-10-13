@@ -1,0 +1,55 @@
+{
+  "canonical_csv_row": {
+    "file_path": "art-src/refs/burtsev_hand.png",
+    "character_or_location": "burtsev",
+    "emotion_or_variant": "hand_ref",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Reference study sheet of one man's LEFT hand shown in three angles side by side: back of the hand toward the viewer, thumb and index finger pinching a wooden matchstick, middle, ring and little fingers loosely extended; the RING FINGER is missing its last joint: no fingernail, a smooth rounded healed stump, clearly shorter than the middle and little fingers; all other fingers complete with nails; weathered ruddy skin of a 54-year-old man, even neutral studio light, plain mid-grey background #6E7378, painterly oil study with visible brush strokes, no text, no labels",
+    "negative_en": "intact ring finger, fingernail on the ring finger, six fingers, extra fingers, fused fingers, right hand, gloves, text",
+    "notes_ru": "Рабочий этюд кисти. Не в игру. Этюд левой кисти Бурцева — эталон для paint-over всех 5 портретов. Утвердить до генерации эмоций."
+  },
+  "generation_tool": "built-in image_gen",
+  "native_dimensions": [
+    1536,
+    1024
+  ],
+  "export_dimensions": [
+    2304,
+    1536
+  ],
+  "export_method": "Pillow LANCZOS technical resize only, no content edits",
+  "native_path": "burtsev_hand_native_1536x1024.png",
+  "final_path": "burtsev_hand.png",
+  "full_effective_prompt": "Use case: stylized-concept. Asset type: anatomical continuity reference for a fictional character, a healed old fingertip difference. Requested canvas 2304 x 1536, landscape.\nInput image 1 is STYLE AND SKIN-AGE REFERENCE ONLY: approved Burtsev head sheet, not content to repeat. Do not draw his face, head or body. Draw only the one SAME LEFT hand repeated in three distinct nearby angles. Keep the rough matte expressive oil-brush paint, visible angular broken strokes, grey plain background and soft flat neutral studio light.\n\nFULL CANONICAL CSV PROMPT_EN (preserve all):\nReference study sheet of one man's LEFT hand shown in three angles side by side: back of the hand toward the viewer, thumb and index finger pinching a wooden matchstick, middle, ring and little fingers loosely extended; the RING FINGER is missing its last joint: no fingernail, a smooth rounded healed stump, clearly shorter than the middle and little fingers; all other fingers complete with nails; weathered ruddy skin of a 54-year-old man, even neutral studio light, plain mid-grey background #6E7378, painterly oil study with visible brush strokes, no text, no labels\n\nFULL CANONICAL CSV NEGATIVE_EN (avoid all):\nintact ring finger, fingernail on the ring finger, six fingers, extra fingers, fused fingers, right hand, gloves, text\n\nPrecise anatomy and arrangement: Three isolated studies horizontally side by side at equal scale, with all digits clearly inside the canvas. This is a LEFT hand with the DORSAL BACK and nails facing us; in the first straight-on dorsal view the THUMB IS ON IMAGE-RIGHT. Reading the extended digits from image-left to image-right: LITTLE finger complete with nail; RING finger with only its distal/nail phalanx absent, two lower segments still present and a rounded fully healed skin end with NO NAIL; MIDDLE finger fully intact and longest; INDEX finger bent naturally toward the intact THUMB to pinch a single slender wooden matchstick. That is exactly FIVE digits per hand: thumb, index, middle, shortened ring, little. The shortened ring ends just below the little fingertip, and noticeably below the middle fingertip. Do not remove the entire ring finger, do not damage the little or middle fingers, do not draw an intact nail on the shortened ring. No gore, blood, open wound, fresh injury, stitches, bone or bandage. The intact index and thumb pinch the match at the right side of the hand; their natural bends do not turn them into extra fingers. The middle, ring and little remain loosely separated and extended so the exact ring difference is easy to inspect.\nThe second and third panels show the SAME LEFT hand with the SAME old healed ring-tip difference, same skin, same proportions and same match grip, turned modestly in two directions for dorsal-oblique study, not a mirrored right hand. Keep all five digits identifiable in each; do not rotate into full edge-on profile that hides the shortened ring. Lower forearm in a small worn brown leather cuff over dark knit sweater, matching the character reference, hand-focused crop. No frames, labels, words, numbers, arrows, diagrams, jewellery or props other than the match. Matte brushy paint, never photographic, smooth render or plastic.",
+  "style_reference": "libfile_ff5b0f05cf18819180f56522eeae588a",
+  "style_reference_scope": "paint technique and turnaround layout only, not male identity",
+  "visual_qa": {
+    "passed": [
+      "three views of the same LEFT hand, dorsal back facing viewer, thumb on image-right",
+      "exactly five digits in each view",
+      "anatomical ring finger is second extended digit from image-left, between intact little and middle",
+      "only ring distal/nail phalanx absent: lower two segments remain",
+      "ring end rounded and fully healed, no nail, no blood or exposed tissue",
+      "ring shorter than both middle and little fingers as CSV requires",
+      "other fingers complete, with intact nails where not naturally occluded",
+      "index and thumb pinch one wooden matchstick",
+      "middle, ring and little loosely extended and separated",
+      "same brown leather cuff and dark knit consistent with Burtsev sheet",
+      "neutral grey backdrop, matte painterly oil technique, no text"
+    ],
+    "limitations": [
+      "Index nail is partly naturally occluded by the pinch in straight and middle angles; intact distal shape is visible.",
+      "Native output 1536x1024; final is technical resize to 2304x1536."
+    ]
+  },
+  "sha256_export": "ba3743f8f434af1e9de8cee17a27e89a58b439771e82c118d99266d38c664a91",
+  "sha256_native": "f55ed344f167c3134ccdc579c2b922ec2bce257b5292d72a90f198f1a3ff99be",
+  "publication_approval_state": "qa_reviewed_individual_approval_waived",
+  "library_backups": {
+    "burtsev_hand.png": "libfile_9ca6926477ac819182e973f6db3048d8",
+    "burtsev_hand_native_1536x1024.png": "libfile_f0c27f1e1f3c81919ba6311456e565aa",
+    "burtsev_hand_prompt.txt": "libfile_9f61cd9371cc8191919f936f4c12293f",
+    "burtsev_hand_metadata.json": "libfile_df8c09e605d48191b4eaa57a8e145b3b"
+  }
+}

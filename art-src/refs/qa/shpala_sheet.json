@@ -1,0 +1,52 @@
+{
+  "canonical_csv_row": {
+    "file_path": "art-src/refs/shpala_sheet.png",
+    "character_or_location": "shpala",
+    "emotion_or_variant": "ref_sheet",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Character reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Georgy 'Shpala' Shpakov, a 47-year-old scrap-metal dealer and police informant, extremely tall and thin, hollow cheeks, a long nose, sly narrow eyes, bad teeth, a fur ushanka hat with the ear flaps tied up, a shabby black puffer jacket open over a faded green tracksuit (#4C7A3F), long bony fingers with blue-grey tattooed rings on several fingers (simple geometric signet designs).",
+    "negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, gloves, untattooed fingers, gold teeth",
+    "notes_ru": "Рабочий лист-референс (анфас, 3/4, профиль, нейтральный свет). Не в игру. Делается до якоря."
+  },
+  "generation_tool": "built-in image_gen",
+  "native_dimensions": [
+    1536,
+    1024
+  ],
+  "export_dimensions": [
+    2304,
+    1536
+  ],
+  "export_method": "Pillow LANCZOS technical resize only, no content edits",
+  "native_path": "shpala_sheet_native_1536x1024.png",
+  "final_path": "shpala_sheet.png",
+  "full_effective_prompt": "Use case: stylized-concept. Asset type: production character turnaround reference sheet for ZeroSQL.\nRequested canvas size: 2304 x 1536 pixels, landscape.\nInput image 1 is STYLE AND TURNAROUND LAYOUT REFERENCE ONLY. Do not copy the reference man or his identity. Create the entirely different character specified below. Keep the approved rough angular expressive oil-brush graphic-novel medium, matte paint, broken palette-knife marks and simplified planes, never photographic or polished.\n\nFULL CANONICAL CSV PROMPT_EN (preserve all):\nCharacter reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Georgy 'Shpala' Shpakov, a 47-year-old scrap-metal dealer and police informant, extremely tall and thin, hollow cheeks, a long nose, sly narrow eyes, bad teeth, a fur ushanka hat with the ear flaps tied up, a shabby black puffer jacket open over a faded green tracksuit (#4C7A3F), long bony fingers with blue-grey tattooed rings on several fingers (simple geometric signet designs).\n\nFULL CANONICAL CSV NEGATIVE_EN (avoid all):\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, gloves, untattooed fingers, gold teeth\n\nProduction clarity: exactly three consistent views of the same character, left frontal, center three-quarter, right true profile. Same head size and eye height across the three separate busts. Entire head and hair inside canvas. Soft flat neutral studio light and plain #6E7378 grey, not portrait dramatic split lighting. No labels, text, borders or drawn divisions. Extremely long thin face, hollow cheeks, long nose, narrow cunning eyes, age 47; tied-up-ear fur ushanka and battered black puffer jacket open over faded green tracksuit. Keep all hands out of the head and upper-chest crop: exact finger-tattoo placement is a separate future reference dependency. No gold teeth or actual jewelry rings.",
+  "style_reference": "libfile_ff5b0f05cf18819180f56522eeae588a",
+  "style_reference_scope": "paint technique and turnaround layout only, not male identity",
+  "visual_qa": {
+    "passed": [
+      "same long gaunt identity in front, 3/4 and profile",
+      "hollow cheeks, long nose and sly narrow eyes",
+      "fur ushanka with ear flaps tied above",
+      "shabby black puffer jacket over faded green zip tracksuit",
+      "small visible bad teeth, no gold teeth",
+      "hands cropped out, no invented finger tattoo mapping",
+      "neutral grey background and rough matte oil technique",
+      "no text or labels"
+    ],
+    "limitations": [
+      "The separate future tattooed hand reference is still needed before game portraits.",
+      "Native output 1536x1024; final is technical resize to 2304x1536."
+    ]
+  },
+  "sha256_export": "6b97cb2932e2e7eb7d18a3a4d48188d9981df8b4170c409dfda7bf8b4df9bdf6",
+  "sha256_native": "c6fc7ad5de8b0ec790d5630ae870fbd8630e83092a6d095db3e3b24421f79ebf",
+  "publication_approval_state": "qa_reviewed_individual_approval_waived",
+  "library_backups": {
+    "shpala_sheet.png": "libfile_bdf6e46cac5881918fd4110541f4fa7a",
+    "shpala_sheet_native_1536x1024.png": "libfile_497d51e4a30c8191a2d2e2f7734a9c85",
+    "shpala_sheet_prompt.txt": "libfile_e0567eb88f088191901e5b47b3420b1d",
+    "shpala_sheet_metadata.json": "libfile_ddfbf4750ff08191846dac6c9c35cfd2"
+  }
+}

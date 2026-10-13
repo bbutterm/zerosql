@@ -1,0 +1,54 @@
+{
+  "canonical_csv_row": {
+    "file_path": "art-src/refs/melnik_sheet.png",
+    "character_or_location": "melnik",
+    "emotion_or_variant": "ref_sheet",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Character reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Konstantin Melnik, a 41-year-old police major and IT chief who dresses like a corporate manager, slim, sleek slicked-back dark hair, clean-shaven, rimless glasses, perfect bright white teeth, a fitted slate-grey suit (#9AA5B1) with a narrow tie, a black smartwatch, a white wireless earbud in his right ear, polished KPI confidence with cowardly eyes.",
+    "negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, police uniform, beard, thick-rimmed glasses",
+    "notes_ru": "Рабочий лист-референс (анфас, 3/4, профиль, нейтральный свет). Не в игру. Делается до якоря."
+  },
+  "generation_tool": "built-in image_gen",
+  "native_dimensions": [
+    1536,
+    1024
+  ],
+  "export_dimensions": [
+    2304,
+    1536
+  ],
+  "export_method": "Pillow LANCZOS technical resize only, no content edits",
+  "native_path": "melnik_sheet_native_1536x1024.png",
+  "final_path": "melnik_sheet.png",
+  "full_effective_prompt": "Use case: stylized-concept. Asset type: production character turnaround reference sheet for ZeroSQL.\nRequested canvas size: 2304 x 1536 pixels, landscape.\nInput image 1 is STYLE AND TURNAROUND LAYOUT REFERENCE ONLY. Do not copy the reference man or his identity. Create the entirely different character specified below. Keep the approved rough angular expressive oil-brush graphic-novel medium, matte paint, broken palette-knife marks and simplified planes, never photographic or polished.\n\nFULL CANONICAL CSV PROMPT_EN (preserve all):\nCharacter reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Konstantin Melnik, a 41-year-old police major and IT chief who dresses like a corporate manager, slim, sleek slicked-back dark hair, clean-shaven, rimless glasses, perfect bright white teeth, a fitted slate-grey suit (#9AA5B1) with a narrow tie, a black smartwatch, a white wireless earbud in his right ear, polished KPI confidence with cowardly eyes.\n\nFULL CANONICAL CSV NEGATIVE_EN (avoid all):\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, police uniform, beard, thick-rimmed glasses\n\nProduction clarity: exactly three consistent views of the same character, left frontal, center three-quarter, right true profile. Same head size and eye height across the three separate busts. Entire head and hair inside canvas. Soft flat neutral studio light and plain #6E7378 grey, not portrait dramatic split lighting. No labels, text, borders or drawn divisions. Fit clean-shaven 41-year-old man, slicked-back dark hair, appraising look, rimless glasses. Tailored steel-grey suit and narrow tie. White wireless earbud in anatomical RIGHT ear, choose right-facing profile so right ear and earbud are visible. Black smartwatch only if wrist visible; no logos. Smooth corporate grooming, but rough matte brushwork. Not the same man as the approved style sheet.\nPrecise details: eyeglasses are RIMLESS, with only a fine narrow bridge and delicate temples, no visible full lens frames. Single white wireless earbud in anatomical RIGHT ear only, seen in the front view on image-left, in center 3/4 and right-facing right-side profile. Hair entirely dark and combed back neatly; no grey sideburns copied from reference. Smooth clean-shaven skin structure, NO stubble or moustache. Keep hands/wrists out of upper-chest crop, so wristwatch is not shown. Mouth closed in neutral expression; no forced grin.",
+  "style_reference": "libfile_ff5b0f05cf18819180f56522eeae588a",
+  "style_reference_scope": "paint technique and turnaround layout only, not male identity",
+  "visual_qa": {
+    "passed": [
+      "same slim 41-year-old identity in front, 3/4 and right profile",
+      "slicked-back dark hair, clean-shaven face",
+      "rimless eyeglasses with delicate bridge and arms",
+      "white wireless earbud in anatomical right ear in all views",
+      "fitted steel-grey suit and narrow tie, no police uniform",
+      "neutral closed mouth, no forced grin",
+      "hands and watch outside crop",
+      "no text or logos",
+      "rough matte oil technique and neutral grey backdrop"
+    ],
+    "limitations": [
+      "Teeth and smartwatch not visible in this neutral head/upper-chest crop.",
+      "Small stippled paint marks around jaw are texture rather than a drawn beard.",
+      "Native output 1536x1024; final is technical resize to 2304x1536."
+    ]
+  },
+  "sha256_export": "f815932990852115730a6da77bd69c9e27fe0fb52be898af182f400f64256864",
+  "sha256_native": "fe58a03e50dbca7e7c96e253da4aba38ce18fc600d1ec04c6f7f77d752040bb5",
+  "publication_approval_state": "qa_reviewed_individual_approval_waived",
+  "library_backups": {
+    "melnik_sheet.png": "libfile_d1495e5c8e308191861c5ce8dbee8eaa",
+    "melnik_sheet_native_1536x1024.png": "libfile_4525f33309ec8191a5e04660c41e1ef0",
+    "melnik_sheet_prompt.txt": "libfile_b62d5cd70fec819199ddaba9f218f5b8",
+    "melnik_sheet_metadata.json": "libfile_2246e090635c819188d76cdf25d0cb30"
+  }
+}

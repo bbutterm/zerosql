@@ -1,0 +1,165 @@
+{
+  "asset": "ZeroSQL — Lev Ratnikov neutral reference turnaround sheet",
+  "asset_path": "art-src/refs/ratnikov_sheet.png",
+  "status": "Review candidate; awaiting user approval. No repository changes.",
+  "date_utc": "2026-10-13",
+  "tool": "built-in image_gen",
+  "model": "Not exposed by built-in tool",
+  "seed": null,
+  "reference_library_file_id": "libfile_95249e58c8fc8191960ff00f7378f03f",
+  "reference_role": "User-approved expressive portrait: face identity, outfit and brushwork; neutral sheet intentionally omits portrait lighting and tea.",
+  "canonical_csv": {
+    "file_path": "art-src/refs/ratnikov_sheet.png",
+    "character_or_location": "ratnikov",
+    "emotion_or_variant": "ref_sheet",
+    "width": "2304",
+    "height": "1536",
+    "prompt_en": "Character reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Lev Ratnikov, a 58-year-old Russian police lieutenant colonel, tall and stooped, very large hands, grey crew-cut hair, heavy bushy grey eyebrows, deep-set tired kind eyes, a long lined face with heavy nasolabial folds, grey stubble, reading glasses on a black cord around his neck, a thick grey knitted cardigan over a pale blue-grey uniform shirt with a loosened dark tie and no visible insignia, a small translucent plastic nitroglycerin tube with a white cap sticking out of the shirt breast pocket, looks permanently cold.",
+    "negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, insignia patches, medals, beard",
+    "notes_ru": "Рабочий лист-референс (анфас, 3/4, профиль, нейтральный свет). Не в игру. Делается до якоря."
+  },
+  "submitted_prompt": "Use case: stylized-concept, identity-preserving character turnaround.\nAsset type: ONE ZeroSQL reference sheet, art-src/refs/ratnikov_sheet.png. Requested PNG canvas 2304×1536, landscape 3:2. This is a neutral development reference sheet, not a dramatic in-game portrait.\nInput image 1: approved expressive Ratnikov portrait. Use it as the strong FACE IDENTITY, COSTUME, and ROUGH PAINTERLY STYLE reference. Match this original fictional person's distinctive long, narrow angular face, heavy grey brows, tired kind deep-set eyes, long prominent nose, ears, hairline, grey crewcut, short grey stubble, reading glasses and black neck cord. Do NOT copy the tea, hands, steam, pose, dark navy background, or teal/amber split light.\n\nSTYLE PRIORITY: retain the approved reference's boldly angular, expressionist oil-paint character art, close to Disco Elysium portrait sensibility without copying any existing game character. Large broken confident brushstrokes and scraped palette-knife marks, broad jagged simplified masses, graphic planar face anatomy, matte paint. Face, hair, stubble and cardigan are painted as coarse color shapes, never photorealistic microdetail or smoothly rendered digital volume. This stronger expressive style instruction overrides any tendency toward photographic realism. The painting must read immediately as stylized angular oil illustration at thumbnail size.\n\nSHEET LAYOUT: exactly three busts side by side, no panel borders. LEFT strictly front view facing camera, CENTER three-quarter view facing toward the right of the canvas, RIGHT strict side-profile facing right. Head and upper chest only. Same head size and proportions, same eye-line height and the same clothing and glasses in all views. Three views of exactly the SAME man, neutral closed-mouth expression. Do not turn this into three similar relatives. Keep the nose bridge and tip, ear shapes, hairline, chin and age anatomically consistent across rotation. Hair is a short grey crew-cut, facial hair is short grey stubble, NOT a beard.\nReading glasses are worn lowered on his nose in all views, attached to a clearly visible thin BLACK cord that hangs naturally around his neck. The loosened dark tie, pale blue-grey shirt, thick grey cardigan and ONE white-capped translucent nitroglycerin tube in his left shirt breast pocket must remain consistent where visible. Profile may naturally obscure the far-side pocket. No hands and no tea are needed in this head-and-upper-chest framing.\nBACKGROUND AND LIGHT: neutral flat solid mid-grey #6E7378 behind all three heads; even soft neutral studio illumination. No dramatic color split, no teal rim, no amber edge, no blue-black shadows, no gradient, no vignette. Keep rough brush texture on the figures rather than in the empty grey background.\n\nCanonical CSV prompt_en, complete and verbatim:\nCharacter reference turnaround sheet: the same person shown three times side by side on one wide canvas, front view, three-quarter view and profile view, head and upper chest, neutral expression, even soft neutral studio light, plain mid-grey background #6E7378, identical proportions and identical clothes in all three views, painterly oil technique with visible brush strokes, no text, no labels, no numbers. Lev Ratnikov, a 58-year-old Russian police lieutenant colonel, tall and stooped, very large hands, grey crew-cut hair, heavy bushy grey eyebrows, deep-set tired kind eyes, a long lined face with heavy nasolabial folds, grey stubble, reading glasses on a black cord around his neck, a thick grey knitted cardigan over a pale blue-grey uniform shirt with a loosened dark tie and no visible insignia, a small translucent plastic nitroglycerin tube with a white cap sticking out of the shirt breast pocket, looks permanently cold.\n\nCanonical CSV negative_en, complete and verbatim:\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, insignia patches, medals, beard\n\nFinal constraints: ONE wide image, exactly THREE views front / three-quarter / profile in that order, same character and scale, all hair and head silhouettes visible. NO text, labels, captions, numbers, letters, signatures, panels, borders, watermark, logos, epaulettes, medals, insignia. Do not add props beyond the glasses/cord and single tube per visible pocket. Make this a neutral reference sheet of the approved expressive painted character, with no scene and no dramatic lighting.",
+  "native_output": "exec-bb2c5be3-fdfb-4f3b-8976-4c8a731d0358.png",
+  "requested_dimensions": [
+    2304,
+    1536
+  ],
+  "actual_dimensions": [
+    1536,
+    1024
+  ],
+  "aspect_ratio": "3:2",
+  "format": "PNG",
+  "color_mode": "RGB",
+  "bytes": 2748805,
+  "sha256": "fa066f65e4e0ada8cfd3e787a62aec432843a113265b9bc9ead752f7e145601b",
+  "transformations_after_generation": [
+    "Byte-for-byte copy to project asset path and shared output folder; no resize, repaint or upscaling."
+  ],
+  "qa": {
+    "views": "Exactly three busts, left front, center three-quarter toward right, right profile facing right. Aligned eye heights and similar head scale. All hair/head silhouettes visible.",
+    "identity": "Long angular face, broad heavy brows, deep-set tired eyes, same long prominent nose, consistent hairline/grey spiky short haircut, large ear and jaw/chin proportions across the three views. Subject matches the approved expressive reference.",
+    "expression": "Neutral closed mouth across all three views; weary but not distressed.",
+    "age_facial_hair": "Visually late middle age consistent with specified 58. Short grey stubble with visible short individual brush marks, not a full beard. Hair follows the approved reference's short, rough spiky silhouette.",
+    "wardrobe": "Consistent thick grey cardigan, pale blue-grey collared shirt, loosened dark tie; no visible insignia, epaulettes, badges or medals.",
+    "glasses_cord": "Reading glasses lowered on nose in all views, with attached black cord around neck; cord is clearly visible.",
+    "tube": "One translucent tube with white cap in the visible shirt breast pocket in each view. Tube is unlabelled. Profile shows the same pocket on the near side.",
+    "style": "Large broken/angular oil-paint marks, simplified face planes, scraped brush texture, rough painted cardigan. Clearly illustrative, not photographic or smooth digital rendering.",
+    "background_light": "Quiet mid-grey field, neutral overall illumination without teal rim or amber dramatic split. Flesh palette remains warm and the grey background has small pixel variations. NOT an exact flat #6E7378.",
+    "background_target_rgb": [
+      110,
+      115,
+      120
+    ],
+    "background_samples": [
+      {
+        "xy": [
+          0,
+          0
+        ],
+        "rgb": [
+          100,
+          104,
+          110
+        ]
+      },
+      {
+        "xy": [
+          768,
+          0
+        ],
+        "rgb": [
+          98,
+          104,
+          111
+        ]
+      },
+      {
+        "xy": [
+          1535,
+          0
+        ],
+        "rgb": [
+          98,
+          104,
+          109
+        ]
+      },
+      {
+        "xy": [
+          0,
+          1023
+        ],
+        "rgb": [
+          103,
+          103,
+          112
+        ]
+      },
+      {
+        "xy": [
+          768,
+          1023
+        ],
+        "rgb": [
+          101,
+          106,
+          113
+        ]
+      },
+      {
+        "xy": [
+          1535,
+          1023
+        ],
+        "rgb": [
+          102,
+          104,
+          112
+        ]
+      },
+      {
+        "xy": [
+          512,
+          150
+        ],
+        "rgb": [
+          100,
+          105,
+          112
+        ]
+      },
+      {
+        "xy": [
+          1000,
+          150
+        ],
+        "rgb": [
+          100,
+          105,
+          111
+        ]
+      },
+      {
+        "xy": [
+          700,
+          20
+        ],
+        "rgb": [
+          100,
+          105,
+          112
+        ]
+      }
+    ],
+    "framing": "Head and upper chest. No hands, tea or additional props. Leftmost cardigan edge reaches canvas boundary but head/face is intact.",
+    "text": "No visible captions, letters, numbers, labels, logo, signature or watermark.",
+    "limitations": [
+      "Native dimensions are 1536×1024, not requested 2304×1536. This is not a native-resolution master at the requested size.",
+      "Background is visually neutral grey but not numerically exact flat #6E7378."
+    ],
+    "next_step": "Stop for user review. Do not generate Nina or further assets until approval."
+  },
+  "publication_approval_state": "appearance_approved",
+  "approval_message_id": "Sentinel_c3b0efba17e881918dcfd6f8f8d92566"
+}

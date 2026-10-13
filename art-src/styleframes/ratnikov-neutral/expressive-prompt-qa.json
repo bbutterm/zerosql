@@ -1,0 +1,102 @@
+{
+  "asset": "ZeroSQL Ratnikov neutral expressive style candidate",
+  "status": "Awaiting user style review, not approved anchor and not production-ready",
+  "date_utc": "2026-10-13",
+  "user_feedback": "Слишком реалистично можно ближе к диско Элизиум",
+  "user_feedback_message_id": "Sentinel_16e2134c92d88191ae4c26c5ac2cf3d7",
+  "tool": "built-in image_gen",
+  "mode": "single targeted style-transfer edit",
+  "model": "not exposed",
+  "seed": null,
+  "reference_original_library_file_id": "libfile_c02942cb6d988191ac6d9c6e4d9bc334",
+  "canonical_prompt_en": "Lev Ratnikov, a 58-year-old Russian police lieutenant colonel, tall and stooped, very large hands, grey crew-cut hair, heavy bushy grey eyebrows, deep-set tired kind eyes, a long lined face with heavy nasolabial folds, grey stubble, reading glasses on a black cord around his neck, a thick grey knitted cardigan over a pale blue-grey uniform shirt with a loosened dark tie and no visible insignia, a small translucent plastic nitroglycerin tube with a white cap sticking out of the shirt breast pocket, looks permanently cold. Expression: calm, warm and weary, a faint ironic smile at one corner of the mouth, heavy brows relaxed, eyes looking at the viewer over the reading glasses lowered on his nose; both big hands hold a tea glass in a metal glass-holder embossed with an icebreaker ship at chest height, a thin curl of steam from the tea. Chest-up bust portrait, vertical 2:3, one person centered, body and face turned three-quarters toward the right of the frame, eyes to the viewer unless stated otherwise, eye line at one third of the height, top of the head one tenth below the top edge, chest cut by the bottom edge, hands kept above the lower third. Split lighting identical in every image: cold teal rim light from the left and behind, warm sodium-amber key light from the right on the face, shadows into deep blue-black. Flat solid dark navy background #1A2442, no texture, no gradient, nothing behind the figure. Painterly graphic-novel oil painting on canvas: loose expressive brushwork with visible strokes and palette-knife scrapes, raw canvas in the darkest areas, slightly exaggerated characterful features, psychological realism, limited palette of polar-night blue-black #0B1020, sodium amber #FFB547, muted aurora teal #2EE6C5 and steam white #F2F5F7 over cool greys, fine grain baked into the paint, matte surface.",
+  "canonical_negative_en": "photograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, second person, duplicate figure, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, gradient background, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, insignia patches, medals, beard",
+  "submitted_prompt": "Use case: style-transfer\nAsset type: ONE expressive painterly character portrait, ZeroSQL Ratnikov neutral, native 1024×1536, opaque background.\nInput image: the previous portrait is an identity, costume, prop and pose reference ONLY. Its excessively realistic rendering is explicitly rejected by the user. Radically change the rendering style while preserving the character and required props.\n\nUSER'S LATEST STYLE OVERRIDE — highest priority for the painting treatment: move much closer to the expressionist portrait art of Disco Elysium. This should read as a psychologically incisive, raw, graphic, angular painted illustration. Large broken expressive brushstrokes, distorted characterful long planes of the face, bold simplified color shapes, scraped impasto and palette-knife marks. Push stylization far beyond realistic oil portraiture: facial planes are fractured and angular, shapes and proportions are emotionally exaggerated, skin is represented by flat irregular painted color patches rather than rendered pores, cardigan by broad jagged masses rather than detailed knit loops. Leave passages of face, collar, hands, and edges deliberately unresolved and sketchy. Slightly elongated tired face, oversized bushy brows and strong large hands, melancholy psychological caricature without comedy. Deliberate simplification and abstraction must be immediately obvious at thumbnail scale. NOT merely a realistic portrait with paint texture. No photographic form rendering, no smooth volumetric shading, no hyperreal eyes, no microscopic wrinkles, no painstaking textile detail. Keep no resemblance to an existing Disco Elysium character or real person: this is original fictional Lev Ratnikov.\n\nCanonical CSV prompt_en, complete and verbatim (retain all character, clothing, prop, emotion, palette and composition details, with the stronger style override above):\nLev Ratnikov, a 58-year-old Russian police lieutenant colonel, tall and stooped, very large hands, grey crew-cut hair, heavy bushy grey eyebrows, deep-set tired kind eyes, a long lined face with heavy nasolabial folds, grey stubble, reading glasses on a black cord around his neck, a thick grey knitted cardigan over a pale blue-grey uniform shirt with a loosened dark tie and no visible insignia, a small translucent plastic nitroglycerin tube with a white cap sticking out of the shirt breast pocket, looks permanently cold. Expression: calm, warm and weary, a faint ironic smile at one corner of the mouth, heavy brows relaxed, eyes looking at the viewer over the reading glasses lowered on his nose; both big hands hold a tea glass in a metal glass-holder embossed with an icebreaker ship at chest height, a thin curl of steam from the tea. Chest-up bust portrait, vertical 2:3, one person centered, body and face turned three-quarters toward the right of the frame, eyes to the viewer unless stated otherwise, eye line at one third of the height, top of the head one tenth below the top edge, chest cut by the bottom edge, hands kept above the lower third. Split lighting identical in every image: cold teal rim light from the left and behind, warm sodium-amber key light from the right on the face, shadows into deep blue-black. Flat solid dark navy background #1A2442, no texture, no gradient, nothing behind the figure. Painterly graphic-novel oil painting on canvas: loose expressive brushwork with visible strokes and palette-knife scrapes, raw canvas in the darkest areas, slightly exaggerated characterful features, psychological realism, limited palette of polar-night blue-black #0B1020, sodium amber #FFB547, muted aurora teal #2EE6C5 and steam white #F2F5F7 over cool greys, fine grain baked into the paint, matte surface.\n\nCanonical CSV negative_en, complete and verbatim:\nphotograph, photorealistic, 3D render, CGI, octane render, unreal engine, glossy plastic skin, airbrushed skin, smooth digital painting, anime, manga, cartoon, cel shading, chibi, vector art, comic halftone, text, letters, numbers, captions, signature, watermark, logo, brand name, readable label, frame, border, vignette, extra fingers, six fingers, fused fingers, deformed hands, extra arms, extra limbs, second person, duplicate figure, distorted face, asymmetric eyes, cross-eyed, lens flare, bokeh, neon glow, purple shadows, violet tint, magenta cast, oversaturated, HDR, gradient background, patterned background, scenery, objects in the background, celebrity likeness, resemblance to a real person, insignia patches, medals, beard\n\nInvariants: one man,58; grey crew cut and short stubble (no beard), heavy grey eyebrows, tired kind gaze over reading glasses on a BLACK neck cord. Thick grey cardigan, pale blue-grey shirt, loose dark tie, no insignia. Exactly ONE small translucent nitroglycerin tube with white cap exposed in the shirt breast pocket. Two large anatomically correct hands naturally warm around one tea glass in a metal holder with readable icebreaker SHIP relief and NO written text. A thin wisp of steam. Cold teal rim from viewer-left/behind, warm amber key from viewer-right. Maintain all five digits per hand with natural occlusion. Hands and cup must remain above the lower third. Lower third is dark quiet clothing reaching bottom edge.\n\nComposition refinement if compatible with this style change: eyes around one-third image height, top of hair around one-tenth down, face centered. Use exactly flat solid #1A2442 background without texture, scenery, gradient or vignette; the rough paint marks belong on the figure and at its silhouette, not across the empty background. Do not make a collage or multi-panel page. One image only.",
+  "prompt_delta": "Explicit user override toward Disco Elysium-like expressionist portrait art: coarse broken brush strokes, angular simplified color planes, elongated characterful face, psychological caricature without comedy, reduced skin and textile microdetail, rough palette-knife treatment; identity, props and light retained.",
+  "generation_native": "exec-a6805b0e-ec2c-48d7-b69d-fe169fa87af7.png",
+  "transformations_after_generation": [
+    "Native PNG copied without pixel edits",
+    "WebP encoded sRGB quality82 method6, metadata stripped; no resize or creative retouching"
+  ],
+  "technical": {
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "native_mode": "RGB",
+    "native_png_bytes": 2657026,
+    "webp_bytes": 248298,
+    "webp_format": "WEBP",
+    "webp_mode": "RGB",
+    "background_samples": [
+      {
+        "xy": [
+          10,
+          10
+        ],
+        "rgb": [
+          22,
+          34,
+          64
+        ]
+      },
+      {
+        "xy": [
+          500,
+          10
+        ],
+        "rgb": [
+          21,
+          34,
+          63
+        ]
+      },
+      {
+        "xy": [
+          1000,
+          10
+        ],
+        "rgb": [
+          22,
+          34,
+          64
+        ]
+      },
+      {
+        "xy": [
+          10,
+          200
+        ],
+        "rgb": [
+          22,
+          35,
+          64
+        ]
+      },
+      {
+        "xy": [
+          1000,
+          400
+        ],
+        "rgb": [
+          22,
+          35,
+          64
+        ]
+      }
+    ]
+  },
+  "alpha": false,
+  "master_2048x3072": false,
+  "qa": {
+    "style": "Noticeably larger broken brushstrokes, coarser angular face planes and simplified cardigan surfaces. Still retains recognizable anatomical volume; user must judge whether stylization is sufficient.",
+    "identity_props": "Grey crew cut, short grey stubble, brows, lowered glasses and black cord, grey cardigan over pale shirt and loose tie, exactly one white-capped tube, both hands holding tea glass, ship relief and steam preserved.",
+    "hands": "Inspected enlarged crop: two hands, each thumb plus4 fingers, no obvious extra or fused digits.",
+    "lighting": "Cold teal viewer-left rim, warm amber viewer-right key preserved. Accents are vivid.",
+    "composition_failure": "Head top about y80, eyes around y400 rather than y154–184 and y492–522. Hands extend to about y1245 and again occupy lower third. Not passed for game safe zones.",
+    "background_failure": "Dark navy without scenery, but not a mathematically flat exact#1A2442; numerical samples included.",
+    "text": "No visible letters, logos, numbers, insignia or watermark.",
+    "approval": "None. Stop after this single style-transfer candidate pending user's style decision."
+  },
+  "publication_approval_state": "style_approved_composition_not_production_ready"
+}
