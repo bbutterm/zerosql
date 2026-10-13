@@ -195,6 +195,13 @@
     { "group": "Коды и имена таблиц", "match": "sokol_stage_registry", "say": "со́кол сте́йдж ре́джистри", "mode": "phrase" },
     { "group": "Коды и имена таблиц", "match": "sokol_stage_statements", "say": "со́кол сте́йдж сте́йтментс", "mode": "phrase" },
     { "group": "Коды и имена таблиц", "match": "migration_jobs", "say": "майгре́йшн джо́бс", "mode": "phrase" },
-    { "group": "Коды и имена таблиц", "match": "staging", "say": "сте́йджинг", "mode": "phrase" }
+    { "group": "Коды и имена таблиц", "match": "staging", "say": "сте́йджинг", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "vehicle_id", "say": "ви́кл а́йди", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "cron_jobs", "say": "кро́н джо́бс", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "sokol_stage", "say": "со́кол сте́йдж", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "draft_statements", "say": "дра́фт сте́йтментс", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "draft_persons", "say": "дра́фт пе́рсонс", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "draft_publication", "say": "дра́фт паблике́йшн", "mode": "phrase" },
+    { "group": "Коды и имена таблиц", "match": "evidence_package", "say": "э́виденс па́кедж", "mode": "phrase" }
   ]
 }

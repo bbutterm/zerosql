@@ -123,7 +123,8 @@ function applyDictionary(text, dict) {
       e.ci && /^\p{Lu}/u.test(m) && /^\p{Script=Cyrillic}/u.test(m) ? e.say[0].toUpperCase() + e.say.slice(1) : e.say
     );
   }
-  return out;
+  // имя таблицы, которого нет в словаре: без этого TTS читает «нижнее подчёркивание» вслух
+  return out.replace(/(?<=[\p{L}\p{N}])_(?=[\p{L}\p{N}])/gu, " ");
 }
 
 /** acute — как есть (U+0301); plus — «+» перед ударной гласной (Yandex SpeechKit, Silero); caps — ударная гласная заглавной; none — без знаков */
