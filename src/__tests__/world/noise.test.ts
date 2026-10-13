@@ -129,7 +129,8 @@ describe("резервы посадок: шум их не повторяет", (
   it("номера машин каста — по одной строке реестра", () => {
     expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE plate = 'К404ТО'")).toBe(1);
     expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE plate = 'О114РБ'")).toBe(1);
-    expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE plate IN ('Т117АУ', 'К372ОК')")).toBe(0);
+    expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE plate = 'Т117АУ'")).toBe(1); // c06: машина Сазонова
+    expect(one(db, "SELECT COUNT(*) FROM vehicles WHERE plate = 'К372ОК'")).toBe(0);
     expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate IN ('К404ТО')")).toBe(5);
     expect(one(db, "SELECT COUNT(*) FROM plate_reads WHERE plate IN ('О114РБ', 'Т117АУ', 'К372ОК')")).toBe(0);
   });

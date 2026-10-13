@@ -1,1 +1,90 @@
-[]
+[
+  {
+    "id": "h.dates",
+    "title": "Даты и время: date, time, datetime",
+    "summary": "`date(x)` оставляет от момента день, `time(x)` — время суток, `datetime(x)` — полный момент. Модификаторы сдвигают момент: `'+3 hours'`, `'-1 day'`, `'start of month'`. Так группируют по суткам и проверяют периоды «с … по …».",
+    "syntax": "date(момент [, модификатор …])\ntime(момент [, модификатор …])\ndatetime(момент [, модификатор …])\n\n-- период действует на дату:\nfrom_date <= дата AND (to_date IS NULL OR to_date >= дата)",
+    "example": "SELECT date(ts) AS день, MIN(temp_c) AS минимум\nFROM outfall_temp\nGROUP BY date(ts)\nHAVING MIN(temp_c) < 1\nORDER BY день;",
+    "pitfalls": [
+      "`GROUP BY ts` вместо `GROUP BY date(ts)` даёт не сутки, а каждый час отдельно — сотни групп по одной строке.",
+      "Период с открытым концом: `to_date IS NULL` — человек прописан до сих пор. Условие `to_date >= '2015-02-20'` без `IS NULL` молча теряет таких жителей.",
+      "Скобки вокруг `to_date IS NULL OR …` обязательны: AND связывает сильнее OR.",
+      "Функции дат понимают только ISO-строки `'ГГГГ-ММ-ДД ЧЧ:ММ:СС'`. На `'19.02.2015'` они вернут NULL.",
+      "`date(ts) = '2026-12-14'` удобно, но не использует индекс по `ts`; на больших таблицах быстрее `ts >= '2026-12-14 00:00:00' AND ts < '2026-12-15 00:00:00'`."
+    ]
+  },
+  {
+    "id": "h.strftime",
+    "title": "strftime: части даты",
+    "summary": "`strftime(формат, момент)` вырезает из даты нужную часть строкой: год `%Y`, месяц `%m`, день `%d`, час `%H`, день недели `%w` (0 — воскресенье).",
+    "syntax": "strftime('%Y', момент)      -- '2015'\nstrftime('%Y-%m', момент)   -- '2015-03'\nstrftime('%H', момент)      -- '21'",
+    "example": "SELECT strftime('%Y', ts) AS год, MIN(temp_c) AS минимум, MAX(temp_c) AS максимум\nFROM outfall_temp\nGROUP BY год\nORDER BY год;",
+    "pitfalls": [
+      "Результат — текст: `strftime('%Y', ts) = 2015` (число) не совпадёт, пишите `'2015'`.",
+      "`%m` — месяц, `%M` — минуты. Перепутать легко, а ошибки не будет.",
+      "Группировка по `strftime('%m', ts)` склеивает март 2015-го с мартом 2026-го. Нужен месяц конкретного года — `'%Y-%m'`."
+    ]
+  },
+  {
+    "id": "h.julianday",
+    "title": "julianday: разница в днях",
+    "summary": "`julianday(момент)` переводит дату в число дней. Разность двух таких чисел — сколько дней прошло, с дробной частью за часы и минуты.",
+    "syntax": "julianday(b) - julianday(a)                    -- дни с дробью\njulianday(date(b)) - julianday(date(a))        -- календарные дни",
+    "example": "SELECT d.doc_no, d.signed_at,\n       julianday(d.signed_at) - julianday(date(i.reported_at)) AS дней\nFROM construction_docs d\nJOIN incidents i ON i.id = 7\nWHERE d.doc_no LIKE 'ПД-117%';",
+    "pitfalls": [
+      "Момент 23:58 — это почти следующие сутки: `julianday('2015-03-12') - julianday('2015-02-19 23:58:00')` = 20,0014, а календарных дней — 21. Для календарных дней сравнивайте `date(…)`.",
+      "Дробную часть убирают `round()` или `CAST(… AS INTEGER)`; CAST отбрасывает, round округляет.",
+      "Для секунд julianday неточен (дробь в днях). Разницу в секундах считайте через `unixepoch()`."
+    ]
+  },
+  {
+    "id": "h.unixepoch",
+    "title": "unixepoch: время в секундах",
+    "summary": "Unix-время — число секунд с 1970-01-01 00:00:00 по UTC. `unixepoch(момент)` переводит строку в секунды, модификатор `'unixepoch'` — секунды обратно в дату.",
+    "syntax": "unixepoch('2015-02-19 21:47:00')                 -- строка → секунды\ndatetime(ts_unix, 'unixepoch')                   -- секунды → UTC\ndatetime(ts_unix, 'unixepoch', '+3 hours')       -- секунды → местное",
+    "example": "SELECT id, ts_unix,\n       datetime(ts_unix, 'unixepoch') AS utc,\n       datetime(ts_unix, 'unixepoch', '+3 hours') AS местное\nFROM gs_comms_2015\nLIMIT 10;",
+    "pitfalls": [
+      "`datetime(ts_unix)` без `'unixepoch'` примет число за юлианский день и вернёт ерунду или NULL.",
+      "`'unixepoch'` даёт время UTC. Местное время Полыньи — UTC+3: забытый `'+3 hours'` сдвигает вечер на три часа, и окно «21:00–22:00» оказывается пустым.",
+      "Окна «в пределах N минут» удобно считать прямо в секундах: `s.ts_unix BETWEEN c.ts_unix AND c.ts_unix + 15 * 60`."
+    ]
+  },
+  {
+    "id": "h.self_join",
+    "title": "Self-join: таблица сама с собой",
+    "summary": "Одну таблицу подключают дважды под разными алиасами, когда строки ссылаются друг на друга (ревизия → прежний документ, ребёнок → отец) или когда ищут пары строк одной таблицы (звонок и SMS рядом по времени).",
+    "syntax": "SELECT новый.*, старый.*\nFROM таблица новый\nJOIN таблица старый ON старый.id = новый.ссылка_id;",
+    "example": "SELECT d.doc_no AS ревизия, o.doc_no AS заменяет, d.subject\nFROM construction_docs d\nJOIN construction_docs o ON o.id = d.supersedes_doc_id\nWHERE d.doc_no LIKE 'ПД-117%';",
+    "pitfalls": [
+      "Без алиасов self-join невозможен: SQLite не поймёт, о какой копии таблицы речь (`ambiguous column name`).",
+      "Направление связи важно: `o.id = d.supersedes_doc_id` — «прежний документ ревизии», а `o.supersedes_doc_id = d.id` — «кто ссылается на этот документ».",
+      "В парах «строка со строкой» исключайте саму строку (`a.id <> b.id`), иначе каждая строка найдёт пару сама с собой.",
+      "Документ без ссылки (`supersedes_doc_id IS NULL`) во внутреннем JOIN выпадает — для «всех документов с прежними, если есть» нужен LEFT JOIN."
+    ]
+  },
+  {
+    "id": "h.math",
+    "title": "Математика: sqrt, abs, round",
+    "summary": "`sqrt(x)` — квадратный корень, `abs(x)` — модуль, `round(x, n)` — округление до n знаков. Расстояние между точками на плоскости — `sqrt(dx*dx + dy*dy)`.",
+    "syntax": "sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))\nabs(a - b)\nround(x)        -- до целого\nround(x, 1)     -- до десятых",
+    "example": "SELECT d.doc_no,\n       round(sqrt((d.x_m - i.x_m) * (d.x_m - i.x_m) + (d.y_m - i.y_m) * (d.y_m - i.y_m))) AS метров\nFROM construction_docs d\nJOIN incidents i ON i.id = 7\nWHERE d.doc_no LIKE 'ПД-117%';",
+    "pitfalls": [
+      "В SQLite нет оператора степени: `x^2` — ошибка. Пишите `x * x` (`power()` есть не во всех сборках).",
+      "`round()` возвращает дробное число: `round(17.9)` — это `18.0`, а не `18`.",
+      "Целочисленное деление: `7 / 2` = 3. Нужна дробь — `7 / 2.0`.",
+      "Координаты здесь — метры в местной сетке, поэтому теорема Пифагора честная. Для широты и долготы так считать нельзя."
+    ]
+  },
+  {
+    "id": "w.time_sources",
+    "title": "Чьё время: UTC в архиве «Глубина-Строя»",
+    "summary": "В ПБД и ЗЕРКАЛЕ время местное (UTC+3) строкой. Архив АТС «Глубина-Строя» 2015 года (`gs_comms_2015.ts_unix`) хранит unix-секунды по UTC: к местному времени нужно прибавить три часа.",
+    "syntax": "datetime(ts_unix, 'unixepoch', '+3 hours')   -- местное время звонка",
+    "example": "SELECT datetime(ts_unix, 'unixepoch', '+3 hours') AS местное, kind, from_ext, to_number, recipient_name, text\nFROM gs_comms_2015\nWHERE date(ts_unix, 'unixepoch', '+3 hours') = '2015-02-19'\n  AND time(ts_unix, 'unixepoch', '+3 hours') >= '18:00:00';",
+    "pitfalls": [
+      "Окно «вечер 19.02 с 21:00 до 22:00» без `'+3 hours'` ищет на самом деле полночь по местному — и находит пустоту.",
+      "Сравнивать `ts_unix` с текстовой датой бессмысленно: число всегда «меньше» строки. Сначала переведите одно в другое.",
+      "Перед любым запросом по времени спросите: чьё это время? Источник, часовой пояс, формат."
+    ]
+  }
+]

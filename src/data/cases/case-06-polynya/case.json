@@ -6,16 +6,13 @@
   "title": "Полынья",
   "subtitle": "Залив замёрз впервые за одиннадцать лет",
   "date": "2026-12-17 08:40",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-17 12:00"
+  },
+  "location": "Створ, лёд у Старого причала / ГУ МВД, кабинет Б0-03",
   "difficulty": "medium",
-  "concepts": [
-    "h.dates",
-    "h.strftime",
-    "h.julianday",
-    "h.unixepoch",
-    "h.self_join",
-    "h.math",
-    "w.time_sources"
-  ],
+  "concepts": ["h.dates", "h.strftime", "h.julianday", "h.unixepoch", "h.self_join", "h.math", "w.time_sources"],
   "tables": [
     "incidents",
     "staff",
@@ -47,17 +44,469 @@
     "gs_comms_2015",
     "gs_phonebook"
   ],
-  "newTables": [
-    "outfall_temp",
-    "construction_docs",
-    "registrations",
-    "addresses",
-    "diver_reports",
-    "gs_comms_2015",
-    "gs_phonebook"
-  ],
-  "briefing": "С 14.12 зал Б «Глубины» работает по замкнутому контуру, сброс тёплой воды в бухту прекращён. Полынья замёрзла впервые за 11 лет: чёрный лёд толщиной 22 см.",
+  "newTables": ["outfall_temp", "construction_docs", "registrations", "addresses", "diver_reports", "gs_comms_2015", "gs_phonebook"],
+  "briefing": "17.12.2026, 08:40. С 14.12 зал Б ЦОД «Глубина» работает по замкнутому контуру: тёплую воду в бухту больше не сбрасывают. Полынья у Старого причала замёрзла впервые за 11 лет — чёрный лёд, 22 см. При −38 °C на залив вышли дети с коньками. Ст. лейтенант Ким Д. С. проверяет лёд, бодикамера ведёт запись.\n\nДопуск расширен: температура сброса гидропоста «Створ» (outfall_temp), проектные документы «Глубина-Строя» (construction_docs), паспортный учёт (registrations, addresses), рапорты водолазов (diver_reports), архив АТС «Глубина-Строя» 2015 года (gs_comms_2015, gs_phonebook). Время в архиве АТС — unix-секунды по UTC.",
+  "starterSql": "SELECT ts, temp_c, station FROM outfall_temp ORDER BY ts DESC LIMIT 24;",
   "introScene": "intro",
-  "objectives": [],
+  "objectives": [
+    {
+      "id": "o6_1",
+      "order": 1,
+      "task": "Нина: «Сброс, говорят, с четырнадцатого перекрыли». Гидропост пишет температуру сброса в outfall_temp каждый час. Найти первый день, когда минимум за сутки опустился ниже +1 °C. День из момента даёт функция date(ts); дальше — GROUP BY и MIN.",
+      "concept": "h.dates",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Первый холодный день найден.",
+        "rules": [
+          { "type": "cell_value", "value": "2026-12-14" },
+          { "type": "row_count", "expected": 10, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c06_o6_1.001",
+          "text": "Гидропост, голубчик, каждый час пишет. Тебе не часы нужны — сутки. Сгреби по дню и глянь самый холодный час."
+        },
+        {
+          "by": "mira",
+          "text": "date(ts) превращает момент '2026-12-02 18:05:00' в день '2026-12-02'. Пример: SELECT date(reported_at) AS день, COUNT(*) FROM incidents GROUP BY date(reported_at). См. «Даты и время: date, time, datetime»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT date(ts) AS день, MIN(temp_c) FROM outfall_temp GROUP BY ________ HAVING MIN(temp_c) < _ ORDER BY день LIMIT 1;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT date(ts) AS день, MIN(temp_c) AS минимум FROM outfall_temp GROUP BY ts HAVING MIN(temp_c) < 1 ORDER BY день; — одна ошибка тут нарочно. Ладно. Дальше."
+        }
+      ],
+      "success": "14 декабря: минимум +0,6. С 15-го — около нуля. Зал Б перевели на замкнутый контур, и бухта остыла за сутки.",
+      "evidence": {
+        "id": "ev.c06.cold_outfall",
+        "title": "Сброс остыл 14.12",
+        "text": "outfall_temp, гидропост «Створ»: 14.12.2026 минимум за сутки +0,6 °C, с 15.12 — около 0. До этого — не ниже +1,25.",
+        "kind": "record"
+      },
+      "solution": "SELECT date(ts) AS день, MIN(temp_c) AS минимум\nFROM outfall_temp\nGROUP BY date(ts)\nHAVING MIN(temp_c) < 1\nORDER BY день\nLIMIT 1;"
+    },
+    {
+      "id": "o6_2",
+      "order": 2,
+      "task": "Даша (по рации): «Бабки на берегу говорят — тут с пятнадцатого года не замерзало. Проверь». Посчитать минимум температуры сброса по годам — за все годы, что пишет гидропост. Год из момента: strftime('%Y', ts).",
+      "concept": "h.strftime",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT strftime('%Y', ts) AS год, MIN(temp_c) AS минимум FROM outfall_temp GROUP BY strftime('%Y', ts)"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c06_o6_2.001",
+          "text": "Мне не сутки надо, а годы. Было хоть раз, чтоб сброс к нулю падал? Если клюёт — скажи."
+        },
+        {
+          "by": "mira",
+          "text": "strftime('%Y', ts) возвращает год строкой: '2015'; '%m' — месяц, '%H' — час. Пример: SELECT strftime('%Y', hired_at) AS год, COUNT(*) FROM staff GROUP BY год. См. «strftime: части даты»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT strftime('__', ts) AS год, MIN(temp_c) AS минимум FROM outfall_temp GROUP BY ___ ORDER BY год;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT strftime('%m', ts) AS год, MIN(temp_c) AS минимум FROM outfall_temp GROUP BY год ORDER BY год; — одна ошибка нарочно. Найдёшь — значит, думаешь как я."
+        }
+      ],
+      "success": "Двенадцать лет замеров. До декабря 2026-го минимум ни разу не опускался ниже +6,2. Первая запись — 12.03.2015: сброс стоит здесь с марта пятнадцатого.",
+      "evidence": {
+        "id": "ev.c06.outfall_years",
+        "title": "Сброс с марта 2015-го",
+        "text": "outfall_temp: замеры с 2015-03-12. Минимум по годам 2015–2025 — от +6,2 до +7,9. Ниже нуля — только с 15.12.2026.",
+        "kind": "record"
+      },
+      "sceneAfter": "ice",
+      "solution": "SELECT strftime('%Y', ts) AS год, MIN(temp_c) AS минимум, MAX(temp_c) AS максимум, MIN(ts) AS первый_замер\nFROM outfall_temp\nGROUP BY strftime('%Y', ts)\nORDER BY год;"
+    },
+    {
+      "id": "o6_3",
+      "order": 3,
+      "task": "Даша: «Под льдом машина. Номер — тэ, сто семнадцать, а, у». Пробить Т117АУ по реестру машин (vehicles): марка, год, владелец, снята ли с учёта.",
+      "concept": "h.where",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Владелец найден.",
+        "rules": [
+          { "type": "cell_value", "value": "Сазонов Пётр Ильич", "columns": ["owner_name"] },
+          {
+            "type": "compound",
+            "successMessage": "Владелец найден.",
+            "rules": [
+              { "type": "cell_value", "value": "Сазонов Пётр Ильич" },
+              { "type": "cell_value", "value": "Т117АУ" }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c06_o6_3.001",
+          "text": "Буквы наши, кириллица. Латиницу не суй — не клюнет."
+        },
+        {
+          "by": "mira",
+          "text": "Точное совпадение — знак =, текст в апострофах. Пример: SELECT * FROM cameras WHERE name = 'Береговое шоссе'. См. «Отбор строк: WHERE»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT plate, make, model, year, owner_name, deregistered_at FROM vehicles WHERE plate = '______';"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT plate, make, model, year, owner_name FROM vehicles WHERE plate = 'T117AY'; — одна ошибка нарочно. Смотри на буквы, не на цифры."
+        }
+      ],
+      "success": "«Нордика Седан» 2009 года. Владелец — Сазонов Пётр Ильич. С учёта не снята: одиннадцать лет числится на ходу.",
+      "evidence": {
+        "id": "ev.c06.t117au",
+        "title": "Т117АУ: машина Сазонова",
+        "text": "vehicles: Т117АУ, «Нордика Седан», 2009, владелец Сазонов Пётр Ильич (1388), зарегистрирована 2009-05-22, с учёта не снята. Найдена подо льдом у оголовка сброса 17.12.2026.",
+        "kind": "record"
+      },
+      "sceneAfter": "lift",
+      "solution": "SELECT plate, make, model, year, owner_person_id, owner_name, deregistered_at\nFROM vehicles\nWHERE plate = 'Т117АУ';"
+    },
+    {
+      "id": "o6_4",
+      "order": 4,
+      "task": "Нина: «Кто ж это сброс к самому причалу перетащил?» Ревизия в construction_docs ссылается на прежний документ через supersedes_doc_id — склеить таблицу саму с собой (self-join). Найти документ о переносе оголовка сброса и вывести: номер, дату подписи, кто подписал (persons), сколько метров от точки строки 7 (incidents, id = 7) было у прежнего оголовка и стало у нового — sqrt по x_m и y_m, — и сколько календарных дней прошло от даты строки 7 до подписи (julianday).",
+      "concept": "h.self_join",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Перенос сброса найден.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT d.doc_no, d.signed_at, p.full_name AS подписал, round(sqrt((o.x_m - i.x_m) * (o.x_m - i.x_m) + (o.y_m - i.y_m) * (o.y_m - i.y_m))) AS было_м, round(sqrt((d.x_m - i.x_m) * (d.x_m - i.x_m) + (d.y_m - i.y_m) * (d.y_m - i.y_m))) AS стало_м FROM construction_docs d JOIN construction_docs o ON o.id = d.supersedes_doc_id JOIN persons p ON p.id = d.signed_by_person_id JOIN incidents i ON i.id = 7 WHERE d.id = 104",
+            "aliases": { "подписал": ["full_name", "signed_by", "фио"] }
+          },
+          { "type": "cell_value", "value": 21, "tolerance": 1 }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c06_o6_4.001",
+          "text": "Ревизия, голубчик, всегда на старый документ ссылается. Положи рядом старый и новый — и видно, что куда переехало."
+        },
+        {
+          "by": "mira",
+          "text": "Self-join — одна таблица под двумя алиасами. Пример: SELECT c.full_name, f.full_name AS отец FROM persons c JOIN persons f ON f.id = c.father_id. Расстояние — sqrt(dx*dx + dy*dy), дни — julianday(b) - julianday(a). См. «Self-join», «Математика», «julianday»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT d.doc_no, d.signed_at, p.full_name, sqrt((o.x_m - i.x_m)*(o.x_m - i.x_m) + (o.y_m - i.y_m)*(o.y_m - i.y_m)) AS было_м, sqrt(______) AS стало_м, julianday(d.signed_at) - julianday(date(i.reported_at)) AS дней FROM construction_docs d JOIN construction_docs o ON o.id = d.____________ JOIN persons p ON p.id = d.signed_by_person_id JOIN incidents i ON i.id = _ WHERE d.subject LIKE '%оголовка сброса%';"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT d.doc_no, d.signed_at, p.full_name, round(sqrt((o.x_m - i.x_m)*(o.x_m - i.x_m) + (o.y_m - i.y_m)*(o.y_m - i.y_m))) AS было_м, round(sqrt((d.x_m - i.x_m)*(d.x_m - i.x_m) + (d.y_m - i.y_m)*(d.y_m - i.y_m))) AS стало_м, julianday(d.signed_at) - julianday(date(i.reported_at)) AS дней FROM construction_docs d JOIN construction_docs o ON o.id = d.id JOIN persons p ON p.id = d.signed_by_person_id JOIN incidents i ON i.id = 7 WHERE d.subject LIKE '%оголовка сброса%'; — одна ошибка нарочно. Сброс перенесли на два километра. Через три недели после."
+        }
+      ],
+      "success": "ПД-117/изм.3 от 12.03.2015, «Перенос оголовка сброса на временный сброс». Подписал Гранин Эдуард Витальевич. Прежний оголовок — в 2 140 м от места из строки 7, новый — в 18 м. Прошёл 21 день.",
+      "evidence": {
+        "id": "ev.c06.outfall_moved",
+        "title": "Перенос сброса",
+        "text": "construction_docs 104, ПД-117/изм.3 от 2015-03-12, «Перенос оголовка сброса на временный сброс», заменяет ПД-117 (101). Подписал Гранин Э. В. (1001). Было 2 140 м от точки строки 7, стало 18 м. Через 21 день после ночи 19.02.2015. Обоснование: «использовать существующий временный сброс, экономия 41 млн».",
+        "kind": "document"
+      },
+      "sceneAfter": "grave",
+      "solution": "SELECT d.doc_no, d.signed_at, p.full_name AS подписал,\n       round(sqrt((o.x_m - i.x_m) * (o.x_m - i.x_m) + (o.y_m - i.y_m) * (o.y_m - i.y_m))) AS было_м,\n       round(sqrt((d.x_m - i.x_m) * (d.x_m - i.x_m) + (d.y_m - i.y_m) * (d.y_m - i.y_m))) AS стало_м,\n       julianday(d.signed_at) - julianday(date(i.reported_at)) AS дней\nFROM construction_docs d\nJOIN construction_docs o ON o.id = d.supersedes_doc_id\nJOIN persons p ON p.id = d.signed_by_person_id\nJOIN incidents i ON i.id = 7\nWHERE d.subject LIKE '%оголовка сброса%';"
+    },
+    {
+      "id": "o6_5",
+      "order": 5,
+      "task": "Береговая, 4 — адрес заявителя из строки 7. Кто был прописан там в ночь на 20.02.2015? В registrations у прописки есть период: from_date и to_date; пустой to_date (NULL) — прописан до сих пор. Вывести id и ФИО жителей (persons).",
+      "concept": "h.dates",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Жители Береговой, 4 найдены.",
+        "rules": [
+          {
+            "type": "any_of",
+            "successMessage": "Все жители на месте.",
+            "rules": [
+              {
+                "type": "column_values",
+                "columns": ["person_id", "id"],
+                "mode": "superset",
+                "referenceQuery": "SELECT r.person_id FROM registrations r JOIN addresses a ON a.id = r.address_id WHERE a.street = 'Береговая' AND a.house = '4' AND r.from_date <= '2015-02-19' AND (r.to_date IS NULL OR r.to_date >= '2015-02-20')"
+              },
+              {
+                "type": "column_values",
+                "columns": ["full_name"],
+                "mode": "superset",
+                "referenceQuery": "SELECT p.full_name FROM registrations r JOIN addresses a ON a.id = r.address_id JOIN persons p ON p.id = r.person_id WHERE a.street = 'Береговая' AND a.house = '4' AND r.from_date <= '2015-02-19' AND (r.to_date IS NULL OR r.to_date >= '2015-02-20')"
+              }
+            ]
+          },
+          {
+            "type": "not",
+            "message": "Лосева П. А. выписалась 31.12.2014 — в ту ночь её там не было.",
+            "rule": {
+              "type": "any_of",
+              "successMessage": "Лосева в результате.",
+              "rules": [
+                { "type": "cell_value", "value": "Лосева Полина Андреевна" },
+                { "type": "cell_value", "value": 3112, "columns": ["person_id", "id"] }
+              ]
+            }
+          },
+          {
+            "type": "not",
+            "message": "Один из жильцов прописался только в 2017 году — в ту ночь его там не было.",
+            "rule": {
+              "type": "any_of",
+              "successMessage": "Поздний жилец в результате.",
+              "rules": [
+                { "type": "column_values", "columns": ["full_name"], "mode": "superset", "referenceQuery": "SELECT full_name FROM persons WHERE id = 3476" },
+                { "type": "cell_value", "value": 3476, "columns": ["person_id", "id"] }
+              ]
+            }
+          },
+          {
+            "type": "not",
+            "message": "Это однофамилица с Портовой: Береговая, 4 — другой адрес.",
+            "rule": {
+              "type": "any_of",
+              "successMessage": "Ким с Портовой в результате.",
+              "rules": [
+                { "type": "cell_value", "value": "Ким Светлана Робертовна" },
+                { "type": "cell_value", "value": 3477, "columns": ["person_id", "id"] }
+              ]
+            }
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c06_o6_5.001",
+          "text": "Прописка — она как срок, голубчик: с какого по какое. А у кого «по какое» пустое — те и теперь там живут."
+        },
+        {
+          "by": "mira",
+          "text": "Период «действует на дату»: from_date <= дата AND (to_date IS NULL OR to_date >= дата). Скобки обязательны. Пример: SELECT * FROM gs_phonebook WHERE from_date <= '2015-02-19' AND (to_date IS NULL OR to_date >= '2015-02-19'). См. «Даты и время»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT p.id, p.full_name, r.from_date, r.to_date FROM registrations r JOIN addresses a ON a.id = r.address_id JOIN persons p ON p.id = r.person_id WHERE a.street = '_________' AND a.house = '_' AND r.from_date <= '__________' AND (r.to_date ________ OR r.to_date >= '__________');"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT p.id, p.full_name, r.from_date, r.to_date FROM registrations r JOIN addresses a ON a.id = r.address_id JOIN persons p ON p.id = r.person_id WHERE a.street = 'Береговая' AND a.house = '4' AND r.from_date <= '2015-02-19' AND r.to_date >= '2015-02-20'; — одна ошибка нарочно. Кто живёт до сих пор, тот тоже жил."
+        }
+      ],
+      "success": "Семь человек. Среди них — Ким Сергей Андреевич и Ким Дарья Сергеевна, 14.06.2001: прописаны с 01.03.2009 по 31.08.2016. Лосева уехала до той ночи, ещё один жилец въехал только в 2017-м.",
+      "evidence": {
+        "id": "ev.c06.beregovaya",
+        "title": "Береговая, 4: Ким Д. С.",
+        "text": "registrations, адрес 512 (Створ, Береговая, 4): в ночь на 20.02.2015 прописаны Ким Сергей Андреевич (3070) и Ким Дарья Сергеевна, 14.06.2001 (3071) — с 2009-03-01 по 2016-08-31, и ещё три семьи. Лосева П. А. — по 2014-12-31.",
+        "kind": "record"
+      },
+      "sceneAfter": "dream_open",
+      "solution": "SELECT p.id, p.full_name, p.birth_date, r.from_date, r.to_date\nFROM registrations r\nJOIN addresses a ON a.id = r.address_id\nJOIN persons p ON p.id = r.person_id\nWHERE a.street = 'Береговая' AND a.house = '4'\n  AND r.from_date <= '2015-02-19'\n  AND (r.to_date IS NULL OR r.to_date >= '2015-02-20')\nORDER BY r.from_date;"
+    },
+    {
+      "id": "o6_3b",
+      "order": 31,
+      "optional": true,
+      "task": "★ Машина стоит у оголовка с пятнадцатого года. Неужели за одиннадцать лет туда ни разу не ныряли? Найти в рапортах водолазов (diver_reports) находку у оголовка — машину.",
+      "concept": "h.where",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Рапорт найден.",
+        "rules": [
+          { "type": "cell_value", "value": "кузов легковой машины у оголовка; проверено: строительный металлолом" },
+          { "type": "row_count", "expected": 15, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c06_o6_3b.001",
+          "text": "Водолазы МЧС каждое лето тут ныряют. Кто-то же видел крышу. Ищи по слову «машина»."
+        },
+        {
+          "by": "mira",
+          "text": "LIKE ищет по образцу: % — любые символы, с двух сторон — «где угодно в тексте». Пример: SELECT * FROM incidents WHERE description LIKE '%фары%'."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT report_date, location, note, checked_by FROM diver_reports WHERE note LIKE '%_____%';"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT report_date, location, note, checked_by FROM diver_reports WHERE note LIKE 'машин%'; — одна ошибка нарочно. Процент нужен с двух сторон."
+        }
+      ],
+      "success": "14.07.2018, Створ, оголовок сброса: «кузов легковой машины у оголовка; проверено: строительный металлолом». Проверял майор Ратников.",
+      "evidence": {
+        "id": "ev.c06.scrap",
+        "title": "Рапорт водолазов: «металлолом»",
+        "text": "diver_reports, 2018-07-14, Створ, оголовок сброса «Глубины»: «кузов легковой машины у оголовка; проверено: строительный металлолом». Проверил — майор Ратников.",
+        "kind": "document"
+      },
+      "sceneAfter": "scrap",
+      "solution": "SELECT report_date, location, note, checked_by\nFROM diver_reports\nWHERE note LIKE '%машин%';"
+    },
+    {
+      "id": "o6_5b",
+      "order": 51,
+      "optional": true,
+      "task": "★ «Последний вечер Сазонова». В строке 6 жена пишет: уехал после звонка с работы. В архиве АТС «Глубина-Строя» (gs_comms_2015) время — unix-секунды по UTC. Найти вечером 19.02.2015 звонок и SMS с одного внутреннего номера с разницей не больше 15 минут (self-join gs_comms_2015) и узнать по gs_phonebook, чей это номер.",
+      "concept": "h.unixepoch",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Звонок, SMS и номер найдены.",
+        "rules": [
+          { "type": "cell_value", "value": "+7 900 000-12-19" },
+          { "type": "cell_value", "value": "ГОСТЬ ЕДЕТ К СТАРОМУ ПРИЧАЛУ. ВСТРЕТЬ." },
+          { "type": "cell_value", "value": "приёмная директора" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c06_o6_5b.001",
+          "text": "В «Глубине» часы, голубчик, не наши — гринвичские. Три часа накинь, а то вечер у тебя ночью окажется."
+        },
+        {
+          "by": "mira",
+          "text": "datetime(ts_unix, 'unixepoch', '+3 hours') — местное время из unix-секунд UTC. Пример: SELECT ts_unix, datetime(ts_unix, 'unixepoch') AS utc, datetime(ts_unix, 'unixepoch', '+3 hours') AS местное FROM gs_comms_2015 LIMIT 5. См. «unixepoch» и «Чьё время»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT datetime(c.ts_unix, 'unixepoch', '+3 hours') AS звонок, c.to_number, datetime(s.ts_unix, 'unixepoch', '+3 hours') AS смс, s.recipient_name, s.text, pb.room, pb.holder_person_id FROM gs_comms_2015 c JOIN gs_comms_2015 s ON s.from_ext = c.from_ext AND s.kind = 'sms' AND s.ts_unix BETWEEN c.ts_unix AND c.ts_unix + ___ JOIN gs_phonebook pb ON pb.ext = c.from_ext WHERE c.kind = 'call' AND date(c.ts_unix, 'unixepoch', '+3 hours') = '__________' AND time(c.ts_unix, 'unixepoch', '+3 hours') >= '18:00:00';"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT datetime(c.ts_unix, 'unixepoch') AS звонок, c.to_number, s.text, pb.room FROM gs_comms_2015 c JOIN gs_comms_2015 s ON s.from_ext = c.from_ext AND s.kind = 'sms' AND s.ts_unix BETWEEN c.ts_unix AND c.ts_unix + 900 JOIN gs_phonebook pb ON pb.ext = c.from_ext WHERE c.kind = 'call' AND datetime(c.ts_unix, 'unixepoch') BETWEEN '2015-02-19 21:00:00' AND '2015-02-19 22:00:00'; — одна ошибка нарочно. Его последний вечер. Часы там чужие."
+        }
+      ],
+      "success": "21:47 — звонок с внутреннего 2-14 на мобильный Сазонова, 60 секунд. 21:56 — SMS с того же номера старшему наряда Бурцеву: «ГОСТЬ ЕДЕТ К СТАРОМУ ПРИЧАЛУ. ВСТРЕТЬ.» 2-14 — приёмная директора, держатель — 1001.",
+      "evidence": {
+        "id": "ev.c06.last_evening",
+        "title": "Последний вечер Сазонова",
+        "text": "gs_comms_2015, 19.02.2015 по местному: 21:47 звонок 2-14 → +7 900 000-12-19 (Сазонов), 60 с; 21:56 SMS 2-14 → +7 900 000-22-14, «ст. наряда Бурцев»: «ГОСТЬ ЕДЕТ К СТАРОМУ ПРИЧАЛУ. ВСТРЕТЬ.» gs_phonebook: 2-14 — «приёмная директора», держатель 1001, 2013-04-01 … 2017-06-30.",
+        "kind": "record"
+      },
+      "sceneAfter": "last_evening",
+      "solution": "SELECT datetime(c.ts_unix, 'unixepoch', '+3 hours') AS звонок, c.from_ext, c.to_number, c.duration_sec,\n       datetime(s.ts_unix, 'unixepoch', '+3 hours') AS смс, s.to_number AS смс_кому, s.recipient_name, s.text,\n       pb.room, pb.holder_person_id\nFROM gs_comms_2015 c\nJOIN gs_comms_2015 s ON s.from_ext = c.from_ext AND s.kind = 'sms'\n                    AND s.ts_unix BETWEEN c.ts_unix AND c.ts_unix + 15 * 60\nJOIN gs_phonebook pb ON pb.ext = c.from_ext\n                    AND date(c.ts_unix, 'unixepoch', '+3 hours') BETWEEN pb.from_date AND pb.to_date\nWHERE c.kind = 'call'\n  AND date(c.ts_unix, 'unixepoch', '+3 hours') = '2015-02-19'\n  AND time(c.ts_unix, 'unixepoch', '+3 hours') >= '18:00:00';"
+    },
+    {
+      "id": "o6_0a",
+      "order": 90,
+      "optional": true,
+      "task": "Утренняя сводка (повтор: LEFT JOIN). Какие камеры за 16 декабря не прочитали ни одного номера? Вывести id, название и статус камеры.",
+      "validation": {
+        "type": "column_values",
+        "columns": ["name"],
+        "referenceQuery": "SELECT c.name FROM cameras c LEFT JOIN plate_reads r ON r.camera_id = c.id AND r.read_at BETWEEN '2026-12-16 00:00:00' AND '2026-12-16 23:59:59' WHERE r.id IS NULL"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c06_o6_0a.001",
+          "text": "Кто молчал, голубчик, того в списке считываний и нет. Бери все камеры, а к ним — что прочитали."
+        },
+        {
+          "by": "mira",
+          "text": "Условие на правую таблицу пишут в ON, иначе LEFT JOIN станет обычным. Пример: SELECT s.full_name FROM staff s LEFT JOIN logins l ON l.login = s.login WHERE l.login IS NULL."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT c.id, c.name, c.status FROM cameras c LEFT JOIN plate_reads r ON r.camera_id = c.id AND r.read_at BETWEEN '__________ 00:00:00' AND '__________ 23:59:59' WHERE r.id ______;"
+        }
+      ],
+      "success": "Камеры, которые молчали 16 декабря. Береговое шоссе (22) среди них: «отключена по запросу собственника территории (ЧОП «Щит»)».",
+      "solution": "SELECT c.id, c.name, c.status\nFROM cameras c\nLEFT JOIN plate_reads r ON r.camera_id = c.id\n     AND r.read_at BETWEEN '2026-12-16 00:00:00' AND '2026-12-16 23:59:59'\nWHERE r.id IS NULL;"
+    },
+    {
+      "id": "o6_0b",
+      "order": 91,
+      "optional": true,
+      "task": "Утренняя сводка (повтор: GROUP BY). Сколько вызовов было 16 декабря в каждом районе?",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT district, COUNT(*) AS вызовов FROM incidents WHERE reported_at BETWEEN '2026-12-16 00:00:00' AND '2026-12-16 23:59:59' GROUP BY district"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c06_o6_0b.001",
+          "text": "Сводку я по районам печатаю, голубчик. Отбери вчерашний день и посчитай по каждому."
+        },
+        {
+          "by": "mira",
+          "text": "GROUP BY сворачивает строки в группы, COUNT(*) считает строки группы. Пример: SELECT dept, COUNT(*) FROM staff GROUP BY dept."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT district, COUNT(*) FROM incidents WHERE reported_at BETWEEN '__________ 00:00:00' AND '__________ 23:59:59' GROUP BY ________;"
+        }
+      ],
+      "success": "Сводка за 16 декабря готова.",
+      "solution": "SELECT district, COUNT(*) AS вызовов\nFROM incidents\nWHERE reported_at BETWEEN '2026-12-16 00:00:00' AND '2026-12-16 23:59:59'\nGROUP BY district\nORDER BY вызовов DESC;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Машину {car} нашли у оголовка сброса.",
+      "Через {days} день после исчезновения оголовок перенесли документом {doc} на {meters} м от места из строки 7.",
+      "Подписал {signer}."
+    ],
+    "blanks": [
+      {
+        "id": "car",
+        "kind": "text",
+        "options": ["Т117АУ", "К404ТО", "О114РБ"],
+        "answer": "Т117АУ"
+      },
+      {
+        "id": "days",
+        "kind": "number",
+        "tolerance": 1,
+        "options": ["18", "21", "2140"],
+        "answer": "21"
+      },
+      {
+        "id": "doc",
+        "kind": "text",
+        "options": ["ПД-117", "ПД-117/изм.3", "ПД-117/изм.4", "ПД-117/изм.7"],
+        "answer": "ПД-117/изм.3"
+      },
+      {
+        "id": "meters",
+        "kind": "number",
+        "tolerance": 0.5,
+        "options": ["18", "21", "2140"],
+        "answer": "18"
+      },
+      {
+        "id": "signer",
+        "kind": "person",
+        "options": ["Гранин Эдуард Витальевич", "Сазонов Пётр Ильич", "Ким Сергей Андреевич", "Ким Дарья Сергеевна"],
+        "answer": "Гранин Эдуард Витальевич",
+        "aliases": { "Гранин Эдуард Витальевич": [1001] }
+      }
+    ],
+    "successScene": "outro",
+    "failureLines": [
+      "Нина: Не сходится, голубчик. Перечитай документ — там всё написано, только не в лоб.",
+      "Даша (по рации): Так. Стоп. Мимо. Ещё раз.",
+      "МИРА: Не сходится."
+    ]
+  },
   "outroScene": "outro"
 }
