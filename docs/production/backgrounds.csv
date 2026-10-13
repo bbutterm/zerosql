@@ -1,13 +1,13 @@
 ﻿id,name,file,export_px,tier,used_in_script,canon,exists
-basement_b0_03_evening,"Подвал Б0-03, вечер",public/backgrounds/basement_b0_03_evening.webp,1920x1080,P0 №2,no,yes,no
-basement_b0_03_night,"Подвал Б0-03, ночь",public/backgrounds/basement_b0_03_night.webp,1920x1080,P0 №15,no,yes,no
-archive_nina,Архив Нины,public/backgrounds/archive_nina.webp,1920x1080,P1,no,yes,no
-server_room_b0_11,Серверная Б0-11,public/backgrounds/server_room_b0_11.webp,1920x1080,P1,no,yes,no
-interrogation_glass,Допросная «за стеклом»,public/backgrounds/interrogation_glass.webp,1920x1080,P0 №10,no,yes,no
-ratnikov_office,Кабинет Ратникова,public/backgrounds/ratnikov_office.webp,1920x1080,P1,no,yes,no
-cardiology_corridor,Коридор кардиологии,public/backgrounds/cardiology_corridor.webp,1920x1080,P2,no,yes,no
-substation_promzona_2,Подстанция «Промзона-2»,public/backgrounds/substation_promzona_2.webp,1920x1080,P0 №8,no,yes,no
-pakhomova_apartment,Квартира Пахомовой,public/backgrounds/pakhomova_apartment.webp,1920x1080,P1,no,yes,no
+basement_b0_03_evening,"Подвал Б0-03, вечер",public/backgrounds/basement_b0_03_evening.webp,1920x1080,P0 №2,yes,yes,no
+basement_b0_03_night,"Подвал Б0-03, ночь",public/backgrounds/basement_b0_03_night.webp,1920x1080,P0 №15,yes,yes,no
+archive_nina,Архив Нины,public/backgrounds/archive_nina.webp,1920x1080,P1,yes,yes,no
+server_room_b0_11,Серверная Б0-11,public/backgrounds/server_room_b0_11.webp,1920x1080,P1,yes,yes,no
+interrogation_glass,Допросная «за стеклом»,public/backgrounds/interrogation_glass.webp,1920x1080,P0 №10,yes,yes,no
+ratnikov_office,Кабинет Ратникова,public/backgrounds/ratnikov_office.webp,1920x1080,P1,yes,yes,no
+cardiology_corridor,Коридор кардиологии,public/backgrounds/cardiology_corridor.webp,1920x1080,P2,yes,yes,no
+substation_promzona_2,Подстанция «Промзона-2»,public/backgrounds/substation_promzona_2.webp,1920x1080,P0 №8,yes,yes,no
+pakhomova_apartment,Квартира Пахомовой,public/backgrounds/pakhomova_apartment.webp,1920x1080,P1,yes,yes,no
 polyarnaya_street_night,Полярная улица ночью,public/backgrounds/polyarnaya_street_night.webp,1920x1080,P1,no,yes,no
 black_ice_mostki,Чёрный лёд у мостков (ключевой арт),public/backgrounds/black_ice_mostki.webp,1920x1080,P2,no,yes,no
 cafe_stvor,Кафе «Створ» у маяка,public/backgrounds/cafe_stvor.webp,1920x1080,P3,no,yes,no
@@ -16,3 +16,13 @@ basement_new_year,Подвал в новогоднюю ночь,public/backgroun
 mostki_dawn,Мостки на рассвете,public/backgrounds/mostki_dawn.webp,1920x1080,P3,no,yes,no
 title_night,"Холодное открытие, ночь (ключевая картина)",public/backgrounds/title_night.webp,2560x1440,P0 №6,no,yes,no
 title_dawn,Холодное открытие после финала,public/backgrounds/title_dawn.webp,2560x1440,P3,no,yes,no
+gu_corridor,gu_corridor,public/backgrounds/gu_corridor.webp,1920x1080,,yes,no,no
+basement_b0_03_day,basement_b0_03_day,public/backgrounds/basement_b0_03_day.webp,1920x1080,,yes,no,no
+office_1_12,office_1_12,public/backgrounds/office_1_12.webp,1920x1080,,yes,no,no
+basement_archive_night,basement_archive_night,public/backgrounds/basement_archive_night.webp,1920x1080,,yes,no,no
+basement_b0_03_morning_tv,basement_b0_03_morning_tv,public/backgrounds/basement_b0_03_morning_tv.webp,1920x1080,,yes,no,no
+polynya_ice_morning,polynya_ice_morning,public/backgrounds/polynya_ice_morning.webp,1920x1080,,yes,no,no
+polynya_ice_old_pier,polynya_ice_old_pier,public/backgrounds/polynya_ice_old_pier.webp,1920x1080,,yes,no,no
+polynya_shore_noon,polynya_shore_noon,public/backgrounds/polynya_shore_noon.webp,1920x1080,,yes,no,no
+basement_b0_03_morning,basement_b0_03_morning,public/backgrounds/basement_b0_03_morning.webp,1920x1080,,yes,no,no
+pier_lantern_night,pier_lantern_night,public/backgrounds/pier_lantern_night.webp,1920x1080,,yes,no,no

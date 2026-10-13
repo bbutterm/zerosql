@@ -1,64 +1,64 @@
 ﻿character,name,emotion,variant,file,used_in_script,canon,tier,export_px,exists
-ratnikov,Лев Борисович Ратников,neutral,,public/portraits/ratnikov/neutral.webp,no,yes,P0 №1,1024x1536,no
-ratnikov,Лев Борисович Ратников,happy,,public/portraits/ratnikov/happy.webp,no,yes,P1,1024x1536,no
-ratnikov,Лев Борисович Ратников,tired,,public/portraits/ratnikov/tired.webp,no,yes,P1,1024x1536,no
-ratnikov,Лев Борисович Ратников,uneasy,,public/portraits/ratnikov/uneasy.webp,no,yes,P1,1024x1536,no
-ratnikov,Лев Борисович Ратников,lie,,public/portraits/ratnikov/lie.webp,no,yes,P1,1024x1536,no
-ratnikov,Лев Борисович Ратников,ashamed,,public/portraits/ratnikov/ashamed.webp,no,yes,P2,1024x1536,no
-ratnikov,Лев Борисович Ратников,broken,,public/portraits/ratnikov/broken.webp,no,yes,P2,1024x1536,no
-ratnikov,Лев Борисович Ратников,hurt,,public/portraits/ratnikov/hurt.webp,no,yes,P2,1024x1536,no
-dasha,Дарья Сергеевна Ким,neutral,,public/portraits/dasha/neutral.webp,no,yes,P0 №4,1024x1536,no
-dasha,Дарья Сергеевна Ким,neutral,outdoor,public/portraits/dasha/neutral_outdoor.webp,no,yes,P0 №7,1024x1536,no
-dasha,Дарья Сергеевна Ким,smug,,public/portraits/dasha/smug.webp,no,yes,P1,1024x1536,no
-dasha,Дарья Сергеевна Ким,angry,,public/portraits/dasha/angry.webp,no,yes,P1,1024x1536,no
-dasha,Дарья Сергеевна Ким,scared,,public/portraits/dasha/scared.webp,no,yes,P2,1024x1536,no
-dasha,Дарья Сергеевна Ким,determined,,public/portraits/dasha/determined.webp,no,yes,P1,1024x1536,no
-dasha,Дарья Сергеевна Ким,determined,outdoor,public/portraits/dasha/determined_outdoor.webp,no,yes,P2,1024x1536,no
-dasha,Дарья Сергеевна Ким,hurt,,public/portraits/dasha/hurt.webp,no,yes,P2,1024x1536,no
-dasha,Дарья Сергеевна Ким,broken,,public/portraits/dasha/broken.webp,no,yes,P3,1024x1536,no
-nina,Нина Фёдоровна Шустова,neutral,,public/portraits/nina/neutral.webp,no,yes,P0 №3,1024x1536,no
-nina,Нина Фёдоровна Шустова,happy,,public/portraits/nina/happy.webp,no,yes,P1,1024x1536,no
-nina,Нина Фёдоровна Шустова,sad,,public/portraits/nina/sad.webp,no,yes,P2,1024x1536,no
-nina,Нина Фёдоровна Шустова,scared,,public/portraits/nina/scared.webp,no,yes,P2,1024x1536,no
-nina,Нина Фёдоровна Шустова,thinking,,public/portraits/nina/thinking.webp,no,yes,P1,1024x1536,no
-nina,Нина Фёдоровна Шустова,angry,,public/portraits/nina/angry.webp,no,yes,P2,1024x1536,no
-nina,Нина Фёдоровна Шустова,ashamed,,public/portraits/nina/ashamed.webp,no,yes,P2,1024x1536,no
-tokha,Антон Сергеевич Лыков,neutral,,public/portraits/tokha/neutral.webp,no,yes,P0 №5,1024x1536,no
-tokha,Антон Сергеевич Лыков,happy,,public/portraits/tokha/happy.webp,no,yes,P1,1024x1536,no
-tokha,Антон Сергеевич Лыков,uneasy,,public/portraits/tokha/uneasy.webp,no,yes,P1,1024x1536,no
-tokha,Антон Сергеевич Лыков,scared,,public/portraits/tokha/scared.webp,no,yes,P1,1024x1536,no
-tokha,Антон Сергеевич Лыков,lie,,public/portraits/tokha/lie.webp,no,yes,P1,1024x1536,no
-tokha,Антон Сергеевич Лыков,ashamed,,public/portraits/tokha/ashamed.webp,no,yes,P2,1024x1536,no
-tokha,Антон Сергеевич Лыков,broken,,public/portraits/tokha/broken.webp,no,yes,P2,1024x1536,no
-burtsev,Валерий Николаевич Бурцев,neutral,,public/portraits/burtsev/neutral.webp,no,yes,P0 №12,1024x1536,no
-burtsev,Валерий Николаевич Бурцев,cold,,public/portraits/burtsev/cold.webp,no,yes,P1,1024x1536,no
+ratnikov,Лев Борисович Ратников,neutral,,public/portraits/ratnikov/neutral.webp,yes,yes,P0 №1,1024x1536,no
+ratnikov,Лев Борисович Ратников,happy,,public/portraits/ratnikov/happy.webp,yes,yes,P1,1024x1536,no
+ratnikov,Лев Борисович Ратников,tired,,public/portraits/ratnikov/tired.webp,yes,yes,P1,1024x1536,no
+ratnikov,Лев Борисович Ратников,uneasy,,public/portraits/ratnikov/uneasy.webp,yes,yes,P1,1024x1536,no
+ratnikov,Лев Борисович Ратников,lie,,public/portraits/ratnikov/lie.webp,yes,yes,P1,1024x1536,no
+ratnikov,Лев Борисович Ратников,ashamed,,public/portraits/ratnikov/ashamed.webp,yes,yes,P2,1024x1536,no
+ratnikov,Лев Борисович Ратников,broken,,public/portraits/ratnikov/broken.webp,yes,yes,P2,1024x1536,no
+ratnikov,Лев Борисович Ратников,hurt,,public/portraits/ratnikov/hurt.webp,yes,yes,P2,1024x1536,no
+dasha,Дарья Сергеевна Ким,neutral,,public/portraits/dasha/neutral.webp,yes,yes,P0 №4,1024x1536,no
+dasha,Дарья Сергеевна Ким,neutral,outdoor,public/portraits/dasha/neutral_outdoor.webp,yes,yes,P0 №7,1024x1536,no
+dasha,Дарья Сергеевна Ким,smug,,public/portraits/dasha/smug.webp,yes,yes,P1,1024x1536,no
+dasha,Дарья Сергеевна Ким,angry,,public/portraits/dasha/angry.webp,yes,yes,P1,1024x1536,no
+dasha,Дарья Сергеевна Ким,scared,,public/portraits/dasha/scared.webp,yes,yes,P2,1024x1536,no
+dasha,Дарья Сергеевна Ким,determined,,public/portraits/dasha/determined.webp,yes,yes,P1,1024x1536,no
+dasha,Дарья Сергеевна Ким,determined,outdoor,public/portraits/dasha/determined_outdoor.webp,yes,yes,P2,1024x1536,no
+dasha,Дарья Сергеевна Ким,hurt,,public/portraits/dasha/hurt.webp,yes,yes,P2,1024x1536,no
+dasha,Дарья Сергеевна Ким,broken,,public/portraits/dasha/broken.webp,yes,yes,P3,1024x1536,no
+nina,Нина Фёдоровна Шустова,neutral,,public/portraits/nina/neutral.webp,yes,yes,P0 №3,1024x1536,no
+nina,Нина Фёдоровна Шустова,happy,,public/portraits/nina/happy.webp,yes,yes,P1,1024x1536,no
+nina,Нина Фёдоровна Шустова,sad,,public/portraits/nina/sad.webp,yes,yes,P2,1024x1536,no
+nina,Нина Фёдоровна Шустова,scared,,public/portraits/nina/scared.webp,yes,yes,P2,1024x1536,no
+nina,Нина Фёдоровна Шустова,thinking,,public/portraits/nina/thinking.webp,yes,yes,P1,1024x1536,no
+nina,Нина Фёдоровна Шустова,angry,,public/portraits/nina/angry.webp,yes,yes,P2,1024x1536,no
+nina,Нина Фёдоровна Шустова,ashamed,,public/portraits/nina/ashamed.webp,yes,yes,P2,1024x1536,no
+tokha,Антон Сергеевич Лыков,neutral,,public/portraits/tokha/neutral.webp,yes,yes,P0 №5,1024x1536,no
+tokha,Антон Сергеевич Лыков,happy,,public/portraits/tokha/happy.webp,yes,yes,P1,1024x1536,no
+tokha,Антон Сергеевич Лыков,uneasy,,public/portraits/tokha/uneasy.webp,yes,yes,P1,1024x1536,no
+tokha,Антон Сергеевич Лыков,scared,,public/portraits/tokha/scared.webp,yes,yes,P1,1024x1536,no
+tokha,Антон Сергеевич Лыков,lie,,public/portraits/tokha/lie.webp,yes,yes,P1,1024x1536,no
+tokha,Антон Сергеевич Лыков,ashamed,,public/portraits/tokha/ashamed.webp,yes,yes,P2,1024x1536,no
+tokha,Антон Сергеевич Лыков,broken,,public/portraits/tokha/broken.webp,yes,yes,P2,1024x1536,no
+burtsev,Валерий Николаевич Бурцев,neutral,,public/portraits/burtsev/neutral.webp,yes,yes,P0 №12,1024x1536,no
+burtsev,Валерий Николаевич Бурцев,cold,,public/portraits/burtsev/cold.webp,yes,yes,P1,1024x1536,no
 burtsev,Валерий Николаевич Бурцев,smug,,public/portraits/burtsev/smug.webp,no,yes,P1,1024x1536,no
-burtsev,Валерий Николаевич Бурцев,thinking,,public/portraits/burtsev/thinking.webp,no,yes,P1,1024x1536,no
+burtsev,Валерий Николаевич Бурцев,thinking,,public/portraits/burtsev/thinking.webp,yes,yes,P1,1024x1536,no
 burtsev,Валерий Николаевич Бурцев,scared,,public/portraits/burtsev/scared.webp,no,yes,P3,1024x1536,no
 granin,Эдуард Витальевич Гранин,neutral,,public/portraits/granin/neutral.webp,no,yes,P2,1024x1536,no
-granin,Эдуард Витальевич Гранин,happy,,public/portraits/granin/happy.webp,no,yes,P1,1024x1536,no
-granin,Эдуард Витальевич Гранин,smug,,public/portraits/granin/smug.webp,no,yes,P2,1024x1536,no
+granin,Эдуард Витальевич Гранин,happy,,public/portraits/granin/happy.webp,yes,yes,P1,1024x1536,no
+granin,Эдуард Витальевич Гранин,smug,,public/portraits/granin/smug.webp,yes,yes,P2,1024x1536,no
 granin,Эдуард Витальевич Гранин,cold,,public/portraits/granin/cold.webp,no,yes,P3,1024x1536,no
 granin,Эдуард Витальевич Гранин,shaken,,public/portraits/granin/shaken.webp,no,yes,P3,1024x1536,no
 granin,Эдуард Витальевич Гранин,scared,,public/portraits/granin/scared.webp,no,yes,P3,1024x1536,no
-melnik,Константин Игоревич Мельник,neutral,,public/portraits/melnik/neutral.webp,no,yes,P0 №14,1024x1536,no
-melnik,Константин Игоревич Мельник,smug,,public/portraits/melnik/smug.webp,no,yes,P1,1024x1536,no
-melnik,Константин Игоревич Мельник,angry,,public/portraits/melnik/angry.webp,no,yes,P2,1024x1536,no
-melnik,Константин Игоревич Мельник,scared,,public/portraits/melnik/scared.webp,no,yes,P3,1024x1536,no
-alla,Алла Дмитриевна Мирошник,neutral,,public/portraits/alla/neutral.webp,no,yes,P2,1024x1536,no
-alla,Алла Дмитриевна Мирошник,smug,,public/portraits/alla/smug.webp,no,yes,P2,1024x1536,no
-alla,Алла Дмитриевна Мирошник,tired,,public/portraits/alla/tired.webp,no,yes,P3,1024x1536,no
-alla,Алла Дмитриевна Мирошник,ashamed,,public/portraits/alla/ashamed.webp,no,yes,P3,1024x1536,no
-valentina,Валентина Сергеевна Вальц,neutral,,public/portraits/valentina/neutral.webp,no,yes,P0 №13,1024x1536,no
-valentina,Валентина Сергеевна Вальц,sad,,public/portraits/valentina/sad.webp,no,yes,P1,1024x1536,no
-valentina,Валентина Сергеевна Вальц,hurt,,public/portraits/valentina/hurt.webp,no,yes,P2,1024x1536,no
-valentina,Валентина Сергеевна Вальц,hurt,outdoor,public/portraits/valentina/hurt_outdoor.webp,no,yes,P2,1024x1536,no
-valentina,Валентина Сергеевна Вальц,determined,,public/portraits/valentina/determined.webp,no,yes,P1,1024x1536,no
-shpala,Георгий Ильич Шпаков,neutral,,public/portraits/shpala/neutral.webp,no,yes,P0 №9,1024x1536,no
-shpala,Георгий Ильич Шпаков,happy,,public/portraits/shpala/happy.webp,no,yes,P1,1024x1536,no
-shpala,Георгий Ильич Шпаков,scared,,public/portraits/shpala/scared.webp,no,yes,P1,1024x1536,no
-oleg_pakhomov,Олег Викторович Пахомов,neutral,,public/portraits/oleg_pakhomov/neutral.webp,no,yes,P0 №11,1024x1536,no
-oleg_pakhomov,Олег Викторович Пахомов,scared,,public/portraits/oleg_pakhomov/scared.webp,no,yes,P1,1024x1536,no
-oleg_pakhomov,Олег Викторович Пахомов,angry,,public/portraits/oleg_pakhomov/angry.webp,no,yes,P1,1024x1536,no
-irina,Ирина Петровна Вальц,neutral,,public/portraits/irina/neutral.webp,no,yes,P1,1024x1536,no
-irina,Ирина Петровна Вальц,happy,,public/portraits/irina/happy.webp,no,yes,P1,1024x1536,no
+melnik,Константин Игоревич Мельник,neutral,,public/portraits/melnik/neutral.webp,yes,yes,P0 №14,1024x1536,no
+melnik,Константин Игоревич Мельник,smug,,public/portraits/melnik/smug.webp,yes,yes,P1,1024x1536,no
+melnik,Константин Игоревич Мельник,angry,,public/portraits/melnik/angry.webp,yes,yes,P2,1024x1536,no
+melnik,Константин Игоревич Мельник,scared,,public/portraits/melnik/scared.webp,yes,yes,P3,1024x1536,no
+alla,Алла Дмитриевна Мирошник,neutral,,public/portraits/alla/neutral.webp,yes,yes,P2,1024x1536,no
+alla,Алла Дмитриевна Мирошник,smug,,public/portraits/alla/smug.webp,yes,yes,P2,1024x1536,no
+alla,Алла Дмитриевна Мирошник,tired,,public/portraits/alla/tired.webp,yes,yes,P3,1024x1536,no
+alla,Алла Дмитриевна Мирошник,ashamed,,public/portraits/alla/ashamed.webp,yes,yes,P3,1024x1536,no
+valentina,Валентина Сергеевна Вальц,neutral,,public/portraits/valentina/neutral.webp,yes,yes,P0 №13,1024x1536,no
+valentina,Валентина Сергеевна Вальц,sad,,public/portraits/valentina/sad.webp,yes,yes,P1,1024x1536,no
+valentina,Валентина Сергеевна Вальц,hurt,,public/portraits/valentina/hurt.webp,yes,yes,P2,1024x1536,no
+valentina,Валентина Сергеевна Вальц,hurt,outdoor,public/portraits/valentina/hurt_outdoor.webp,yes,yes,P2,1024x1536,no
+valentina,Валентина Сергеевна Вальц,determined,,public/portraits/valentina/determined.webp,yes,yes,P1,1024x1536,no
+shpala,Георгий Ильич Шпаков,neutral,,public/portraits/shpala/neutral.webp,yes,yes,P0 №9,1024x1536,no
+shpala,Георгий Ильич Шпаков,happy,,public/portraits/shpala/happy.webp,yes,yes,P1,1024x1536,no
+shpala,Георгий Ильич Шпаков,scared,,public/portraits/shpala/scared.webp,yes,yes,P1,1024x1536,no
+oleg_pakhomov,Олег Викторович Пахомов,neutral,,public/portraits/oleg_pakhomov/neutral.webp,yes,yes,P0 №11,1024x1536,no
+oleg_pakhomov,Олег Викторович Пахомов,scared,,public/portraits/oleg_pakhomov/scared.webp,yes,yes,P1,1024x1536,no
+oleg_pakhomov,Олег Викторович Пахомов,angry,,public/portraits/oleg_pakhomov/angry.webp,yes,yes,P1,1024x1536,no
+irina,Ирина Петровна Вальц,neutral,,public/portraits/irina/neutral.webp,yes,yes,P1,1024x1536,no
+irina,Ирина Петровна Вальц,happy,,public/portraits/irina/happy.webp,yes,yes,P1,1024x1536,no
