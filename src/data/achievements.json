@@ -1,22 +1,35 @@
 [
-  {
-    "id": "ach.watchman",
-    "title": "Сторож",
-    "description": "«Мёртвая душа»: выполнить дополнительную задачу про логин без хозяина.",
-    "kind": "all_optional",
-    "param": "case-04-mertvaya-dusha"
-  },
-  {
-    "id": "ach.acrostic",
-    "title": "Акростих",
-    "description": "Закрыть дело «Копирка» без подсказок.",
-    "kind": "case_no_hints",
-    "param": "case-10-kopirka"
-  },
-  {
-    "id": "ach.no_safety",
-    "title": "Без страховки",
-    "description": "Закрыть любое дело без подсказок.",
-    "kind": "case_no_hints"
-  }
+  { "id": "ach.first_row", "title": "Первая строка", "description": "Выполнить первый запрос.", "kind": "event", "param": "first_query" },
+  { "id": "ach.eyes", "title": "Зоркий глаз", "description": "Отметить 5 из 8 аномалий раньше, чем их раскроет сюжет.", "kind": "counter", "param": "anomalies_early:5" },
+  { "id": "ach.homoglyph", "title": "В/B", "description": "Дело № 01: найти латинского двойника номера без подсказки.", "kind": "event", "param": "objective_no_hint:case-01-med/o1_4" },
+  { "id": "ach.sentinel", "title": "Минус девятьсот девяносто девять", "description": "Дело № 02: обойти сентинел −999 с первой попытки.", "kind": "event", "param": "objective_first_try:case-02-minus-41/o2_1" },
+  { "id": "ach.null_person", "title": "NULL — это человек", "description": "Дело № 03: найти потерпевшую через IS NULL без подсказки.", "kind": "event", "param": "objective_no_hint:case-03-polyarnaya/o3_5" },
+  { "id": "ach.count_col", "title": "Ноль — тоже число", "description": "Дело № 04: получить у Громова 0 действий с первой попытки.", "kind": "event", "param": "objective_first_try:case-04-mertvaya-dusha/o4_4" },
+  { "id": "ach.watchman", "title": "Сторож", "description": "Дело № 04, ★: найти, кто и когда включил логин zero.", "kind": "event", "param": "objective_done:case-04-mertvaya-dusha/o4_2b" },
+  { "id": "ach.not_exists", "title": "NOT IN споткнулся", "description": "Дело № 05: найти дыры в журнале, обойдя NULL в NOT IN.", "kind": "event", "param": "objective_done:case-05-nomer-3312/o5_1" },
+  { "id": "ach.scrap", "title": "Металлолом", "description": "Дело № 06, ★: найти рапорт водолазов о машине у оголовка.", "kind": "event", "param": "objective_done:case-06-polynya/o6_3b" },
+  { "id": "ach.three_weeks", "title": "Через три недели", "description": "Дело № 06: посчитать 21 день между ночью Сазонова и переносом сброса.", "kind": "event", "param": "objective_done:case-06-polynya/o6_4" },
+  { "id": "ach.union_all", "title": "Двадцать четыре", "description": "Дело № 07: склеить ленту Ратникова через UNION ALL с первой попытки.", "kind": "event", "param": "objective_first_try:case-07-sluzhebnaya-kvartira/o7_3" },
+  { "id": "ach.two_cups", "title": "Две чашки", "description": "Дело № 08: найти чай с чабрецом до допроса.", "kind": "event", "param": "objective_done:case-08-prizrak/o8_4" },
+  { "id": "ach.future_row", "title": "Строка из будущего", "description": "Дело № 08, ★: найти последнее событие каждого номера.", "kind": "event", "param": "objective_done:case-08-prizrak/o8_5s" },
+  { "id": "ach.not_pressed", "title": "Палец не дрогнул", "description": "Закрыть дело № 09, не задев сторожа.", "kind": "event", "param": "case_solved_without:case-09-matryoshka/watcher_tripped" },
+  { "id": "ach.loop", "title": "Петля", "description": "Поймать таймаут запроса.", "kind": "event", "param": "query_timeout", "hidden": true },
+  { "id": "ach.is_not", "title": "IS NOT", "description": "Дело № 10: найти 27 расхождений примет с первой попытки.", "kind": "event", "param": "objective_first_try:case-10-kopirka/o10_4" },
+  { "id": "ach.acrostic", "title": "Акростих", "description": "Закрыть дело «Копирка» без подсказок.", "kind": "case_no_hints", "param": "case-10-kopirka" },
+  { "id": "ach.all_notes", "title": "Все десять", "description": "Услышать все записи диктофона Ирины.", "kind": "counter", "param": "notes_heard:10" },
+  { "id": "ach.zero_rows", "title": "Ноль строк — тоже ответ", "description": "Дело № 10: доказать алиби пустым результатом.", "kind": "event", "param": "objective_done:case-10-kopirka/o10_1d" },
+  { "id": "ach.no_delete", "title": "Улики не удаляют", "description": "Пройти сезон без единого DELETE по statements, persons или evidence_registry.", "kind": "event", "param": "season_no_evidence_delete" },
+  { "id": "ach.tokha", "title": "Тоха жив", "description": "Тоха перешёл на нашу сторону.", "kind": "flag", "param": "tokha_turned" },
+  { "id": "ach.sun", "title": "Первое солнце", "description": "Получить лучшую концовку.", "kind": "event", "param": "ending:first_sun" },
+  { "id": "ach.all_endings", "title": "Все погоды", "description": "Увидеть все 5 концовок.", "kind": "counter", "param": "endings_seen:5" },
+  { "id": "ach.from_future", "title": "Из будущего", "description": "Решить задачу понятием из будущего дела.", "kind": "event", "param": "future_concept" },
+  { "id": "ach.sniper", "title": "Снайпер ×10", "description": "Десять раз решить задачу ровно нужными столбцами.", "kind": "counter", "param": "elegant_sniper:10" },
+  { "id": "ach.jeweler", "title": "Ювелир ×10", "description": "Десять раз решить две задачи одним запросом.", "kind": "counter", "param": "elegant_jeweler:10" },
+  { "id": "ach.no_safety", "title": "Без страховки", "description": "Закрыть любое дело без подсказок.", "kind": "case_no_hints" },
+  { "id": "ach.owl", "title": "Сова", "description": "Закрыть дело после полуночи по настоящему времени.", "kind": "event", "param": "solved_after_midnight" },
+  { "id": "ach.ficus", "title": "Фикус", "description": "Погладить кота в архиве 10 раз.", "kind": "counter", "param": "ficus_pets:10" },
+  { "id": "ach.secret_first", "title": "Не по описи", "description": "Найти первый тайник в данных.", "kind": "secrets_found", "param": 1, "hidden": true },
+  { "id": "ach.archaeologist", "title": "Археолог", "description": "Найти 5 тайников.", "kind": "secrets_found", "param": 5, "hidden": true },
+  { "id": "ach.digger", "title": "Копатель", "description": "Найти 12 тайников.", "kind": "secrets_found", "param": 12, "hidden": true },
+  { "id": "ach.every_row", "title": "До последней строки", "description": "Найти все 22 тайника.", "kind": "secrets_found", "param": 22, "hidden": true }
 ]

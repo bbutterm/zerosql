@@ -303,8 +303,11 @@ export function generateGrantRequests(ctx: WorldContext): void {
       })),
     });
   }
-  rows.sort((a, b) => a.at - b.at);
-  for (const r of rows) ctx.write("grant_requests", { id: ctx.nextId("grant_requests"), ...r.row });
+  // Плавающие посадки (тайники, EASTER_EGGS.md № 18–19) встают по времени вместе с шумом
+  const floating = ctx.takeDeferred("grant_requests").map((p) => ({ at: p.key ?? parseTs(String(p.row.requested_at)), row: p.row, planted: true }));
+  const all = [...floating, ...rows.map((r) => ({ ...r, planted: false }))];
+  all.sort((a, b) => a.at - b.at || (a.planted === b.planted ? 0 : a.planted ? -1 : 1));
+  for (const r of all) ctx.write("grant_requests", { ...r.row, id: ctx.nextId("grant_requests") });
 }
 
 // ==================================================================== share_deals

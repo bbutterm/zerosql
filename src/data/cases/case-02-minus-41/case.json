@@ -356,7 +356,7 @@
         },
         {
           "by": "mira",
-          "text": "COUNT(DISTINCT столбец) считает разные значения, COUNT(*) — строки. Пример: SELECT COUNT(DISTINCT plate) FROM plate_reads WHERE camera_id = 12. См. «COUNT(DISTINCT)»."
+          "text": "COUNT(DISTINCT столбец) считает разные значения, COUNT(*) — строки. Пример: SELECT COUNT(DISTINCT district) FROM incidents. См. «COUNT(DISTINCT)»."
         },
         {
           "by": "mira",

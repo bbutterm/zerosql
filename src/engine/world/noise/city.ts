@@ -52,13 +52,16 @@ export function generateVehicles(ctx: WorldContext): void {
     const resold = !company && rng.chance(0.2) && rows.length + 1 < target;
     const scrapped = !resold && year < 2012 && rng.chance(0.3);
     const base = { plate, make, model: rng.pick(m.models), color, year };
+    // Строка прежнего владельца проверяется исключениями вместе со строкой нового:
+    // если исключена любая из двух, машина не попадает в реестр целиком
+    let previous: { key: number; row: Row } | null = null;
     if (resold) {
       const sold = Math.floor(rng.float(registered + 0.5 * YEAR, Math.max(registered + YEAR, hi)) / DAY) * DAY;
       if (sold < hi) {
-        rows.push({
+        previous = {
           key: registered,
           row: { ...base, owner_person_id: firstOwner?.id ?? null, owner_company_id: null, owner_name: firstOwner?.full ?? null, registered_at: fmtDate(registered), sold_at: fmtDate(sold), deregistered_at: null },
-        });
+        };
         registered = sold;
       }
     }
@@ -68,7 +71,8 @@ export function generateVehicles(ctx: WorldContext): void {
       ...base, owner_person_id: owner?.id ?? null, owner_company_id: company?.id ?? null, owner_name: owner ? owner.full : company?.name ?? null,
       registered_at: fmtDate(registered), sold_at: null, deregistered_at: deregistered && deregistered < hi ? fmtDate(deregistered) : null,
     };
-    if (ctx.isExcluded("vehicles", row)) continue;
+    if (ctx.isExcluded("vehicles", row) || (previous && ctx.isExcluded("vehicles", previous.row))) continue;
+    if (previous) rows.push(previous);
     rows.push({
       key: registered, row,
       v: { id: 0, plate, make, ownerPersonId: owner?.id ?? null, ownerCompanyId: company?.id ?? null, active: row.deregistered_at === null, kind },

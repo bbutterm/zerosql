@@ -178,40 +178,6 @@ function plantVehicles(ctx: WorldContext): void {
   }
   ctx.reserve("plate", C01.plates.vanLatin);
   ctx.reserve("plate", C01.plates.transit);
-  guardResaleLeak(ctx);
-}
-
-const SAIGAK_MAKES = ["Сайгак", "САЙГАК", "СайгаК", "Сайгак Next"] as const;
-const RESALE_TRIGGER = "c01_saigak_resale";
-
-/**
- * Обход дефекта шума (noise/city.ts, generateVehicles): у перепроданной машины
- * строка прежнего владельца (с sold_at) пишется ДО проверки ctx.exclude, и
- * исключение отсекает только строку нового владельца. Без обхода в реестре
- * остаются «осиротевшие» строки «Сайгаков» с sold_at — и их уже не 14.
- * Временный триггер переписывает марку такой строки шума на другую (машину
- * продали, новый владелец поставил её на учёт не у нас). Снимается перед
- * шумом plate_reads (см. plantExclusions). Когда шум начнёт проверять обе
- * строки, триггер просто перестанет срабатывать — и его можно удалить.
- */
-function guardResaleLeak(ctx: WorldContext): void {
-  const makes = SAIGAK_MAKES.map((m) => `'${m}'`).join(", ");
-  const ids = SAIGAKS.map((v) => v.id).join(", ");
-  ctx.db.run(
-    `CREATE TEMP TRIGGER IF NOT EXISTS ${RESALE_TRIGGER} AFTER INSERT ON vehicles
-     WHEN NEW.sold_at IS NOT NULL AND NEW.make IN (${makes}) AND NEW.id NOT IN (${ids})
-     BEGIN
-       UPDATE vehicles
-       SET make = CASE NEW.id % 3 WHEN 0 THEN 'Кречет' WHEN 1 THEN 'Север-М' ELSE 'Полюс' END,
-           model = CASE NEW.id % 3 WHEN 0 THEN 'пикап' WHEN 1 THEN 'бортовой' ELSE 'Кросс' END
-       WHERE id = NEW.id;
-     END`
-  );
-}
-
-/** Реестр машин уже записан: шум plate_reads идёт после vehicles (ему нужны машины шума) */
-function dropResaleGuard(ctx: WorldContext): void {
-  ctx.db.run(`DROP TRIGGER IF EXISTS temp.${RESALE_TRIGGER}`);
 }
 
 // ==================================================================== plate_reads
@@ -262,12 +228,7 @@ function plantExclusions(ctx: WorldContext): void {
   // Ровно 14 «Сайгаков» — все посажены; номеров с «372» в реестре — два
   ctx.exclude("vehicles", (r) => SAIGAK_RE.test(String(r.make ?? "")) || String(r.plate ?? "").includes("372"), "c01: «Сайгаки» и «372» — только посадки");
 
-  let guardDropped = false;
   ctx.exclude("plate_reads", (r) => {
-    if (!guardDropped) {
-      guardDropped = true;
-      dropResaleGuard(ctx);
-    }
     const plate = String(r.plate ?? "");
     if (plate.includes("372")) return true;
     if (PLANTED_PLATES.has(cyr(plate))) return true;

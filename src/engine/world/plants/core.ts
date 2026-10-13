@@ -667,8 +667,18 @@ function plantChronicle(ctx: WorldContext): void {
   const irinaTimes = irinaQueryTimes(rng);
   const total = QUERY_LOG_TARGET + IRINA_QUERY_COUNT;
   const span = QUERY_LOG_TO - QUERY_LOG_FROM;
-  const holeIds = fitSequence(irinaTimes.map((t) => 1 + ((t - QUERY_LOG_FROM) / span) * (total - 1)), 0, total + 1);
-  holeIds.forEach((id, i) => ctx.hole("query_log", id, irinaTimes[i]));
+  // Плавающие строки тайников (eggs.ts) идут в общий ряд как «фантомы»: их id
+  // остаются свободными, и в серии запросов Ирины для них всегда найдётся место
+  const eggTimes = F.EGG_QUERY_LOG_TIMES.map(ts);
+  const series = [...irinaTimes.map((t) => ({ t, irina: true })), ...eggTimes.map((t) => ({ t, irina: false }))]
+    .sort((a, b) => a.t - b.t || (a.irina === b.irina ? 0 : a.irina ? -1 : 1));
+  const seriesIds = fitSequence(series.map((x) => 1 + ((x.t - QUERY_LOG_FROM) / span) * (total - 1)), 0, total + 1);
+  const holeIds: number[] = [];
+  series.forEach((x, i) => {
+    if (!x.irina) return;
+    ctx.hole("query_log", seriesIds[i], x.t);
+    holeIds.push(seriesIds[i]);
+  });
   // Призрак стирает с конца: в первую ночь — последние недели её работы
   const deletable = holeIds.map((id, i) => ({ id, at: irinaTimes[i] })).reverse();
 

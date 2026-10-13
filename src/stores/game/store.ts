@@ -60,6 +60,11 @@ import {
   applyFlag,
   bumpMastery,
   defaultPersisted,
+  deletesEvidence,
+  flagRaised,
+  futureConcepts,
+  isIrinaNote,
+  tripFlags,
   flagsBefore,
   hintTierAllowed,
   hintTierFree,
@@ -413,7 +418,26 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           return st.session ? { ...merged, ...st.session.flags } : merged;
         };
 
+        /** Записи диктофона Ирины, дослушанные в этом деле: события note_heard:* и счётчик notes_heard */
+        const syncNotes = () => {
+          const s = get().session;
+          const d = def();
+          if (!s || !d) return;
+          const heard = s.endedScenes
+            .filter((id) => {
+              const scene = getScene(d, id);
+              return scene !== undefined && isIrinaNote(scene);
+            })
+            .map((id) => `note_heard:${d.id}/${id}`);
+          const season = get().season;
+          const events = pushUniq(season.events, ...heard);
+          if (events.length === season.events.length) return;
+          const notes = events.filter((e) => e.startsWith("note_heard:")).length;
+          set({ season: { ...season, events, counters: { ...season.counters, notes_heard: notes } } });
+        };
+
         const checkAch = (): string[] => {
+          syncNotes();
           const st = get();
           const fresh = checkAchievements(achievementDefs, {
             solved: Object.values(st.season.solved).map((s) => ({ caseId: s.caseId, stats: s.stats, stars: s.stars })),
@@ -523,7 +547,9 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
           recordEvents(
             `objective_done:${key}`,
             ...(firstTry ? [`objective_first_try:${key}`] : []),
-            ...(hintsFor.length === 0 ? [`objective_no_hint:${key}`] : [])
+            ...(hintsFor.length === 0 ? [`objective_no_hint:${key}`] : []),
+            // «Из будущего»: задача решена понятием, которое вводит более позднее дело
+            ...(sql && futureConcepts(sql, d, cases).length > 0 ? ["future_concept"] : [])
           );
           if (firstTry && obj?.concept) {
             set((st) => ({ season: { ...st.season, mastery: bumpMastery(st.season.mastery, obj.concept, MASTERY.firstTry) } }));
@@ -592,7 +618,13 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
               casePatches: { ...st.season.casePatches, [d.id]: s.patches },
               caseQueryLog: { ...st.season.caseQueryLog, [d.id]: s.log },
               evidence: pushUniq(st.season.evidence, ...s.evidence),
-              events: pushUniq(st.season.events, `case_solved:${d.id}`, ...(hour < 5 ? ["solved_after_midnight"] : [])),
+              events: pushUniq(
+                st.season.events,
+                `case_solved:${d.id}`,
+                ...(hour < 5 ? ["solved_after_midnight"] : []),
+                // «Палец не дрогнул»: дело закрыто, а его растяжка (after.flag живого события) не задета
+                ...tripFlags(d).filter((f) => !flagRaised(flags[f])).map((f) => `case_solved_without:${d.id}/${f}`)
+              ),
             },
           });
 
@@ -606,7 +638,11 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
                 ending,
                 endingsSeen: seen,
                 counters: { ...x.season.counters, endings_seen: seen.length },
-                events: pushUniq(x.season.events, `ending:${ending!.id}`),
+                events: pushUniq(
+                  x.season.events,
+                  `ending:${ending!.id}`,
+                  ...((x.season.counters.evidence_deletes ?? 0) === 0 ? ["season_no_evidence_delete"] : [])
+                ),
               },
             }));
           }
@@ -907,6 +943,9 @@ export function createGameStore(options: GameStoreOptions = {}): GameStore {
               ev.secrets.forEach((id) => toast("secret", id));
             }
             recordEvents("first_query", ...(ev.recovery?.reason === "timeout" ? ["query_timeout"] : []));
+            if (!ev.result.error && deletesEvidence(sql)) {
+              set((x) => ({ season: { ...x.season, counters: { ...x.season.counters, evidence_deletes: (x.season.counters.evidence_deletes ?? 0) + 1 } } }));
+            }
 
             await afterStory();
             return ev;

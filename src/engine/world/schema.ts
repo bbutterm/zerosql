@@ -40,6 +40,11 @@ export interface TableDef {
   late?: boolean;
   /** Дела, где таблица открыта на запись (представление горизонта снимается) */
   writableIn?: CaseKey[];
+  /**
+   * Комментарий на полях DDL (тайник «Подпись на полях», EASTER_EGGS.md № 1):
+   * отдельной строкой перед закрывающей скобкой, без `;` и кавычек
+   */
+  ddlComment?: string;
   columns: ColumnDef[];
 }
 
@@ -85,6 +90,9 @@ export const WORLD_TABLES: readonly TableDef[] = [
   // ---------------------------------------------------------------- ПБД
   {
     name: "incidents", layer: "ПБД", opensIn: "c00", horizon: "reported_at", target: 2000,
+    ddlComment:
+      "Если ты это читаешь, ты копаешь глубже, чем просили. Каждая строка здесь — чей-то вечер. " +
+      "Спасибо, что тратишь на них свой. Те, кто строил этот город.",
     columns: [
       PK(), I("kusp_no"), T("reported_at"), T("kind"), T("district"), T("address_text"), T("description"),
       I("vehicle_id", "vehicles(id)"), T("applicant_text"), I("officer_staff_id", "staff(id)"), T("status"),
@@ -419,7 +427,9 @@ function columnSql(c: ColumnDef): string {
 
 /** CREATE TABLE для одной таблицы мира (без IF NOT EXISTS: двойное создание — ошибка генератора) */
 export function tableDdl(table: TableDef, ifNotExists = false): string {
-  return `CREATE TABLE ${ifNotExists ? "IF NOT EXISTS " : ""}${table.name} (\n  ${table.columns.map(columnSql).join(",\n  ")}\n)`;
+  // Комментарий — на своей строке: в одной строке с последним столбцом `--` съел бы скобку
+  const note = table.ddlComment ? `\n  -- ${table.ddlComment}` : "";
+  return `CREATE TABLE ${ifNotExists ? "IF NOT EXISTS " : ""}${table.name} (\n  ${table.columns.map(columnSql).join(",\n  ")}${note}\n)`;
 }
 
 /** DDL базового мира: все таблицы, кроме поздних */

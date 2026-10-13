@@ -46,8 +46,12 @@ export function generatePhones(ctx: WorldContext): void {
     const reg = Math.floor(rng.float(Math.max(c.registered, parseTs("2008-01-01")), open) / DAY) * DAY;
     rows.push({ key: reg, row: { msisdn, person_id: null, company_id: c.id, registered_at: fmtDate(reg) } });
   }
-  rows.sort((a, b) => a.key - b.key);
-  for (const r of rows) if (!ctx.isExcluded("phones", r.row)) ctx.write("phones", r.row);
+  // Плавающие посадки (номер Деда Мороза, EASTER_EGGS.md № 21) встают по дате регистрации:
+  // первый взгляд на phones (LIMIT 10/20) их не показывает
+  const floating = ctx.takeDeferred("phones").map((p) => ({ key: p.key ?? parseTs(String(p.row.registered_at)), row: p.row, planted: true }));
+  const all = [...floating, ...rows.map((r) => ({ ...r, planted: false }))];
+  all.sort((a, b) => a.key - b.key || (a.planted === b.planted ? 0 : a.planted ? -1 : 1));
+  for (const r of all) if (r.planted || !ctx.isExcluded("phones", r.row)) ctx.write("phones", r.row);
 }
 
 // ==================================================================== accounts

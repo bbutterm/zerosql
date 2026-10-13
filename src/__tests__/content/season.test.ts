@@ -55,6 +55,9 @@ const ACHIEVEMENT_KINDS = [
   "secrets_found",
   "all_optional",
   "season_complete",
+  "flag",
+  "counter",
+  "event",
 ] as const satisfies readonly AchievementKind[];
 
 const SQL_NAME_RE = /^[a-z][a-z0-9_]*$/;
@@ -250,9 +253,13 @@ describe("достижения", () => {
       expect(a.title.trim(), a.id).not.toBe("");
       expect(a.description.trim(), a.id).not.toBe("");
       expect(ACHIEVEMENT_KINDS as readonly string[], a.id).toContain(a.kind);
-      if (typeof a.param === "string" && !/^\d+$/.test(a.param)) {
+      // flag / counter / event — имя флага, «счётчик:порог» или id события; у прочих строка — id дела
+      const byCase = !["flag", "counter", "event"].includes(a.kind);
+      if (byCase && typeof a.param === "string" && !/^\d+$/.test(a.param)) {
         expect(getCase(a.param), `${a.id}: нет дела «${a.param}»`).toBeDefined();
       }
+      if (a.kind === "counter") expect(String(a.param), a.id).toMatch(/^[a-z_]+:\d+$/);
+      if (a.kind === "flag" || a.kind === "event") expect(String(a.param ?? "").trim(), a.id).not.toBe("");
     }
   });
 });

@@ -168,11 +168,13 @@ export function PortraitFrame({
 
 /* ---------- Учётная карточка: заглушка портрета ---------- */
 
-function splitName(c: CharacterDef) {
+/** «Имя Отчество Фамилия» → фамилия и «Имя Отчество»; отчество из CharacterDef — только если его нет в name */
+export function splitName(c: Pick<CharacterDef, "name" | "patronymic">) {
   const parts = c.name.trim().split(/\s+/);
   const surname = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-  const given = parts.length > 1 ? parts.slice(0, -1).join(" ") : "";
-  return { surname, given: [given, c.patronymic].filter(Boolean).join(" ") };
+  const given = parts.length > 1 ? parts.slice(0, -1) : [];
+  if (c.patronymic && !given.includes(c.patronymic)) given.push(c.patronymic);
+  return { surname, given: given.join(" ") };
 }
 
 /** Размеры заданы для листа 360×480 и масштабируются вместе с карточкой (единица --u) */

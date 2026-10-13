@@ -89,7 +89,9 @@ describe("форматы дат (разд. 8.1)", () => {
 
   it("сознательные исключения: gs_comms_2015.ts_unix — целое unix-время", () => {
     expect(one(db, "SELECT COUNT(*) FROM gs_comms_2015 WHERE typeof(ts_unix) <> 'integer'")).toBe(0);
-    expect(one(db, "SELECT MIN(datetime(ts_unix, 'unixepoch', '+3 hours')) >= '2014-01-01' FROM gs_comms_2015")).toBe(1);
+    // Кроме двух тестов шлюза со сбитыми часами — тайник «Край эпохи» (EASTER_EGGS.md № 13)
+    expect(one(db, "SELECT MIN(datetime(ts_unix, 'unixepoch', '+3 hours')) >= '2014-01-01' FROM gs_comms_2015 WHERE from_ext <> '0-00'")).toBe(1);
+    expect(rows(db, "SELECT ts_unix FROM gs_comms_2015 WHERE from_ext = '0-00' ORDER BY ts_unix")).toEqual([[-2147483648], [0]]);
   });
 
   it("в столбцах горизонта нет NULL: иначе строка не появилась бы никогда", () => {

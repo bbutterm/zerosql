@@ -19,6 +19,7 @@ import {
 } from "../pools";
 import { DISTRICT_WEIGHTS, SPECIAL_MARKS, STREETS, type District, officeMoment, personCreatedAt } from "../catalog";
 import { CAST_PERSONS, CASE_START, KEY_TIMES, type AdultReservation } from "../facts";
+import { EGG_PERSON_SHORT } from "../plants/eggs";
 import { addressKey, noiseState, noiseTarget, type NoisePerson } from "./state";
 
 const NOW = parseTs("2026-12-01 00:00:00");
@@ -32,7 +33,8 @@ const REG_OPEN = parseTs(CASE_START.c06);
  */
 const NOISE_CREATED_MAX = parseTs(KEY_TIMES.hitAndRun) - 3 * 3_600_000;
 
-const CAST_SHORT = new Set(CAST_PERSONS.map((p) => shortName(p.last, p.first, p.middle)));
+/** Короткие ФИО каста и жителей-пасхалок: шум не заводит им тёзок */
+const CAST_SHORT = new Set([...CAST_PERSONS.map((p) => shortName(p.last, p.first, p.middle)), ...EGG_PERSON_SHORT]);
 
 const ADULT_AGES: readonly (readonly [readonly [number, number], number])[] = [
   [[18, 24], 10], [[25, 34], 26], [[35, 44], 27], [[45, 54], 18], [[55, 64], 12], [[65, 74], 5], [[75, 90], 2],

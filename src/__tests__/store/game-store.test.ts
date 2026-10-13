@@ -4,7 +4,7 @@ import { cases } from "@/data";
 import { createGameStore, type GameStore } from "@/stores/game/store";
 import { memoryStorage, migrateSave, SAVE_KEY, SAVE_VERSION } from "@/stores/game/persist";
 import { computeEnding } from "@/stores/game/endings";
-import { applyFlag } from "@/stores/game/rules";
+import { applyFlag, deletesEvidence, futureConcepts, isIrinaNote, tripFlags } from "@/stores/game/rules";
 import { calendar, interrogationView, objectivesView, protocolView } from "@/stores/game/selectors";
 import { RUNTIME_CASE } from "../runtime/fixture";
 
@@ -285,5 +285,109 @@ describe("стор v2: чистые правила", () => {
     expect(computeEnding({ ...best, tokha_turned: false, ratnikov_full: true }).id).toBe("first_sun");
     expect(computeEnding({ ...best, archive_restored: false })).toMatchObject({ id: "murky", variant: "no_v" });
     expect(computeEnding({ ...best, recipient: "deal" }).epilogue).toEqual([]);
+  });
+});
+
+// ==================================================================== достижения: события стора
+
+const ACH_CASE: CaseDef = {
+  ...RUNTIME_CASE,
+  id: "case-92-ach",
+  order: 92,
+  protocol: undefined,
+  concepts: ["h.select"],
+  outroScene: "outro",
+  objectives: [
+    {
+      ...RUNTIME_CASE.objectives[0],
+      // самосоединение: JOIN вводит только следующее дело — «понятие из будущего»
+      solution: "SELECT p.id, p.full_name FROM persons p JOIN persons q ON q.id = p.id WHERE p.last_name = 'Вальц'",
+      sceneAfter: "rec01",
+      evidence: undefined,
+    },
+  ],
+  events: [{ id: "trip", after: { flag: "watcher_tripped" }, scene: "outro" }],
+  scenes: [
+    sc("intro"),
+    sc("rec01", { lines: [{ id: "c92.rec01.001", speaker: "irina", text: "Запись. Проверка.", direction: "запись диктофона; полушёпот" }] }),
+    sc("outro"),
+  ],
+};
+const LATER_CASE: CaseDef = { ...ACH_CASE, id: "case-93-later", order: 93, concepts: ["h.inner_join"], events: [] };
+
+describe("стор v2: события и счётчики для достижений", () => {
+  it("первая попытка, без подсказок, понятие из будущего, запись Ирины, дело без растяжки → достижения", async () => {
+    const achievements = [
+      { id: "ach.t_first", title: "t", description: "t", kind: "event" as const, param: "first_query" },
+      { id: "ach.t_future", title: "t", description: "t", kind: "event" as const, param: "future_concept" },
+      { id: "ach.t_first_try", title: "t", description: "t", kind: "event" as const, param: "objective_first_try:case-92-ach/o1" },
+      { id: "ach.t_no_hint", title: "t", description: "t", kind: "event" as const, param: "objective_no_hint:case-92-ach/o1" },
+      { id: "ach.t_notes", title: "t", description: "t", kind: "counter" as const, param: "notes_heard:1" },
+      { id: "ach.t_calm", title: "t", description: "t", kind: "event" as const, param: "case_solved_without:case-92-ach/watcher_tripped" },
+      { id: "ach.t_tokha", title: "t", description: "t", kind: "flag" as const, param: "tokha_turned" },
+    ];
+    const store = makeStore(memoryStorage(), { cases: [ACH_CASE, LATER_CASE], achievements });
+    await store.getState().boot();
+    expect(await store.getState().openCase(ACH_CASE.id)).toBe(true);
+    await drain(store);
+    await store.getState().runQuery(ACH_CASE.objectives[0].solution);
+    await drain(store);
+
+    const season = store.getState().season;
+    expect(season.solved[ACH_CASE.id]).toBeDefined();
+    expect(season.events).toEqual(
+      expect.arrayContaining([
+        "first_query",
+        "future_concept",
+        "objective_done:case-92-ach/o1",
+        "objective_first_try:case-92-ach/o1",
+        "objective_no_hint:case-92-ach/o1",
+        "note_heard:case-92-ach/rec01",
+        "case_solved_without:case-92-ach/watcher_tripped",
+      ])
+    );
+    expect(season.counters.notes_heard).toBe(1);
+    expect(season.achievements).toEqual(expect.arrayContaining(["ach.t_first", "ach.t_future", "ach.t_first_try", "ach.t_no_hint", "ach.t_notes", "ach.t_calm"]));
+    expect(season.achievements).not.toContain("ach.t_tokha");
+  }, 120_000);
+
+  it("чистые правила: понятия из будущего, растяжки, записи Ирины, DELETE по уликам", () => {
+    const seasonCases = [{ order: 1, concepts: ["h.in", "h.like"] }, { order: 3, concepts: ["h.inner_join"] }, { order: 7, concepts: ["h.cte", "h.union"] }];
+    expect(futureConcepts("SELECT * FROM a JOIN b ON b.id = a.id", { order: 1 }, seasonCases)).toEqual(["h.inner_join"]);
+    expect(futureConcepts("SELECT * FROM a JOIN b ON b.id = a.id", { order: 3 }, seasonCases)).toEqual([]);
+    // строки и комментарии — не синтаксис
+    expect(futureConcepts("SELECT 'WITH x UNION' AS t -- JOIN", { order: 1 }, seasonCases)).toEqual([]);
+    expect(futureConcepts("WITH t AS (SELECT 1) SELECT * FROM t", { order: 3 }, seasonCases)).toEqual(["h.cte"]);
+
+    expect(tripFlags({ events: [{ id: "w", after: { flag: "watcher_tripped" } }, { id: "s", after: { scene: "x" } }] })).toEqual(["watcher_tripped"]);
+    expect(tripFlags(cases.find((c) => c.id === "case-09-matryoshka")!)).toContain("watcher_tripped");
+
+    expect(isIrinaNote({ lines: [{ speaker: "irina", direction: "запись диктофона; ночь" }] })).toBe(true);
+    expect(isIrinaNote({ lines: [{ speaker: "irina", direction: "голос из памяти" }] })).toBe(false);
+    expect(isIrinaNote({ lines: [{ speaker: "nina", direction: "запись диктофона" }] })).toBe(false);
+    // в сезоне записи Ирины — в Д4 (№1) и Д5
+    const notes = cases.flatMap((c) => c.scenes.filter(isIrinaNote).map((x) => `${c.id}/${x.id}`));
+    expect(notes).toEqual(expect.arrayContaining(["case-04-mertvaya-dusha/outro", "case-05-nomer-3312/rec02"]));
+
+    expect(deletesEvidence("DELETE FROM statements WHERE id = 1")).toBe(true);
+    expect(deletesEvidence("delete from main.persons")).toBe(true);
+    expect(deletesEvidence("DELETE FROM draft_persons WHERE id = 1")).toBe(false);
+    expect(deletesEvidence("DELETE FROM publication WHERE person_id = 1")).toBe(false);
+    expect(deletesEvidence("SELECT 'DELETE FROM statements'")).toBe(false);
+  });
+
+  it("каждое достижение сезона ссылается на настоящие дела и задачи", async () => {
+    const { achievements } = await import("@/data");
+    expect(achievements).toHaveLength(33);
+    for (const a of achievements) {
+      const m = typeof a.param === "string" ? a.param.match(/^objective_(?:done|first_try|no_hint):([^/]+)\/(.+)$/) : null;
+      if (!m) continue;
+      const c = cases.find((x) => x.id === m[1]);
+      expect(c, a.id).toBeDefined();
+      expect(c!.objectives.map((o) => o.id), a.id).toContain(m[2]);
+    }
+    const every = achievements.find((a) => a.id === "ach.every_row")!;
+    const { secrets } = await import("@/data");
+    expect(every.param).toBe(secrets.length);
   });
 });

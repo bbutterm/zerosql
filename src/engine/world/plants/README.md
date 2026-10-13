@@ -94,22 +94,12 @@ export const late: LateFillers = { bank_statements(db, rng, { flags, clock }) { 
 
 ## TODO по делам: факты разд. 8.4 → модуль
 
+Посадки дел `c00` … `c12` и тайники `eggs` (22 тайника, EASTER_EGGS.md) сделаны; проверки —
+`src/__tests__/cases/cNN.test.ts` и `src/__tests__/world/eggs.test.ts`. Осталось:
+
 | Модуль | Что посадить |
 |---|---|
-| `c00` | incidents 1701–1714 (вечер 02.12; `exclude` вызовов 16:00–18:35, кроме посаженных), 1683/1690/1697 не здесь; transit_taps 'Ш-00417' 'Лаптев М. А.' 16:41 (маршрут 3, «Музыкальная школа»; `reserve("card_no")`) |
-| `c01` | incidents 1683, 1690, 1697 (КУСП 4688, 4703, 4717); vehicles К372ОК (2307), М537ТН (снят 2024-04-11), Е372ВХ, Р037АА; ровно 14 «Сайгаков», 5 из них 'Сайгак' — `exclude("vehicles", r => /^сайгак/i.test(make))` и посадить свои 14; plate_reads камеры 12 (K372OK латиницей), хлебовоз 05:00–05:10; `exclude` номеров с «372» на камере 12 в три ночи |
-| `c02` | addresses 811 / 640 / 702 (`reserve("address", "Шахтная\|12\|31", 811)`), ряд heat_readings ШХ-12-31 (`exclude` по flat_id: −999 в 14:00 и 14:20, < +12 с 19:40, минимум +4,1 в 07.12 09:40); incidents 1735; transactions ACC-30518 (СФР 48 ×, УК «Шахтный» +25 000, −38 000 СБП 06:41, −340 «Лапа» 12:20); intercom_events (код 7741 ×3, 06:30 Пахомов О. В., 11:02 Самойлова; `exclude` кода 7741 в шуме); delivery_orders Олега |
-| `c03` | incidents 1611, 1613, 1614, 1616 (КУСП 4514, 4516, 4517, 4519 подряд — якоря с `orderAt`), 1631 (4549); `exclude` incidents 18.11 22:00–19.11 01:00; ложные следы на камере 7 (М412КС, «Сайгак» доставки, «Вега» скорой) |
-| `c04` | staff 64 Громов (`p.gromov`, уволен 2020-01-15), опечатки staff 23 / 57 / 91 / 133 (`STAFF_TYPOS`); logins `test1`, `p.gromov` (резервы уже стоят) |
-| `c05` | дыра 4471 (10.03.2015, `doc_reg_hole`), «Валька-практикантка» в registered_by, если нужна по тексту |
-| `c06` | construction_docs 101–108 (`GEO`; подписанты — `F.PD117_ENGINEERS`, уже взрослые), vehicles Т117АУ, morgue 398 (КУСП 4921 — `reserve("kusp:2026")`), addresses 512 + registrations Береговой, 4 (`exclude` прочих прописок по 512; строки — плавающие, `orderAt` по from_date), Лосева, однофамилица Ким на Портовой (не в кв. 12 и 14 дома 3 — они заняты core), diver_reports 2018-07-14 |
-| `c07` | properties 401–422 (Северная, 14 и 16; адреса — свои), фонд → Ратников 24 + 24 возврата (две одинаковые строки 2016-11-08), Шубин 36 × 40 000, Мирошник 24 × 30 000, 57 переселенцев; счета получателей; door_access B-9000 21.12 23:41; employment строителей «Глубина-Строя» |
-| `c08` | ночи сеансов на КПП-Б0: Нина 6/7, Ратников 6/7, Мельник 5/7 (командировка 03.12, больничный 09.12 и 27.11 Нины шум уже уважает); пятничные чаепития и «Серверная» Ирины 04.09–13.11 |
-| `c09` | company_owners (цепочка «Щита», Kordon 70/30, цикл 15 ↔ 16, 1 ← 12 (51), 18 ← 13); share_deals Kordon (СД-0145…0147 как якоря — шум встанет по номерам); 14 → 17 по 180 000 5-го; «Возврат» → ИП Мельник Е. А. (и её карточка в persons); grant_requests 2026-11-20 Ратникова; `late.bank_statements` |
-| `c10` | attachments 201–209 (`orderAt` по created_at — якоря в диапазоне 180–219); `late` для `sokol_stage_registry/statements/persons` (снимок 30.09.2016, 2071/2072, 21 законное расхождение примет, 37 дублей без Тохи) и `nina_carbon` |
-| `c11` | `late` для draft_statements / draft_persons / draft_publication (разд. 5.11) |
-| `c12` | ночь 10.01 (plate_reads О114РБ 01:58/02:31, door_access 02:09 без пропуска, audit_log 02:12 SESSION a.lykov → nol, query_log 02:14), лента Бурцева 11.01 (G-0412: 12:14, 12:20, 12:26, 12:32), `late` для publication_source |
-| `eggs` | житель Исаев 1900-01-01 и прочие пасхалки (не в окнах эталонов) |
+| — (висяк side-02) | житель Исаев 1900-01-01 (разд. 8.3) — не тайник: его разбирает висяк, тайники его не трогают |
 
 ## Сюжетные патчи (`../patches.ts`, `applyStoryPatch`)
 
@@ -117,5 +107,5 @@ export const late: LateFillers = { bank_statements(db, rng, { flags, clock }) { 
 `c07.admission`, `c09.watcher`, `c10.frame`, `c10.rollback`, `c10.purge`, `ws07.removed`,
 `c10.import` (представления arch16_*), `c12.drop.registry|statements|persons`, `c12.finalize`,
 `c12.voice`, `c12.plate_purge_attempt` (данные не меняются), `postcredits.glb`.
-Заглушки до посадок дел (таблица создаётся, наполнитель пуст): `late.bank_statements`,
-`late.nina_carbon`, `late.drafts`, `late.publication`, наполнение диска в `c10.import`.
+Поздние таблицы наполняют посадки дел (`late` в c09–c12): `late.bank_statements`,
+`late.nina_carbon`, `late.drafts`, `late.publication`, диск Нины в `c10.import`.

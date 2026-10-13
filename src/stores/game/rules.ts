@@ -228,3 +228,90 @@ export const defaultPersisted = (): PersistedGame => ({
 
 export const uniq = <T>(items: readonly T[]): T[] => [...new Set(items)];
 export const pushUniq = <T>(items: readonly T[], ...add: T[]): T[] => uniq([...items, ...add]);
+
+// --- Достижения: общие события, которые стор выводит сам ---
+
+/**
+ * Понятия SQL (id из CaseDef.concepts) и их приметы в тексте запроса. Порядок
+ * дел берётся из данных: понятие «из будущего» — то, что вводит более позднее дело.
+ */
+const CONCEPT_PATTERNS: Readonly<Record<string, RegExp>> = {
+  "h.in": /\bIN\s*\(/i,
+  "h.between": /\bBETWEEN\b/i,
+  "h.like": /\bLIKE\b/i,
+  "h.is_null": /\bIS\s+(?:NOT\s+)?NULL\b/i,
+  "h.distinct": /\bDISTINCT\b/i,
+  "h.aggregates": /\b(?:COUNT|SUM|AVG|MIN|MAX)\s*\(/i,
+  "h.round": /\bROUND\s*\(/i,
+  "h.group_by": /\bGROUP\s+BY\b/i,
+  "h.having": /\bHAVING\b/i,
+  "h.inner_join": /\bJOIN\b/i,
+  "h.left_join": /\bLEFT\s+(?:OUTER\s+)?JOIN\b/i,
+  "h.coalesce": /\b(?:COALESCE|IFNULL)\s*\(/i,
+  "h.subquery_in": /\bIN\s*\(\s*SELECT\b/i,
+  "h.scalar_subquery": /\(\s*SELECT\b/i,
+  "h.exists": /\bEXISTS\s*\(/i,
+  "h.case": /\bCASE\b/i,
+  "h.dates": /\b(?:date|datetime|time)\s*\(/i,
+  "h.strftime": /\bstrftime\s*\(/i,
+  "h.julianday": /\bjulianday\s*\(/i,
+  "h.cte": /\bWITH\b/i,
+  "h.union": /\bUNION\b/i,
+  "h.except_intersect": /\b(?:EXCEPT|INTERSECT)\b/i,
+  "h.window": /\bOVER\s*\(/i,
+  "h.row_number_rank": /\b(?:ROW_NUMBER|RANK|DENSE_RANK)\s*\(/i,
+  "h.lag_lead": /\b(?:LAG|LEAD)\s*\(/i,
+  "h.recursive": /\bRECURSIVE\b/i,
+  "h.is_not": /\bIS\s+NOT\s+(?!NULL\b)/i,
+  "h.group_concat": /\bGROUP_CONCAT\s*\(/i,
+  "h.glob_hex": /\bGLOB\b|\bhex\s*\(/i,
+  "h.transactions": /\b(?:BEGIN|COMMIT|ROLLBACK)\b/i,
+  "h.insert_select": /\bINSERT\b/i,
+  "h.update": /\bUPDATE\b/i,
+  "h.delete": /\bDELETE\b/i,
+  "h.view": /\bCREATE\s+VIEW\b/i,
+};
+
+/** Текст запроса без комментариев и строковых литералов (их содержимое — не синтаксис) */
+function sqlSkeleton(sql: string): string {
+  return sql
+    .replace(/'(?:[^']|'')*'/g, "''")
+    .replace(/"(?:[^"]|"")*"/g, '""')
+    .replace(/--[^\n]*/g, " ")
+    .replace(/\/\*[\s\S]*?\*\//g, " ");
+}
+
+/**
+ * Понятия «из будущего» (ach.from_future): приметы в запросе тех понятий,
+ * которые вводит дело позже текущего. Пусто — ничего из будущего.
+ */
+export function futureConcepts(sql: string, current: Pick<CaseDef, "order">, cases: readonly Pick<CaseDef, "order" | "concepts">[]): string[] {
+  const intro = new Map<string, number>();
+  for (const c of cases) for (const id of c.concepts ?? []) if (!intro.has(id) || (intro.get(id) as number) > c.order) intro.set(id, c.order);
+  const text = sqlSkeleton(sql);
+  return Object.entries(CONCEPT_PATTERNS)
+    .filter(([id, re]) => (intro.get(id) ?? -1) > current.order && re.test(text))
+    .map(([id]) => id);
+}
+
+/** «Растяжки» дела: флаги, на которые завязаны его живые события (after.flag) — для «закрыто, не задев …» */
+export function tripFlags(caseDef: Pick<CaseDef, "events">): string[] {
+  return uniq((caseDef.events ?? []).map((e) => e.after?.flag).filter((f): f is string => typeof f === "string" && f !== ""));
+}
+
+/** Флаг поднят (как в checkAchievements: не undefined/null/false/0/"") */
+export const flagRaised = (value: unknown): boolean =>
+  value !== undefined && value !== null && value !== false && value !== 0 && value !== "";
+
+/** Запись диктофона Ирины (М7): в сцене Ирина говорит в диктофон — ремарка «запись … диктофон…» */
+export function isIrinaNote(scene: { lines: readonly { speaker: string; direction?: string }[] }): boolean {
+  return scene.lines.some((l) => l.speaker === "irina" && /диктофон/i.test(l.direction ?? ""));
+}
+
+/**
+ * DELETE по уликам (ach.no_delete): statements, persons, evidence_registry.
+ * Черновики и публикация (draft_*, publication) не считаются.
+ */
+export function deletesEvidence(sql: string): boolean {
+  return /\bDELETE\s+FROM\s+(?:main\.)?["`[]?(?:statements|persons|evidence_registry)\b/i.test(sqlSkeleton(sql));
+}

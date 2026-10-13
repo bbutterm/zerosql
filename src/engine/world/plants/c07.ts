@@ -228,7 +228,20 @@ function plantFlats(ctx: WorldContext, rng: Rng, builders: readonly Planted[]): 
     });
     registration(ctx, owner.id, addressId, shift(acquired, rng.int(3, 15)), null);
   });
+
+  // Ловушка 7.1 «по основанию, без дарителя»: в 2015-м служебную квартиру дал и
+  // другой работодатель. Шум даёт такие строки редко и не в каждом мире — сажаем
+  ctx.reserve("person:adult", String(C07_DECOY_FLAT.owner), { bornFrom: "1962-01-01", bornTo: "1988-12-31" });
+  const decoyAddress = address(ctx, "Старый город", "Мира", C07_DECOY_FLAT.house, C07_DECOY_FLAT.apt);
+  ctx.insert("properties", {
+    id: freeId(ctx, "properties"), address_id: decoyAddress, address_text: `Мира, ${C07_DECOY_FLAT.house}-${C07_DECOY_FLAT.apt}`,
+    owner_person_id: C07_DECOY_FLAT.owner, acquired_at: C07_DECOY_FLAT.acquired, basis: "передача от работодателя",
+    grantor_company_id: F.COMPANY.medsanchast,
+  });
 }
+
+/** Служебная квартира «Медсанчасти» 2015 года (житель шума, взрослый) — ловушка задачи 7.1 */
+export const C07_DECOY_FLAT = { owner: 2733, house: "31", apt: "6", acquired: "2015-09-14" } as const;
 
 // ==================================================================== работа
 
