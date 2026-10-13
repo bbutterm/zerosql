@@ -1,0 +1,749 @@
+{
+  "id": "case-07-sluzhebnaya-kvartira",
+  "order": 7,
+  "act": 2,
+  "code": "Дело № 07",
+  "title": "Служебная квартира",
+  "subtitle": "Самая длинная ночь года",
+  "date": "2026-12-21 16:00",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-21 23:30"
+  },
+  "location": "basement_b0_03_evening",
+  "difficulty": "hard",
+  "concepts": [
+    "h.cte",
+    "h.union",
+    "h.union_all",
+    "h.except_intersect"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log",
+    "doc_registry",
+    "cases",
+    "statements",
+    "outfall_temp",
+    "construction_docs",
+    "registrations",
+    "addresses",
+    "diver_reports",
+    "gs_comms_2015",
+    "gs_phonebook",
+    "properties",
+    "employment",
+    "accounts",
+    "hospital_admissions"
+  ],
+  "newTables": [
+    "properties",
+    "employment",
+    "accounts",
+    "hospital_admissions"
+  ],
+  "briefing": "21.12.2026, 16:00. Самая длинная ночь года. Через сутки после подъёма машины прокуратура города признала смерть П. И. Сазонова несчастным случаем: «съехал в промоину». Дело о «бухгалтере-беглеце» закрыто тихо, без извинений. Начальник ОЦР подполковник Ратников с утра «на совещании». На последней странице тетради И. Вальц: «Кто въехал на Северную в пятнадцатом? Не строители». Выдан допуск: реестр недвижимости (properties), кадры (employment), счета (accounts), горздрав (hospital_admissions).",
+  "starterSql": "-- Тетрадь Ирины, последняя страница: «Кто въехал на Северную в пятнадцатом? Не строители».\n-- Новый допуск: properties, employment, accounts, hospital_admissions.\nSELECT * FROM properties LIMIT 20;",
+  "introScene": "intro",
+  "objectives": [
+    {
+      "id": "o7_1",
+      "order": 1,
+      "task": "На последней странице тетради Ирины: «Кто въехал на Северную в пятнадцатом? Не строители». Найди в реестре недвижимости (properties) квартиры, которые «Глубина-Строй» раздал с марта по декабрь 2015 года. Сначала — с подзапросом к companies, потом перепиши через WITH flats AS (…): этот список понадобится ещё не раз.",
+      "concept": "h.cte",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Жилфонд «Глубина-Строя» найден.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT id FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31'"
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT address_text FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31'"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "text": "Квартиры дарил не человек, а фирма, голубчик. В реестре у каждой квартиры записан даритель. А номер фирмы спроси у companies.",
+          "by": "nina",
+          "line": "hint.c07_o7_1.001"
+        },
+        {
+          "text": "Подзапрос можно вынести вперёд и дать ему имя: WITH flats AS (SELECT …) SELECT … FROM flats. Справочник: «WITH — именованный подзапрос».",
+          "by": "mira",
+          "line": "hint.c07_o7_1.002"
+        },
+        {
+          "text": "WITH flats AS (\n  SELECT id, address_text, owner_person_id, acquired_at FROM properties\n  WHERE grantor_company_id = (SELECT id FROM companies WHERE name LIKE ___)\n    AND acquired_at BETWEEN ___ AND ___\n)\nSELECT * FROM flats;",
+          "by": "mira"
+        },
+        {
+          "text": "Тетрадь Ирины, запрос на полях. У неё самой он вернул пусто — в нём одна ошибка:\nWITH flats AS (SELECT id, address_text, owner_person_id, acquired_at FROM properties WHERE grantor_company_id = (SELECT id FROM companies WHERE name LIKE '%Глубина%') AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31') SELECT * FROM flats;",
+          "by": "irina"
+        }
+      ],
+      "success": "Двадцать две квартиры: Северная, 14 и 16, с марта по декабрь 2015-го. Основание у всех одно — «передача от работодателя». Список лежит в flats.",
+      "evidence": {
+        "id": "ev.c07.flats",
+        "title": "Жилфонд «Глубина-Строя»",
+        "kind": "record",
+        "text": "Реестр недвижимости: 22 квартиры на Северной, 14 и 16 (properties 401–422) выданы ООО «Глубина-Строй» с марта по декабрь 2015 года. Основание у всех — «передача от работодателя»."
+      },
+      "sceneAfter": "flats",
+      "solution": "WITH flats AS (\n  SELECT id, address_text, owner_person_id, acquired_at\n  FROM properties\n  WHERE grantor_company_id = (SELECT id FROM companies WHERE name LIKE '%Глубина-Строй%')\n    AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31'\n)\nSELECT * FROM flats ORDER BY acquired_at;"
+    },
+    {
+      "id": "o7_2",
+      "order": 2,
+      "task": "«Передача от работодателя» — так написано у всех двадцати двух. Проверь, работали ли получатели в «Глубина-Строе» хоть день: оставь из flats тех, у кого в employment нет ни одной строки с этой фирмой. Выведи person_id, ФИО и адрес. NOT IN тут подведёт — почему, станет видно по результату.",
+      "concept": "h.cte",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Четверо посторонних.",
+        "rules": [
+          {
+            "type": "column_values",
+            "columns": [
+              "person_id",
+              "owner_person_id",
+              "holder_person_id",
+              "id"
+            ],
+            "values": [
+              1104,
+              1602,
+              1530,
+              1777
+            ],
+            "mode": "equal"
+          },
+          {
+            "type": "column_values",
+            "columns": [
+              "full_name"
+            ],
+            "values": [
+              "Ратников Лев Борисович",
+              "Шубин Аркадий Алексеевич",
+              "Мирошник Алла Дмитриевна",
+              "Петров Виктор Семёнович"
+            ],
+            "mode": "equal"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "text": "Основание у всех — «передача от работодателя». А работодатель-то был? Кадры у тебя открыты — employment.",
+          "by": "dasha",
+          "line": "hint.c07_o7_2.001"
+        },
+        {
+          "text": "Оставить строки, у которых в другой таблице нет пары: WHERE NOT EXISTS (SELECT 1 FROM … WHERE …). Список flats берётся из WITH. NOT IN по столбцу с NULL вернёт ноль строк.",
+          "by": "mira",
+          "line": "hint.c07_o7_2.002"
+        },
+        {
+          "text": "WITH flats AS (…)\nSELECT f.owner_person_id, p.full_name, f.address_text\nFROM flats f JOIN persons p ON p.id = ___\nWHERE NOT EXISTS (\n  SELECT 1 FROM employment e\n  WHERE e.person_id = ___ AND e.company_id = ___\n);",
+          "by": "mira"
+        },
+        {
+          "text": "Тетрадь Ирины. Запрос вернул ноль строк, и она обвела его кружком — одна ошибка:\nWITH flats AS (SELECT owner_person_id, address_text FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31') SELECT f.owner_person_id, p.full_name, f.address_text FROM flats f JOIN persons p ON p.id = f.owner_person_id WHERE f.owner_person_id NOT IN (SELECT person_id FROM employment WHERE company_id = 18);",
+          "by": "irina"
+        }
+      ],
+      "success": "Четверо ни дня не работали в «Глубина-Строе». Первая строка — Ратников Лев Борисович, Северная, 14-27, 18.12.2015.",
+      "evidence": {
+        "id": "ev.c07.flat",
+        "title": "Квартира Ратникова",
+        "kind": "record",
+        "text": "Северная, 14-27 — Ратников Лев Борисович, получена 18.12.2015 «от работодателя», в «Глубина-Строе» не работал. Ещё трое посторонних: Шубин А. А. (14-31), Мирошник А. Д. (16-4), Петров В. С. (16-9)."
+      },
+      "sceneAfter": "list",
+      "solution": "WITH flats AS (\n  SELECT id, address_text, owner_person_id, acquired_at\n  FROM properties\n  WHERE grantor_company_id = (SELECT id FROM companies WHERE name LIKE '%Глубина-Строй%')\n    AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31'\n)\nSELECT f.owner_person_id AS person_id, p.full_name, f.address_text, f.acquired_at\nFROM flats f\nJOIN persons p ON p.id = f.owner_person_id\nWHERE NOT EXISTS (\n  SELECT 1 FROM employment e\n  WHERE e.person_id = f.owner_person_id\n    AND e.company_id = (SELECT id FROM companies WHERE name LIKE '%Глубина-Строй%')\n)\nORDER BY f.address_text;"
+    },
+    {
+      "id": "o7_3",
+      "order": 3,
+      "task": "Лента Ратникова. Найди его счёт (accounts) и склей в одну ленту две выборки: платежи фонда «Тёплый берег» ему и его возвраты фонду — дата, сумма, назначение. Склеивают через UNION или UNION ALL. Ни одна строка не должна потеряться.",
+      "concept": "h.union_all",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Лента собрана целиком.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT date(t.ts) AS date, t.amount, t.purpose FROM transactions t\nWHERE t.account_id = 'ACC-41104' AND t.counterparty = 'Фонд «Тёплый берег»'"
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT t.ts, t.amount, t.purpose FROM transactions t\nWHERE t.account_id = 'ACC-41104' AND t.counterparty = 'Фонд «Тёплый берег»'"
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT date(t.ts) AS date, abs(t.amount) AS amount, t.purpose FROM transactions t\nWHERE t.account_id = 'ACC-41104' AND t.counterparty = 'Фонд «Тёплый берег»'"
+          }
+        ]
+      },
+      "prediction": {
+        "question": "Платежи и возвраты склеены через UNION, без ALL. Сколько строк вернёт запрос?",
+        "sql": "SELECT date(t.ts) AS date, t.amount, t.purpose\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nWHERE a.holder_person_id = 1104\n  AND t.counterparty = 'Фонд «Тёплый берег»' AND t.amount > 0\nUNION\nSELECT date(t.ts), t.amount, t.purpose\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nWHERE a.holder_person_id = 1104\n  AND t.purpose = 'возврат: отказ получателя';",
+        "options": [
+          24,
+          47,
+          48
+        ],
+        "answer": 47,
+        "explanation": "UNION выбрасывает одинаковые строки. Восьмого ноября 2016 года два возврата совпали до копейки, и UNION оставил один. UNION ALL сохраняет все сорок восемь."
+      },
+      "hints": [
+        {
+          "text": "Счёт у Льва Борисовича в «Северном кредите», как у всех наших. В accounts ищи по владельцу, голубчик. А ленту — в transactions.",
+          "by": "nina",
+          "line": "hint.c07_o7_3.001"
+        },
+        {
+          "text": "Две выборки с одинаковым числом столбцов склеиваются в одну: SELECT … UNION ALL SELECT …. UNION без ALL выбрасывает одинаковые строки.",
+          "by": "mira",
+          "line": "hint.c07_o7_3.002"
+        },
+        {
+          "text": "SELECT date(ts) AS date, amount, purpose FROM transactions\nWHERE account_id = ___ AND counterparty = ___ AND amount > 0\nUNION ALL\nSELECT date(ts), amount, purpose FROM transactions\nWHERE account_id = ___ AND purpose = ___\nORDER BY date;",
+          "by": "mira"
+        },
+        {
+          "text": "Тетрадь Ирины, лента Ратникова. Строк в ней на одну меньше, чем надо, — одна ошибка:\nSELECT date(ts) AS date, amount, purpose FROM transactions WHERE account_id = 'ACC-41104' AND counterparty = 'Фонд «Тёплый берег»' AND amount > 0 UNION SELECT date(ts), amount, purpose FROM transactions WHERE account_id = 'ACC-41104' AND purpose = 'возврат: отказ получателя' ORDER BY date;",
+          "by": "irina"
+        }
+      ],
+      "success": "48 строк: 24 платежа по 25 000 ₽ «на лечение члена семьи» и 24 возврата. 08.11.2016 — два одинаковых возврата одним днём. Обратно ушло всё.",
+      "evidence": {
+        "id": "ev.c07.ledger",
+        "title": "24 платежа / 24 возврата",
+        "kind": "record",
+        "text": "Счёт ACC-41104, Ратников Л. Б.: фонд «Тёплый берег» перечислил 24 раза по 25 000 ₽ (январь 2016 — декабрь 2017), «матпомощь: лечение члена семьи». Все 24 ушли обратно — «возврат: отказ получателя»; два из них — 08.11.2016, одинаковыми строками."
+      },
+      "sceneAfter": "ledger",
+      "solution": "SELECT date(t.ts) AS date, t.amount, t.purpose\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nWHERE a.holder_person_id = 1104\n  AND t.counterparty = 'Фонд «Тёплый берег»' AND t.amount > 0\nUNION ALL\nSELECT date(t.ts), t.amount, t.purpose\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nWHERE a.holder_person_id = 1104\n  AND t.purpose = 'возврат: отказ получателя'\nORDER BY date;"
+    },
+    {
+      "id": "o7_3b",
+      "order": 31,
+      "optional": true,
+      "task": "★ «Лечение члена семьи». Кто этот член семьи — и когда её не стало?",
+      "concept": "h.where",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Тамара Викторовна.",
+        "rules": [
+          {
+            "type": "any_of",
+            "successMessage": "",
+            "rules": [
+              {
+                "type": "cell_value",
+                "value": 1105
+              },
+              {
+                "type": "cell_value",
+                "value": "Ратникова Тамара Викторовна"
+              }
+            ]
+          },
+          {
+            "type": "any_of",
+            "successMessage": "",
+            "rules": [
+              {
+                "type": "cell_value",
+                "value": "2016-03-14"
+              },
+              {
+                "type": "cell_value",
+                "value": "2016-03-14 05:40:00"
+              }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        {
+          "text": "Тамара Викторовна. Жена его. Карточка в persons быть должна, голубчик.",
+          "by": "nina",
+          "line": "hint.c07_o7_3b.001"
+        },
+        {
+          "text": "Поиск по фамилии: WHERE last_name = '…'. Дата смерти — в persons.death_date и в zags_deaths.",
+          "by": "mira",
+          "line": "hint.c07_o7_3b.002"
+        },
+        {
+          "text": "SELECT id, full_name, death_date FROM persons WHERE last_name = ___;",
+          "by": "mira"
+        }
+      ],
+      "success": "Ратникова Тамара Викторовна умерла 14.03.2016 — через три месяца после ключей от Северной, 14-27.",
+      "evidence": {
+        "id": "ev.c07.tamara",
+        "title": "Тамара Викторовна",
+        "kind": "record",
+        "text": "Ратникова Тамара Викторовна (persons 1105), жена Ратникова Л. Б. Умерла 14.03.2016 — через три месяца после ключей от Северной, 14-27. Первый платёж фонда «на лечение» пришёл в январе 2016-го."
+      },
+      "sceneAfter": "tamara",
+      "solution": "SELECT id, full_name, birth_date, death_date\nFROM persons\nWHERE last_name = 'Ратникова';"
+    },
+    {
+      "id": "o7_4",
+      "order": 4,
+      "task": "Теперь — все, кому фонд «Тёплый берег» платил в 2015–2017 годах, кроме тех, кто за те же годы деньги вернул. Счёт → владелец — через accounts. Вычесть одну выборку из другой — EXCEPT.",
+      "concept": "h.except_intersect",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Ратников — единственный, кто вернул.",
+        "rules": [
+          {
+            "type": "any_of",
+            "successMessage": "",
+            "rules": [
+              {
+                "type": "column_values",
+                "columns": [
+                  "person_id",
+                  "owner_person_id",
+                  "holder_person_id",
+                  "id"
+                ],
+                "values": [
+                  2588,
+                  1602,
+                  1530
+                ],
+                "mode": "superset"
+              },
+              {
+                "type": "column_values",
+                "columns": [
+                  "holder_name"
+                ],
+                "values": [
+                  "Пахомова З. П.",
+                  "Шубин А. А.",
+                  "Мирошник А. Д."
+                ],
+                "mode": "superset"
+              },
+              {
+                "type": "column_values",
+                "columns": [
+                  "full_name"
+                ],
+                "values": [
+                  "Пахомова Зинаида Павловна",
+                  "Шубин Аркадий Алексеевич",
+                  "Мирошник Алла Дмитриевна"
+                ],
+                "mode": "superset"
+              }
+            ]
+          },
+          {
+            "type": "not",
+            "message": "Ратников в списке. Кто вернул деньги, тот их не оставил.",
+            "rule": {
+              "type": "any_of",
+              "successMessage": "",
+              "rules": [
+                {
+                  "type": "cell_value",
+                  "value": 1104
+                },
+                {
+                  "type": "cell_value",
+                  "value": "Ратников Л. Б."
+                },
+                {
+                  "type": "cell_value",
+                  "value": "Ратников Лев Борисович"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "hints": [
+        {
+          "text": "Деньги — по счетам, люди — по accounts. Сначала все, кому фонд платил. Потом минус те, кто вернул. За те же годы, Ноль.",
+          "by": "dasha",
+          "line": "hint.c07_o7_4.001"
+        },
+        {
+          "text": "Строки первой выборки, которых нет во второй: SELECT … EXCEPT SELECT …. В обеих частях — одни и те же столбцы в том же порядке.",
+          "by": "mira",
+          "line": "hint.c07_o7_4.002"
+        },
+        {
+          "text": "SELECT a.holder_person_id, a.holder_name\nFROM transactions t JOIN accounts a ON a.id = t.account_id\nWHERE t.counterparty = ___ AND t.amount > 0 AND t.ts BETWEEN ___ AND ___\nEXCEPT\nSELECT a.holder_person_id, a.holder_name\nFROM transactions t JOIN accounts a ON a.id = t.account_id\nWHERE t.purpose = ___ AND t.ts BETWEEN ___ AND ___;",
+          "by": "mira"
+        },
+        {
+          "text": "Тетрадь Ирины. Из списка у неё пропал человек, который денег не возвращал, — одна ошибка:\nSELECT a.holder_person_id, a.holder_name FROM transactions t JOIN accounts a ON a.id = t.account_id WHERE t.counterparty = 'Фонд «Тёплый берег»' AND t.amount > 0 AND t.ts BETWEEN '2015-01-01 00:00:00' AND '2017-12-31 23:59:59' EXCEPT SELECT a.holder_person_id, a.holder_name FROM transactions t JOIN accounts a ON a.id = t.account_id WHERE t.purpose = 'возврат: отказ получателя';",
+          "by": "irina"
+        }
+      ],
+      "success": "Шестьдесят получателей за 2015–2017 годы. Вернул один — Ратников. Остальные оставили себе: Шубин, Мирошник, Пахомова и пятьдесят семь переселенцев.",
+      "evidence": {
+        "id": "ev.c07.kept",
+        "title": "Ратников не среди оставивших",
+        "kind": "record",
+        "text": "Фонд «Тёплый берег» в 2015–2017 годах: получатели минус вернувшие (EXCEPT). Вернул один — Ратников Л. Б. Оставили: Шубин А. А., Мирошник А. Д., Пахомова З. П. и 57 переселенцев Старого Створа (разовая матпомощь по 15 000 ₽)."
+      },
+      "sceneAfter": "kept",
+      "solution": "SELECT a.holder_person_id, a.holder_name\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nWHERE t.counterparty = 'Фонд «Тёплый берег»' AND t.amount > 0\n  AND t.ts BETWEEN '2015-01-01 00:00:00' AND '2017-12-31 23:59:59'\nEXCEPT\nSELECT a.holder_person_id, a.holder_name\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nWHERE t.purpose = 'возврат: отказ получателя'\n  AND t.ts BETWEEN '2015-01-01 00:00:00' AND '2017-12-31 23:59:59'\nORDER BY 2;"
+    },
+    {
+      "id": "o7_5",
+      "order": 5,
+      "task": "Кто есть и среди получателей квартир, и среди тех, кто деньги фонда оставил себе? Пересеки flats с результатом прошлого запроса — INTERSECT. Обе части должны отдавать одно и то же: persons.id.",
+      "concept": "h.except_intersect",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Квартира и деньги.",
+        "rules": [
+          {
+            "type": "column_values",
+            "columns": [
+              "person_id",
+              "owner_person_id",
+              "holder_person_id",
+              "id"
+            ],
+            "values": [
+              1602,
+              1530
+            ],
+            "mode": "equal"
+          },
+          {
+            "type": "column_values",
+            "columns": [
+              "full_name"
+            ],
+            "values": [
+              "Шубин Аркадий Алексеевич",
+              "Мирошник Алла Дмитриевна"
+            ],
+            "mode": "equal"
+          },
+          {
+            "type": "column_values",
+            "columns": [
+              "holder_name"
+            ],
+            "values": [
+              "Шубин А. А.",
+              "Мирошник А. Д."
+            ],
+            "mode": "equal"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "text": "Два списка у тебя есть, голубчик: кто квартиру взял и кто деньги оставил. Нужны те, кто в обоих.",
+          "by": "nina",
+          "line": "hint.c07_o7_5.001"
+        },
+        {
+          "text": "Общие строки двух выборок: SELECT … INTERSECT SELECT …. Обе части должны отдавать одно и то же — например, persons.id.",
+          "by": "mira",
+          "line": "hint.c07_o7_5.002"
+        },
+        {
+          "text": "WITH flats AS (…),\n     kept AS (… EXCEPT …)\nSELECT ___ FROM flats\nINTERSECT\nSELECT ___ FROM kept;",
+          "by": "mira"
+        },
+        {
+          "text": "Тетрадь Ирины. Пересечение у неё вышло пустым — одна ошибка:\nWITH flats AS (SELECT owner_person_id FROM properties WHERE grantor_company_id = 18 AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31'), kept AS (SELECT a.holder_person_id, a.holder_name FROM transactions t JOIN accounts a ON a.id = t.account_id WHERE t.counterparty = 'Фонд «Тёплый берег»' AND t.amount > 0 AND t.ts < '2018-01-01 00:00:00' EXCEPT SELECT a.holder_person_id, a.holder_name FROM transactions t JOIN accounts a ON a.id = t.account_id WHERE t.purpose = 'возврат: отказ получателя' AND t.ts < '2018-01-01 00:00:00') SELECT owner_person_id FROM flats INTERSECT SELECT holder_name FROM kept;",
+          "by": "irina"
+        }
+      ],
+      "success": "Двое: Шубин Аркадий Алексеевич и Мирошник Алла Дмитриевна. И квартира, и деньги — без единого возврата.",
+      "evidence": {
+        "id": "ev.c07.shubin",
+        "title": "Шубин — прокурор города",
+        "kind": "lead",
+        "text": "Шубин Аркадий Алексеевич: квартира Северная, 14-31 и 36 платежей фонда по 40 000 ₽, возвратов нет. В 2015 году — заместитель прокурора, сейчас прокурор города; его прокуратура признала смерть Сазонова несчастным случаем. Мирошник Алла Дмитриевна: Северная, 16-4 и 24 платежа по 30 000 ₽."
+      },
+      "sceneAfter": "shubin",
+      "solution": "WITH flats AS (\n  SELECT owner_person_id\n  FROM properties\n  WHERE grantor_company_id = (SELECT id FROM companies WHERE name LIKE '%Глубина-Строй%')\n    AND acquired_at BETWEEN '2015-03-01' AND '2015-12-31'\n),\nkept AS (\n  SELECT a.holder_person_id\n  FROM transactions t\n  JOIN accounts a ON a.id = t.account_id\n  WHERE t.counterparty = 'Фонд «Тёплый берег»' AND t.amount > 0\n    AND t.ts BETWEEN '2015-01-01 00:00:00' AND '2017-12-31 23:59:59'\n  EXCEPT\n  SELECT a.holder_person_id\n  FROM transactions t\n  JOIN accounts a ON a.id = t.account_id\n  WHERE t.purpose = 'возврат: отказ получателя'\n    AND t.ts BETWEEN '2015-01-01 00:00:00' AND '2017-12-31 23:59:59'\n)\nSELECT p.id AS person_id, p.full_name\nFROM persons p\nWHERE p.id IN (\n  SELECT owner_person_id FROM flats\n  INTERSECT\n  SELECT holder_person_id FROM kept\n);"
+    },
+    {
+      "id": "o7_6",
+      "order": 6,
+      "task": "«Куда его повезли?!» Даша уже в машине. Горздрав (hospital_admissions) пишет поступления сразу. Найди, куда увезли Ратникова.",
+      "concept": "h.order_by",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Кардиология ГБ № 1.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT full_name, department FROM hospital_admissions WHERE id = 601"
+          },
+          {
+            "type": "compound",
+            "successMessage": "",
+            "rules": [
+              {
+                "type": "row_count",
+                "expected": 10,
+                "comparison": "lte"
+              },
+              {
+                "type": "cell_value",
+                "value": "Ратников Лев Борисович"
+              },
+              {
+                "type": "cell_value",
+                "value": "кардиология ГБ № 1"
+              }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        {
+          "text": "Скорая из центра всех в одну больницу возит. Горздрав пишет поступления сразу — ищи самое свежее. Быстрее, Ноль!",
+          "by": "dasha",
+          "line": "hint.c07_o7_6.001"
+        },
+        {
+          "text": "Самая поздняя строка таблицы: ORDER BY столбец времени DESC LIMIT 1.",
+          "by": "mira",
+          "line": "hint.c07_o7_6.002"
+        },
+        {
+          "text": "SELECT * FROM hospital_admissions\nORDER BY ___ DESC\nLIMIT ___;",
+          "by": "mira"
+        },
+        {
+          "text": "Тетрадь Ирины, страница «больницы» — она искала там отца. Запрос отдаёт не ту строку — одна ошибка:\nSELECT * FROM hospital_admissions ORDER BY admitted_at LIMIT 1;",
+          "by": "irina"
+        }
+      ],
+      "success": "Ратников Лев Борисович — кардиология ГБ № 1, «ОКС». Время поступления — то, что сейчас на часах.",
+      "evidence": {
+        "id": "ev.c07.admission",
+        "title": "Кардиология ГБ № 1",
+        "kind": "record",
+        "text": "Горздрав, hospital_admissions 601: Ратников Лев Борисович, кардиология ГБ № 1, диагноз «ОКС», выписки нет. По этой строке Даша и поехала."
+      },
+      "sceneAfter": "corridor",
+      "solution": "SELECT * FROM hospital_admissions\nORDER BY admitted_at DESC\nLIMIT 1;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Квартиру на {address} получил {owner} — «от работодателя», у которого ни дня не работал.",
+      "Двадцать четыре платежа фонда «Тёплый берег» ему ушли обратно с пометкой {purpose}.",
+      "Квартиры и деньги оставили себе прокурор города {kept1} и автор «Бухгалтера-беглеца» {kept2}."
+    ],
+    "blanks": [
+      {
+        "id": "address",
+        "kind": "text",
+        "options": [
+          "Северная, 14-27",
+          "Северная, 14-31",
+          "Северная, 16-4",
+          "Северная, 16-9"
+        ],
+        "answer": "Северная, 14-27"
+      },
+      {
+        "id": "owner",
+        "kind": "person",
+        "options": [
+          "Ратников Лев Борисович",
+          "Шубин Аркадий Алексеевич",
+          "Мирошник Алла Дмитриевна",
+          "Петров Виктор Семёнович"
+        ],
+        "answer": "Ратников Лев Борисович",
+        "aliases": {
+          "Ратников Лев Борисович": [
+            1104,
+            "Ратников Л. Б."
+          ],
+          "Шубин Аркадий Алексеевич": [
+            1602,
+            "Шубин А. А."
+          ],
+          "Мирошник Алла Дмитриевна": [
+            1530,
+            "Мирошник А. Д."
+          ],
+          "Петров Виктор Семёнович": [
+            1777,
+            "Петров В. С."
+          ]
+        }
+      },
+      {
+        "id": "purpose",
+        "kind": "text",
+        "options": [
+          "возврат: отказ получателя",
+          "матпомощь: лечение члена семьи",
+          "матпомощь переселенцу Старого Створа",
+          "оплата экспертных услуг"
+        ],
+        "answer": "возврат: отказ получателя"
+      },
+      {
+        "id": "kept1",
+        "kind": "person",
+        "options": [
+          "Шубин Аркадий Алексеевич",
+          "Мирошник Алла Дмитриевна",
+          "Петров Виктор Семёнович",
+          "Пахомова Зинаида Павловна",
+          "Ратников Лев Борисович"
+        ],
+        "answer": "Шубин Аркадий Алексеевич",
+        "aliases": {
+          "Шубин Аркадий Алексеевич": [
+            1602,
+            "Шубин А. А."
+          ],
+          "Мирошник Алла Дмитриевна": [
+            1530,
+            "Мирошник А. Д."
+          ],
+          "Петров Виктор Семёнович": [
+            1777,
+            "Петров В. С."
+          ],
+          "Пахомова Зинаида Павловна": [
+            2588,
+            "Пахомова З. П."
+          ],
+          "Ратников Лев Борисович": [
+            1104,
+            "Ратников Л. Б."
+          ]
+        }
+      },
+      {
+        "id": "kept2",
+        "kind": "person",
+        "options": [
+          "Шубин Аркадий Алексеевич",
+          "Мирошник Алла Дмитриевна",
+          "Петров Виктор Семёнович",
+          "Пахомова Зинаида Павловна",
+          "Ратников Лев Борисович"
+        ],
+        "answer": "Мирошник Алла Дмитриевна",
+        "aliases": {
+          "Шубин Аркадий Алексеевич": [
+            1602,
+            "Шубин А. А."
+          ],
+          "Мирошник Алла Дмитриевна": [
+            1530,
+            "Мирошник А. Д."
+          ],
+          "Петров Виктор Семёнович": [
+            1777,
+            "Петров В. С."
+          ],
+          "Пахомова Зинаида Павловна": [
+            2588,
+            "Пахомова З. П."
+          ],
+          "Ратников Лев Борисович": [
+            1104,
+            "Ратников Л. Б."
+          ]
+        }
+      }
+    ],
+    "successScene": "outro",
+    "failureLines": [
+      "Нина: «Не сходится, голубчик. Кто вернул, а кто оставил — это разные люди».",
+      "Даша: «Так. Стоп. Где-то врёшь — или себе, или бумаге».",
+      "Нина: «Семь раз отмерь, голубчик. Лента у тебя есть — перечитай»."
+    ]
+  },
+  "events": [
+    {
+      "id": "office_with_dasha",
+      "after": {
+        "scene": "shubin"
+      },
+      "when": {
+        "dasha_knows_burial": true
+      },
+      "scene": "office_dasha"
+    },
+    {
+      "id": "office_without_dasha",
+      "after": {
+        "scene": "shubin"
+      },
+      "when": {
+        "dasha_knows_burial": false
+      },
+      "scene": "office_alone"
+    },
+    {
+      "id": "admission",
+      "after": {
+        "scene": "collapse"
+      },
+      "patch": "c07.admission",
+      "scene": "ambulance"
+    },
+    {
+      "id": "dasha_silence",
+      "after": {
+        "scene": "corridor"
+      },
+      "when": {
+        "dasha_knows_burial": false
+      },
+      "scene": "dasha_silent"
+    },
+    {
+      "id": "dasha_knew",
+      "after": {
+        "scene": "corridor"
+      },
+      "when": {
+        "dasha_knows_burial": true
+      },
+      "scene": "dasha_knew"
+    }
+  ]
+}

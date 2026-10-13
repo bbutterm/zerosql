@@ -1,0 +1,524 @@
+{
+  "id": "case-11-chernovik",
+  "order": 11,
+  "act": 3,
+  "code": "Интерлюдия",
+  "title": "Черновик",
+  "subtitle": "Новогодняя ночь в подвале",
+  "date": "2026-12-31 23:00",
+  "minutesPerQuery": 0,
+  "clock": {
+    "cap": "2027-01-01 00:30"
+  },
+  "location": "Подвал ГУ, ОЦР, кабинет Б0-03",
+  "difficulty": "tutorial",
+  "concepts": [
+    "h.transactions",
+    "h.insert_select",
+    "h.update",
+    "h.delete",
+    "h.view",
+    "w.evidence"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log",
+    "doc_registry",
+    "cases",
+    "statements",
+    "outfall_temp",
+    "construction_docs",
+    "registrations",
+    "addresses",
+    "diver_reports",
+    "gs_comms_2015",
+    "gs_phonebook",
+    "properties",
+    "employment",
+    "accounts",
+    "hospital_admissions",
+    "door_access",
+    "purchases",
+    "messenger_events",
+    "phones",
+    "cron_jobs",
+    "company_owners",
+    "share_deals",
+    "contracts",
+    "grant_requests",
+    "migration_jobs",
+    "bank_statements",
+    "attachments",
+    "evidence_registry",
+    "nina_carbon",
+    "arch16_persons",
+    "arch16_statements",
+    "arch16_registry",
+    "draft_statements",
+    "draft_persons",
+    "draft_publication"
+  ],
+  "newTables": [
+    "draft_statements",
+    "draft_persons",
+    "draft_publication"
+  ],
+  "writableTables": [
+    "draft_statements",
+    "draft_persons",
+    "draft_publication"
+  ],
+  "allowViews": true,
+  "briefing": "31 декабря, 23:00. Подвал, оливье на крышке системника, мандарины на клавиатуре. Одиннадцатого января архив переносят по-настоящему: пропавшие объяснения — обратно в дело, стёртые приметы — обратно в карточки, лишнее — из газеты. Сегодня — репетиция на черновике. Писать можно только в три таблицы: draft_statements (копия объяснений, 200 строк), draft_persons (копия карточек, 100 строк) и draft_publication (черновик публикации, 50 строк). Диск Нины открыт как arch16_statements и arch16_persons. Часы стоят: время двигают куранты.",
+  "starterSql": "-- Черновик. Писать можно только в draft_*.\n-- Нина: «Сначала BEGIN, голубчик. Как перекреститься».\nSELECT COUNT(*) AS строк FROM draft_statements;",
+  "introScene": "intro",
+  "objectives": [
+    {
+      "id": "i1",
+      "order": 1,
+      "task": "Нина: «Открой транзакцию — BEGIN. Потом перенеси из диска объяснения по делу 15-0219, которых в черновике нет: INSERT INTO draft_statements (столбцы…) SELECT … FROM arch16_statements. Статус им поставь 'восстановлено'. И посчитай строки, не закрывая транзакцию: двести плюс сколько?»",
+      "concept": "h.insert_select",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "table_state",
+            "query": "SELECT COUNT(*) AS n FROM draft_statements d JOIN arch16_statements a ON a.id = d.id WHERE d.id IN (2071, 2072) AND d.case_id = '15-0219' AND d.status = 'восстановлено' AND d.text IS a.text AND d.taken_at IS a.taken_at AND d.person_text IS a.person_text",
+            "rule": {
+              "type": "cell_value",
+              "value": 2
+            }
+          },
+          {
+            "type": "not",
+            "rule": {
+              "type": "table_state",
+              "query": "SELECT COUNT(*) AS n FROM draft_statements HAVING COUNT(*) <> 202",
+              "rule": {
+                "type": "row_count",
+                "expected": 1,
+                "comparison": "gte"
+              }
+            },
+            "message": "В черновике не 202 строки. Переносим только дело 15-0219 и только тех, кого в черновике нет. Откати — ROLLBACK — и заново."
+          }
+        ],
+        "successMessage": "Две строки легли в черновик: 2071 и 2072."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c11_i1.001",
+          "text": "Голубчик, мы ничего не выдумываем. Что на диске есть, а в черновике нет, — то и переносим. Ты это уже умеешь искать."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c11_i1.002",
+          "text": "INSERT INTO таблица (столбцы) SELECT … — вставляет результат запроса. У draft_statements 10 столбцов, у arch16_statements 8: нет person_id и status. Перечислите столбцы явно. См. «INSERT … SELECT» и «Транзакции»."
+        },
+        {
+          "by": "mira",
+          "text": "BEGIN;\nINSERT INTO draft_statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status)\nSELECT id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, ___\nFROM arch16_statements\nWHERE case_id = ___\n  AND id NOT IN (SELECT id FROM ___);\nSELECT COUNT(*) FROM draft_statements;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c11_i1.004",
+          "text": "Давай вместе, по строчке. Я диктую — ты печатаешь, как в пятнадцатом:\nBEGIN;\nINSERT INTO draft_statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status)\nSELECT id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, 'восстановлено'\nFROM arch16_statements\nWHERE case_id = '15-0219'\n  AND id NOT IN (SELECT id FROM draft_statements);\nSELECT COUNT(*) FROM draft_statements;"
+        }
+      ],
+      "success": "202 строки. Двое, которых не было с пятнадцатого года: 2071 и 2072. Девочка и её отец.",
+      "evidence": {
+        "id": "ev.c11.rehearsal",
+        "title": "Репетиция: плюс две строки",
+        "text": "INSERT … SELECT из arch16_statements по делу 15-0219 добавил в draft_statements ровно две строки — 2071 (Ким Д. С., № 3312) и 2072 (Ким С. А.). Остальные 61 объяснение диска в черновике уже были.",
+        "kind": "record"
+      },
+      "solution": "BEGIN;\nINSERT INTO draft_statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status)\nSELECT id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, 'восстановлено'\nFROM arch16_statements\nWHERE case_id = '15-0219'\n  AND id NOT IN (SELECT id FROM draft_statements);\nSELECT COUNT(*) AS строк FROM draft_statements;"
+    },
+    {
+      "id": "i1b",
+      "order": 2,
+      "task": "Нина: «Посчитали, посмотрели — и откатывай. ROLLBACK. Это же репетиция, голубчик: одиннадцатого то же самое, только с COMMIT. Хочу видеть снова двести».",
+      "concept": "h.transactions",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "not",
+            "rule": {
+              "type": "table_state",
+              "query": "SELECT id FROM draft_statements WHERE id IN (2071, 2072)",
+              "rule": {
+                "type": "row_count",
+                "expected": 1,
+                "comparison": "gte"
+              }
+            },
+            "message": "2071 и 2072 ещё в черновике. Откати транзакцию: ROLLBACK."
+          },
+          {
+            "type": "table_state",
+            "query": "SELECT COUNT(*) AS n FROM draft_statements",
+            "rule": {
+              "type": "cell_value",
+              "value": 200
+            }
+          }
+        ],
+        "successMessage": "Снова 200: репетиция откатана."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c11_i1b.001",
+          "text": "Что открыл BEGIN, то закрывает либо COMMIT, либо ROLLBACK. Нам сегодня — второе."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c11_i1b.002",
+          "text": "ROLLBACK отменяет всё, что сделано после BEGIN. Если BEGIN не было, каждая команда уже сохранена и откатывать нечего: тогда поможет кнопка «Откатить дело к началу». См. «Транзакции»."
+        },
+        {
+          "by": "mira",
+          "text": "___;\nSELECT COUNT(*) FROM draft_statements;"
+        },
+        {
+          "by": "dasha",
+          "line": "hint.c11_i1b.004",
+          "text": "Так. Стоп. Одно слово. ROLLBACK; — и всё, как было."
+        }
+      ],
+      "success": "Двести. Как будто ничего и не было. Одиннадцатого будет COMMIT.",
+      "sceneAfter": "rollback",
+      "solution": "ROLLBACK;"
+    },
+    {
+      "id": "i2",
+      "order": 3,
+      "task": "Нина: «Теперь примета. У 2214 в черновике пусто, а на диске — было. Верни одну, только ему: UPDATE draft_persons SET special_marks = (значение из arch16_persons для того же id) WHERE … И не забудь, что я про BEGIN говорила».",
+      "concept": "h.update",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "not",
+            "rule": {
+              "type": "table_state",
+              "query": "SELECT d.id FROM draft_persons d JOIN main.persons p ON p.id = d.id WHERE d.id <> 2214 AND d.special_marks IS NOT p.special_marks",
+              "rule": {
+                "type": "row_count",
+                "expected": 1,
+                "comparison": "gte"
+              }
+            },
+            "message": "Нина: «Вот поэтому, голубчик, сначала BEGIN». Переписались чужие приметы. Откати (ROLLBACK) и поставь WHERE id = 2214."
+          },
+          {
+            "type": "table_state",
+            "query": "SELECT COUNT(*) AS n FROM draft_persons d JOIN arch16_persons a ON a.id = d.id WHERE d.id = 2214 AND d.special_marks = a.special_marks",
+            "rule": {
+              "type": "cell_value",
+              "value": 1
+            }
+          },
+          {
+            "type": "table_state",
+            "query": "SELECT COUNT(*) AS n FROM draft_persons",
+            "rule": {
+              "type": "cell_value",
+              "value": 100
+            }
+          }
+        ],
+        "successMessage": "У 2214 примета из архива, остальные 99 карточек не тронуты."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c11_i2.001",
+          "text": "Без WHERE UPDATE переписывает всю таблицу, голубчик. Все сто карточек. Одной строчкой."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c11_i2.002",
+          "text": "UPDATE таблица SET столбец = значение WHERE условие. Значение может быть подзапросом, который ссылается на обновляемую строку: (SELECT … FROM arch16_persons a WHERE a.id = draft_persons.id). См. «UPDATE»."
+        },
+        {
+          "by": "mira",
+          "text": "BEGIN;\nUPDATE draft_persons\nSET special_marks = (SELECT a.___ FROM arch16_persons a WHERE a.id = draft_persons.___)\nWHERE id = ___;\nSELECT id, full_name, special_marks FROM draft_persons WHERE id = 2214;"
+        },
+        {
+          "by": "dasha",
+          "line": "hint.c11_i2.004",
+          "text": "Палец. Его палец. Пиши:\nUPDATE draft_persons\nSET special_marks = (SELECT a.special_marks FROM arch16_persons a WHERE a.id = draft_persons.id)\nWHERE id = 2214;"
+        }
+      ],
+      "success": "«Отсутствует ногтевая фаланга 4-го пальца левой кисти». В черновике — снова есть. Остальные 99 — как были.",
+      "evidence": {
+        "id": "ev.c11.finger",
+        "title": "Примета 2214 возвращена в черновик",
+        "text": "draft_persons 2214, Бурцев В. Н.: special_marks взята из arch16_persons (снимок «Сокола» на 30.09.2016). Остальные 99 карточек черновика совпадают с ПБД.",
+        "kind": "record"
+      },
+      "sceneAfter": "tv",
+      "solution": "UPDATE draft_persons\nSET special_marks = (SELECT a.special_marks FROM arch16_persons a WHERE a.id = draft_persons.id)\nWHERE id = 2214;"
+    },
+    {
+      "id": "i3",
+      "order": 4,
+      "task": "Нина: «Из газеты — можно. Убери из draft_publication тех, кто был несовершеннолетним на дату показаний (ts), и информаторов. Только их. Дату рождения плюс восемнадцать лет сравни с датой показаний — не с сегодняшним днём».",
+      "concept": "h.delete",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "not",
+            "rule": {
+              "type": "table_state",
+              "query": "SELECT id FROM draft_publication WHERE id IN (7, 19)",
+              "rule": {
+                "type": "row_count",
+                "expected": 1,
+                "comparison": "gte"
+              }
+            },
+            "message": "Девочка ещё в газете: Ким Д. С., тринадцать лет на дату объяснения. Сравни date(person_birth_date, '+18 years') с date(ts)."
+          },
+          {
+            "type": "not",
+            "rule": {
+              "type": "table_state",
+              "query": "SELECT id FROM draft_publication WHERE id IN (12, 33)",
+              "rule": {
+                "type": "row_count",
+                "expected": 1,
+                "comparison": "gte"
+              }
+            },
+            "message": "Информатор ещё в газете: source_role = 'информатор'."
+          },
+          {
+            "type": "not",
+            "rule": {
+              "type": "table_state",
+              "query": "SELECT COUNT(*) AS n FROM draft_publication HAVING COUNT(*) < 46",
+              "rule": {
+                "type": "row_count",
+                "expected": 1,
+                "comparison": "gte"
+              }
+            },
+            "message": "Удалено лишнее: в черновике меньше 46 строк. Откати (ROLLBACK) и сузь WHERE: взрослые свидетели и сотрудники остаются."
+          },
+          {
+            "type": "table_state",
+            "query": "SELECT COUNT(*) AS n FROM draft_publication",
+            "rule": {
+              "type": "cell_value",
+              "value": 46
+            }
+          }
+        ],
+        "successMessage": "Из черновика публикации ушли четыре строки: девочка и информатор."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c11_i3.001",
+          "text": "Ей тогда тринадцать было. Сейчас-то взрослая, а в газете ей опять тринадцать. Смотри возраст на тот день, голубчик."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c11_i3.002",
+          "text": "DELETE FROM таблица WHERE условие удаляет строки, для которых условие истинно. Возраст на дату показаний: date(person_birth_date, '+18 years') > date(ts). У документов person_birth_date — NULL, условие для них не истинно. См. «DELETE»."
+        },
+        {
+          "by": "mira",
+          "text": "BEGIN;\nDELETE FROM draft_publication\nWHERE source_role = ___\n   OR date(person_birth_date, '+18 years') > date(___);\nSELECT COUNT(*) FROM draft_publication;"
+        },
+        {
+          "by": "dasha",
+          "line": "hint.c11_i3.004",
+          "text": "Так. Меня там две строки, мелкой. Взрослую меня не трогай. Вот:\nDELETE FROM draft_publication\nWHERE source_role = 'информатор'\n   OR date(person_birth_date, '+18 years') > date(ts);"
+        }
+      ],
+      "success": "Сорок шесть строк. Девочки в газете нет. Шпалы тоже. В деле оба остались.",
+      "evidence": {
+        "id": "ev.c11.redacted",
+        "title": "Черновик публикации без девочки",
+        "text": "Из draft_publication удалены id 7 и 19 (Ким Д. С., 13 лет на 20.02.2015: объяснение № 3312 и схема № 3313) и id 12 и 33 (Шпаков Г. И., информатор). Осталось 46 строк. В draft_statements не удалено ничего.",
+        "kind": "document"
+      },
+      "sceneAfter": "redacted",
+      "solution": "DELETE FROM draft_publication\nWHERE source_role = 'информатор'\n   OR date(person_birth_date, '+18 years') > date(ts);"
+    },
+    {
+      "id": "i4",
+      "order": 5,
+      "task": "Даша: «Газете — только факты. Когда, где, что и откуда. Без имён, без дат рождения, без ролей. Сделай витрину — представление draft_package, по времени. Чтоб одиннадцатого не собирать руками».",
+      "concept": "h.view",
+      "validation": {
+        "type": "view_match",
+        "view": "draft_package",
+        "referenceQuery": "SELECT ts, place, what, source_class FROM draft_publication ORDER BY ts",
+        "ordered": true,
+        "rule": {
+          "type": "compound",
+          "rules": [
+            {
+              "type": "not",
+              "rule": {
+                "type": "contains_columns",
+                "columns": ["person_text"]
+              },
+              "message": "В витрине имя (person_text). Персональных столбцов в газете быть не должно."
+            },
+            {
+              "type": "not",
+              "rule": {
+                "type": "contains_columns",
+                "columns": ["person_id"]
+              },
+              "message": "В витрине person_id. Персональных столбцов в газете быть не должно."
+            },
+            {
+              "type": "not",
+              "rule": {
+                "type": "contains_columns",
+                "columns": ["person_birth_date"]
+              },
+              "message": "В витрине дата рождения. Персональных столбцов в газете быть не должно."
+            },
+            {
+              "type": "not",
+              "rule": {
+                "type": "contains_columns",
+                "columns": ["source_role"]
+              },
+              "message": "В витрине source_role: по роли информатора вычислят быстрее, чем по имени."
+            },
+            {
+              "type": "row_count",
+              "expected": 46,
+              "comparison": "eq"
+            }
+          ],
+          "successMessage": "Витрина собрана."
+        }
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c11_i4.001",
+          "text": "Витрина — это сохранённый запрос. Один раз пишешь — дальше просто SELECT * из неё."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c11_i4.002",
+          "text": "CREATE VIEW имя AS SELECT … — сохраняет запрос под именем. Данных не копирует: при чтении запрос выполняется заново. Порядок задайте ORDER BY внутри. См. «Представления»."
+        },
+        {
+          "by": "mira",
+          "text": "CREATE VIEW ___ AS\nSELECT ts, place, what, source_class\nFROM draft_publication\nORDER BY ___;\n\nSELECT * FROM draft_package;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c11_i4.004",
+          "text": "Опись, голубчик, — она и есть витрина. Пиши:\nCREATE VIEW draft_package AS\nSELECT ts, place, what, source_class\nFROM draft_publication\nORDER BY ts;"
+        }
+      ],
+      "success": "draft_package: 46 строк, с девятнадцатого февраля пятнадцатого по декабрь двадцать шестого. Ни одного имени.",
+      "evidence": {
+        "id": "ev.c11.package",
+        "title": "Витрина draft_package",
+        "text": "Представление над draft_publication: ts, place, what, source_class по времени, 46 строк, без персональных столбцов. Одиннадцатого так же собирается пакет для прессы.",
+        "kind": "document"
+      },
+      "solution": "CREATE VIEW draft_package AS\nSELECT ts, place, what, source_class\nFROM draft_publication\nORDER BY ts;"
+    }
+  ],
+  "events": [
+    {
+      "id": "drafts",
+      "after": {
+        "scene": "intro"
+      },
+      "patch": "late.drafts"
+    },
+    {
+      "id": "helper_tokha",
+      "after": {
+        "scene": "intro"
+      },
+      "when": {
+        "tokha_turned": true
+      },
+      "scene": "helper_tokha"
+    },
+    {
+      "id": "helper_melnik",
+      "after": {
+        "scene": "intro"
+      },
+      "when": {
+        "tokha_turned": false,
+        "melnik": [null, "blackmail"]
+      },
+      "scene": "helper_melnik"
+    },
+    {
+      "id": "helper_nina",
+      "after": {
+        "scene": "intro"
+      },
+      "when": {
+        "tokha_turned": false,
+        "melnik": "reported"
+      },
+      "scene": "helper_nina"
+    },
+    {
+      "id": "address",
+      "after": {
+        "objective": "i2"
+      },
+      "clockTo": "2026-12-31 23:55"
+    },
+    {
+      "id": "chimes",
+      "after": {
+        "objective": "i4"
+      },
+      "clockTo": "2027-01-01 00:00",
+      "scene": "chimes"
+    },
+    {
+      "id": "valentina",
+      "after": {
+        "objective": "i4"
+      },
+      "when": {
+        "valentina_warned": true
+      },
+      "scene": "valentina_sms"
+    }
+  ],
+  "outroScene": "outro"
+}

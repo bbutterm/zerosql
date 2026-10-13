@@ -1,0 +1,107 @@
+[
+  {
+    "id": "h.is_not",
+    "title": "IS и IS NOT: сравнение с учётом NULL",
+    "summary": "`=` и `!=` с NULL дают не «да» и не «нет», а NULL — и строка выпадает из WHERE. `IS` и `IS NOT` сравнивают значения так, будто NULL — обычное значение: `NULL IS NULL` — истина, `'шрам' IS NOT NULL` — тоже истина.",
+    "syntax": "a IS b        -- равны, NULL равен NULL\na IS NOT b    -- различаются, в том числе «было — стало NULL»\n\n-- то же длинно:\n(a != b) OR (a IS NULL) <> (b IS NULL)",
+    "example": "SELECT p.id, p.full_name, a.special_marks AS было, p.special_marks AS стало\nFROM persons p\nJOIN arch16_persons a ON a.id = p.id\nWHERE p.special_marks IS NOT a.special_marks;",
+    "pitfalls": [
+      "`WHERE p.special_marks != a.special_marks` теряет все пары, где хотя бы с одной стороны NULL. На приметах это 21 строка вместо 27: стёртые до NULL не видны.",
+      "`WHERE x = NULL` не находит ничего, даже строки с NULL. Для одного значения — `x IS NULL`, для двух столбцов — `IS` / `IS NOT`.",
+      "`coalesce(a, '') <> coalesce(b, '')` почти работает, но путает NULL с пустой строкой. `IS NOT` такого не делает.",
+      "Пустой результат — тоже ответ. «Найдено строк: ноль» по пропуску и двери доказывает, что прохода не было, если условие верное. Проверьте его на соседнем случае, где строки точно есть."
+    ]
+  },
+  {
+    "id": "h.snapshot_diff",
+    "title": "Сравнение снимков: что пропало и что появилось",
+    "summary": "Два снимка одной таблицы — «как было» и «как стало» — сличают по ключу. Анти-джойн в одну сторону показывает пропавшее, в другую — вписанное позже. Изменённое — это пары с одинаковым ключом и разными значениями.",
+    "syntax": "-- пропало: есть в старом, нет в новом\nSELECT o.* FROM старый o\nLEFT JOIN новый n ON n.id = o.id\nWHERE n.id IS NULL;\n\n-- появилось: есть в новом, нет в старом\nSELECT n.* FROM новый n\nWHERE NOT EXISTS (SELECT 1 FROM старый o WHERE o.id = n.id);\n\n-- изменилось\nSELECT … FROM новый n JOIN старый o ON o.id = n.id\nWHERE n.поле IS NOT o.поле;",
+    "example": "SELECT a.*\nFROM arch16_statements a\nLEFT JOIN statements s ON s.id = a.id\nWHERE s.id IS NULL;",
+    "pitfalls": [
+      "Направление решает всё: `arch16 LEFT JOIN statements` ищет пропавшее, `statements LEFT JOIN arch16` — появившееся. Перепутать легко, а результат выглядит правдоподобно.",
+      "Проверяйте `IS NULL` по ключу правой таблицы, а не по столбцу, где NULL бывает и так (`doc_reg_no`, `special_marks`).",
+      "Если в старом снимке есть дубли ключа, обычный JOIN размножит строки. Анти-джойн от дублей не страдает, а счёт — страдает: сначала отбросьте двойников.",
+      "Сравнивайте снимки за один период: в ПБД есть строки 2026 года, которых в 2016-м быть не могло. Для «что вписали задним числом» ограничьте новое делом или датой.",
+      "★ `FULL OUTER JOIN` (SQLite 3.39+) даёт обе стороны сразу; столбец «тип расхождения» через `CASE` — элегантный способ уложить всё в один запрос."
+    ]
+  },
+  {
+    "id": "h.strings",
+    "title": "Строки: substr, ||, replace, instr, trim, length",
+    "summary": "Строковые функции режут, склеивают и чистят текст прямо в запросе. Позиции в SQLite считаются с 1, а длина — в символах, не в байтах.",
+    "syntax": "substr(s, начало[, длина])   -- substr('СПРОСИ', 1, 1) = 'С'\na || b                        -- склейка; NULL || 'x' = NULL\nreplace(s, что, на_что)\ninstr(s, подстрока)           -- позиция или 0\ntrim(s) / ltrim / rtrim\nlength(s)                     -- в символах\nupper(s) / lower(s)",
+    "example": "SELECT ts, old_value, new_value,\n       substr(new_value, 1, 1) AS первая_буква,\n       length(new_value) - length(old_value) AS разница\nFROM audit_log\nWHERE login = 'i.valts' AND field = 'last_name';",
+    "pitfalls": [
+      "`||` с NULL даёт NULL целиком: `'ПД-' || NULL` — NULL. Оберните сомнительные части в `coalesce(x, '')`.",
+      "`substr` считает с 1, а не с 0. `substr(s, 0, 1)` вернёт пустую строку.",
+      "`length` у числа считает цифры текстового вида: `length(3312)` = 4. У BLOB — байты.",
+      "`instr` возвращает 0, если подстроки нет, а не NULL: `WHERE instr(text, 'палец')` работает как условие «содержит».",
+      "`replace` чувствителен к регистру и к ё/е: `replace(s, 'е', 'ё')` не тронет заглавную «Е»."
+    ]
+  },
+  {
+    "id": "h.group_concat",
+    "title": "group_concat: склеить строки в одну",
+    "summary": "Агрегат `group_concat` собирает значения группы в одну строку через разделитель. Порядок склейки задаётся внутри агрегата: `group_concat(x, '' ORDER BY ts)` (SQLite 3.44+).",
+    "syntax": "group_concat(выражение[, разделитель] [ORDER BY …])\n\n-- без ORDER BY внутри — через упорядоченный подзапрос:\nSELECT group_concat(x, '')\nFROM (SELECT x FROM … ORDER BY ts);",
+    "example": "SELECT group_concat(substr(new_value, 1, 1), '' ORDER BY ts) AS послание\nFROM audit_log\nWHERE login = 'i.valts' AND field = 'last_name'\n  AND ts BETWEEN '2026-11-17 01:00:00' AND '2026-11-17 02:00:00';",
+    "pitfalls": [
+      "Без ORDER BY порядок не гарантирован: он зависит от плана запроса и индексов. Сегодня совпало, завтра — нет.",
+      "`ORDER BY id` — не время. id в audit_log — порядок репликации: офлайн-станция вливается пачкой, и буквы встают в чужом порядке («НИСПУИРОСН» вместо «СПРОСИНИНУ»).",
+      "Разделитель по умолчанию — запятая. Чтобы склеить вплотную, передайте пустую строку: `group_concat(x, '')`.",
+      "NULL пропускается молча: строка без значения просто не попадёт в склейку, и буква «потеряется» без ошибки."
+    ]
+  },
+  {
+    "id": "h.glob_hex",
+    "title": "GLOB и hex: увидеть невидимое",
+    "summary": "`GLOB` — сравнение по шаблону, как `LIKE`, но с учётом регистра и алфавита: `*` — любые символы, `?` — один, `[A-Z]` — один из диапазона. `hex()` показывает байты значения: так видно, латиница в строке или кириллица.",
+    "syntax": "s GLOB '*[A-Z]*'      -- есть латинская заглавная\ns GLOB 'К???ОК'       -- шаблон из ровно шести символов\nhex(s)                -- байты в шестнадцатеричном виде",
+    "example": "SELECT id, plate, hex(plate) AS байты, read_at, camera_id\nFROM plate_reads\nWHERE plate GLOB '*[A-Z]*'\nORDER BY read_at;",
+    "pitfalls": [
+      "`[A-Z]` в GLOB — только латиница. Кириллица в этот диапазон не входит: «К» и «K» для GLOB разные буквы.",
+      "GLOB чувствителен к регистру: `'*[a-z]*'` не найдёт заглавных.",
+      "Кириллическая буква в UTF-8 — два байта (`D09A` — «К»), латинская — один (`4B` — «K»). В `hex` разница видна сразу.",
+      "`LIKE` в ЗЕРКАЛЕ без учёта регистра, а `=` — с учётом. Ни то ни другое не отличит гомоглиф по виду — только по значению."
+    ]
+  },
+  {
+    "id": "h.legacy_dates",
+    "title": "Даты «Сокола»: ДД.ММ.ГГГГ",
+    "summary": "Старый журнал хранит даты текстом `'ДД.ММ.ГГГГ'`. Такой текст сортируется по дню, а не по дате, и не понимается функциями `date()` и `julianday()`. Перед сравнением дату собирают заново в `'ГГГГ-ММ-ДД'`.",
+    "syntax": "substr(d, 7, 4) || '-' || substr(d, 4, 2) || '-' || substr(d, 1, 2)\n-- '21.02.2015' → '2015-02-21'",
+    "example": "SELECT reg_no, reg_date, doc_type,\n       substr(reg_date, 7, 4) || '-' || substr(reg_date, 4, 2) || '-' || substr(reg_date, 1, 2) AS дата\nFROM arch16_registry\nORDER BY дата, reg_no\nLIMIT 20;",
+    "pitfalls": [
+      "`ORDER BY reg_date` по тексту ставит «01.03.2015» раньше «21.02.2015»: сравнение идёт по первым символам, то есть по дню.",
+      "`date('21.02.2015')` возвращает NULL — SQLite такой формат не знает. Ошибки не будет, будет пустота.",
+      "`BETWEEN '16.02.2015' AND '03.03.2015'` по тексту не имеет смысла. Сначала переведите, потом сравнивайте.",
+      "В ПБД даты уже в ISO: `doc_registry.registered_at` — '2015-02-21 09:40:00'. Сличая журналы, приводите обе стороны к одному виду и точности."
+    ]
+  },
+  {
+    "id": "w.homoglyphs",
+    "title": "Гомоглифы: К и K",
+    "summary": "Двенадцать кириллических букв госномера (А, В, Е, К, М, Н, О, Р, С, Т, У, Х) выглядят как латинские. Камеры распознавания иногда записывают латиницу — и номер «К372ОК» превращается в другую строку, которую `=` уже не находит.",
+    "syntax": "plate GLOB '*[A-Z]*'                 -- есть латиница\nhex(plate)                           -- проверить байты\nreplace(replace(plate, 'K', 'К'), 'O', 'О')   -- нормализация по одной букве",
+    "example": "SELECT plate, hex(plate) AS байты, COUNT(*) AS считываний\nFROM plate_reads\nWHERE plate GLOB '*[A-Z]*'\nGROUP BY plate;",
+    "pitfalls": [
+      "Номер в `vehicles` записан кириллицей, а в `plate_reads` бывает латиницей. JOIN по `plate` молча теряет такие считывания.",
+      "Пропуска пишутся латинской B: `'B-9000'`. Кириллическая «В» даёт ноль строк — и ложное «алиби».",
+      "Нормализация через `replace` нужна для каждой буквы отдельно; пропущенная буква оставит гомоглиф."
+    ]
+  },
+  {
+    "id": "w.sokol16",
+    "title": "Диск Нины: архив-2016",
+    "summary": "Последний ночной бэкап «Сокола» от 30.09.2016. Импортирован в staging-контур «Сияния» (`sokol_stage_*`), поверх — представления только для чтения: `arch16_persons`, `arch16_statements`, `arch16_registry`. 11.01.2027 staging удаляется по `migration_jobs`. Рядом — `nina_carbon`, копирка четырёх объяснений 2015 года.",
+    "syntax": "arch16_persons(id, last_name, first_name, patronymic, full_name, birth_date, special_marks, death_date)\narch16_statements(id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text)\narch16_registry(id, year, reg_no, reg_date 'ДД.ММ.ГГГГ', doc_type, case_id, registered_by)\nnina_carbon(id, doc_reg_no, person_text, typed_at_text, text)\nattachments(id, author_login, table_name, row_key_json, created_at, note_no)",
+    "example": "SELECT id, case_id, doc_reg_no, person_text, taken_at\nFROM arch16_statements\nWHERE case_id = '15-0219'\nORDER BY taken_at;",
+    "pitfalls": [
+      "id в `arch16_statements` и `arch16_persons` те же, что в ПБД, — сличайте по ним. У `arch16_registry` свои id; журнал сличают по паре `year` + `reg_no`.",
+      "Старый ридер «Сокола» задваивает строки: в `arch16_statements` бывают двойники с тем же id. Считайте `COUNT(DISTINCT id)` или нумеруйте `ROW_NUMBER() OVER (PARTITION BY id …)`.",
+      "Даты журнала — текст 'ДД.ММ.ГГГГ' (см. «Даты «Сокола»»). Даты `taken_at` и `birth_date` — уже ISO.",
+      "Представления только для чтения: исправлять надо ПБД, а не диск. Диск — свидетель, а не черновик."
+    ]
+  }
+]

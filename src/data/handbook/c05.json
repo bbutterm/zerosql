@@ -1,0 +1,92 @@
+[
+  {
+    "id": "h.subquery_in",
+    "title": "IN (SELECT …): список из другого запроса",
+    "summary": "Вместо списка значений в `IN (…)` можно поставить запрос. Он выполняется и отдаёт **один столбец** — с ним и сравнивают. Так одна таблица фильтрует другую без JOIN.",
+    "syntax": "SELECT …\nFROM таблица\nWHERE столбец IN (SELECT столбец FROM другая WHERE …);",
+    "example": "SELECT id, title, investigator\nFROM cases\nWHERE id IN (SELECT case_id FROM doc_registry\n             WHERE year = 2015 AND doc_type = 'рапорт о выезде');\n-- дела, по которым в журнале есть рапорт о выезде",
+    "pitfalls": [
+      "Подзапрос должен отдавать ровно один столбец. `IN (SELECT * …)` — ошибка.",
+      "Сравнивают одинаковое с одинаковым: `cases.id` — это номер дела ('15-0219'), а `doc_registry.id` — номер строки журнала. `id IN (SELECT id …)` молча вернёт пусто.",
+      "Дубли в подзапросе не размножают строки, в отличие от JOIN: каждая строка внешней таблицы либо есть в результате, либо нет.",
+      "`NOT IN` с подзапросом опасен, если в подзапросе бывает NULL. См. «NOT IN и NULL»."
+    ]
+  },
+  {
+    "id": "h.scalar_subquery",
+    "title": "Скалярный подзапрос: одно значение",
+    "summary": "Подзапрос в скобках, который возвращает **одну строку и один столбец**, можно поставить везде, где ждут значение: после `=`, `<`, в списке столбцов. «Возьми номер отсюда и подставь туда».",
+    "syntax": "SELECT …\nFROM таблица\nWHERE столбец = (SELECT столбец FROM другая WHERE ключ = …);",
+    "example": "SELECT id, full_name, birth_date\nFROM persons\nWHERE id = (SELECT mother_id FROM persons WHERE id = 3612);\n-- карточка матери человека 3612: подзапрос из той же таблицы",
+    "pitfalls": [
+      "Если подзапрос вернул несколько строк, SQLite **не ругается** — молча берёт первую попавшуюся. `id = (SELECT case_id … BETWEEN 3309 AND 3315)` даст чужое дело. Условие подзапроса должно находить ровно одну строку.",
+      "Если подзапрос не нашёл ничего, он равен NULL, а `= NULL` не истинно никогда: результат пустой, без ошибки.",
+      "Скалярный подзапрос удобен для доли: `100.0 * COUNT(*) / (SELECT COUNT(*) FROM …)` — целое в знаменателе считается один раз."
+    ]
+  },
+  {
+    "id": "h.correlated",
+    "title": "Коррелированный подзапрос: смотрит на внешнюю строку",
+    "summary": "Подзапрос, который ссылается на столбцы **внешнего** запроса, выполняется заново для каждой его строки. Так спрашивают «есть ли для этой строки пара»: следующий номер, запись в другой таблице.",
+    "syntax": "SELECT …\nFROM таблица t\nWHERE … (SELECT … FROM другая x WHERE x.ключ = t.ключ);",
+    "example": "SELECT d.reg_no, d.registered_at, d.doc_type\nFROM doc_registry d\nWHERE d.year = 2015\n  AND d.registered_by = (SELECT registered_by FROM doc_registry x\n                         WHERE x.year = 2015 AND x.reg_no = d.reg_no - 1)\n  AND d.reg_no BETWEEN 100 AND 110;\n-- документы, которые записал тот же человек, что и предыдущий номер",
+    "pitfalls": [
+      "Внешнюю таблицу обязательно назвать алиасом (`d`), а внутреннюю — другим (`x`). Иначе `reg_no = reg_no + 1` внутри подзапроса сравнит строку саму с собой.",
+      "Подзапрос выполняется для каждой строки: на больших таблицах ограничивайте внешнюю выборку (`year = 2015`) и сравнивайте по ключам.",
+      "Почти любой коррелированный подзапрос можно переписать через JOIN — и наоборот. Выбирайте то, что читается проще."
+    ]
+  },
+  {
+    "id": "h.exists",
+    "title": "EXISTS и NOT EXISTS",
+    "summary": "`EXISTS (подзапрос)` — истина, если подзапрос нашёл хоть одну строку; `NOT EXISTS` — если не нашёл ни одной. Что именно он выбирает, неважно, поэтому пишут `SELECT 1`. Это самый надёжный способ найти «строки без пары».",
+    "syntax": "SELECT …\nFROM таблица t\nWHERE NOT EXISTS (\n  SELECT 1 FROM другая x WHERE x.ключ = t.ключ\n);",
+    "example": "SELECT d.reg_no + 1 AS gap\nFROM doc_registry d\nWHERE d.year = 2015\n  AND NOT EXISTS (SELECT 1 FROM doc_registry x\n                  WHERE x.year = 2015 AND x.reg_no = d.reg_no + 1)\n  AND d.reg_no < (SELECT MAX(reg_no) FROM doc_registry WHERE year = 2015);\n-- номера, за которыми следующего нет: пропуски журнала",
+    "pitfalls": [
+      "NULL не ломает `NOT EXISTS`: строка с `reg_no` NULL просто не совпадёт ни с чем. Поэтому для поиска «чего нет» он надёжнее, чем `NOT IN`.",
+      "Без связи с внешней строкой (`x.ключ = t.ключ`) подзапрос отвечает на один и тот же вопрос для всех строк — и результат либо весь, либо пустой.",
+      "Номер после последнего тоже «не существует». Отсеките его: `reg_no < (SELECT MAX(reg_no) …)`.",
+      "То же самое делает анти-джойн: `LEFT JOIN … ON … WHERE x.id IS NULL`. Оба способа засчитываются."
+    ]
+  },
+  {
+    "id": "h.not_in_null",
+    "title": "NOT IN и NULL: ноль строк без ошибки",
+    "summary": "Если в подзапросе `NOT IN (SELECT …)` есть хоть один NULL, запрос вернёт **ноль строк**. `x NOT IN (1, 2, NULL)` — это «x ≠ 1 и x ≠ 2 и x ≠ NULL», а сравнение с NULL — не истина и не ложь. WHERE такие строки выбрасывает.",
+    "syntax": "-- опасно, если столбец бывает NULL:\nWHERE x NOT IN (SELECT col FROM t)\n-- надёжно:\nWHERE x NOT IN (SELECT col FROM t WHERE col IS NOT NULL)\nWHERE NOT EXISTS (SELECT 1 FROM t WHERE t.col = x)",
+    "example": "SELECT COUNT(*) FROM doc_registry WHERE reg_no IS NULL;\n-- 12 черновиков без номера. Из-за них:\nSELECT reg_no + 1 FROM doc_registry\nWHERE year = 2015\n  AND reg_no + 1 NOT IN (SELECT reg_no FROM doc_registry\n                         WHERE year = 2015 AND reg_no IS NOT NULL);\n-- без «IS NOT NULL» — ноль строк",
+    "pitfalls": [
+      "Ошибки нет, предупреждения от SQLite нет — просто пусто. Проверяйте подзапрос на NULL: `SELECT COUNT(*) FROM t WHERE col IS NULL`.",
+      "`IN` с NULL в списке работает как ожидается для найденных значений: NULL мешает только отрицанию.",
+      "МИРА предупреждает: «NOT IN по столбцу с NULL». Если видите это — добавьте `IS NOT NULL` в подзапрос или перейдите на `NOT EXISTS`."
+    ]
+  },
+  {
+    "id": "h.case",
+    "title": "CASE WHEN: ветвление в запросе",
+    "summary": "`CASE WHEN условие THEN значение … ELSE значение END` — «если…то…иначе» прямо в строке результата. Им раскладывают строки по корзинам, а `GROUP BY` по корзинам считает.",
+    "syntax": "SELECT CASE WHEN условие THEN 'да'\n            WHEN другое THEN 'может'\n            ELSE 'нет' END AS корзина,\n       COUNT(*)\nFROM таблица\nGROUP BY корзина;",
+    "example": "SELECT CASE WHEN doc_type = 'объяснение' THEN 'объяснения'\n            ELSE 'прочее' END AS kind,\n       COUNT(*) AS docs,\n       ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM doc_registry WHERE year = 2015), 1) AS pct\nFROM doc_registry\nWHERE year = 2015\nGROUP BY kind;",
+    "pitfalls": [
+      "Целое на целое SQLite делит **нацело**: `3569 / 5850` = 0. Для доли умножайте на `100.0` до деления.",
+      "`COUNT(CASE WHEN … THEN 1 ELSE 0 END)` считает и нули — это COUNT всех строк. Для подсчёта по условию — `SUM(CASE … THEN 1 ELSE 0 END)` или `COUNT(CASE … THEN 1 END)` без ELSE.",
+      "Без ELSE строки, не попавшие ни в одну ветку, получают NULL.",
+      "Ветки проверяются сверху вниз, срабатывает первая подходящая.",
+      "Корреляция — не вина: если 61 % документов у одного человека, сначала проверьте, сколько вообще людей могли их регистрировать."
+    ]
+  },
+  {
+    "id": "w.registry",
+    "title": "Журнал регистрации «Сокола»",
+    "summary": "`doc_registry` — журнал входящих и исходящих документов отдела за I квартал 2015 года, залит из «Сокола» через staging-контур миграции. Номер `reg_no` сквозной с 1 января: в бумажном журнале номера не пропускают.",
+    "syntax": "doc_registry(id, year, reg_no, registered_at, doc_type, case_id, registered_by, note)\ncases(id, title, opened_at, applicant_text, investigator, status, status_at)\nstatements(id, case_id, doc_reg_no, person_id, person_text, taken_at, taken_by, typed_by, text, status)",
+    "example": "SELECT reg_no, registered_at, doc_type, case_id, registered_by, note\nFROM doc_registry\nWHERE year = 2015 AND reg_no BETWEEN 3309 AND 3315\nORDER BY reg_no;",
+    "pitfalls": [
+      "У черновиков `reg_no` NULL: номер им не выдавали. В `ORDER BY reg_no` они стоят первыми.",
+      "`id` — номер строки в ПБД, а не регистрационный номер. Пропуски ищут по `reg_no`.",
+      "`case_id` — номер дела вида '15-0219' (год-месяц-день открытия), это ключ таблицы `cases`.",
+      "`investigator` хранится со званием: 'майор Ратников Л. Б.'. `= 'Ратников Л. Б.'` ничего не найдёт.",
+      "Январь и февраль 2015-го набивали задним числом, отсюда ночные и выходные отметки времени у части документов."
+    ]
+  }
+]

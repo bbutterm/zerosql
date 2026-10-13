@@ -1,0 +1,327 @@
+{
+  "scenes": [
+    {
+      "id": "intro",
+      "location": "basement_b0_03_morning_tv",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c06.intro.001", "speaker": "narrator", "text": "17 декабря, 08:40. В коридоре цокольного этажа бубнит телевизор. Бегущая строка: «Полынья замёрзла впервые за 11 лет»." },
+        { "id": "c06.intro.002", "speaker": "narrator", "text": "С 14 декабря зал Б «Глубины» греется по замкнутому контуру. Тёплую воду в бухту больше не сбрасывают. При −38 °C залив затянуло за три дня." },
+        { "id": "c06.intro.003", "speaker": "granin", "emotion": "smug", "text": "Понимаешь, лёд — это тоже прогресс.", "direction": "телеобращение; раскатистый театральный бас, пауза «на аплодисменты»" },
+        { "id": "c06.intro.004", "speaker": "granin", "emotion": "happy", "text": "Наши дети впервые катаются на заливе. По-человечески — разве это не счастье?", "direction": "по-дедовски тепло, с улыбкой в голосе" },
+        { "id": "c06.intro.005", "speaker": "nina", "emotion": "thinking", "text": "Одиннадцать лет там парило, голубчик. Я уж думала — так до моей пенсии и будет.", "direction": "мягко, напевно; выключает звук пультом" },
+        { "id": "c06.intro.006", "speaker": "nina", "emotion": "neutral", "text": "Дашу с утра на лёд погнали. Проверить, чтоб ребятня не провалилась.", "direction": "ворчливо, постукивает пальцем по столу" },
+        { "id": "c06.intro.007", "speaker": "nina", "emotion": "neutral", "text": "А тебе вон — гидропост открыли. И стройку «Глубины», и паспортный стол. Это всё не по описи, но раз дали — бери.", "direction": "с прищуром, будто сама выбила допуск" }
+      ],
+      "next": "ice_open"
+    },
+    {
+      "id": "ice_open",
+      "location": "polynya_ice_morning",
+      "music": "ice_wind",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.ice_open.001", "speaker": "dasha", "emotion": "determined", "text": "Так. Я на льду. Бодикамера пишет. Ноль, слышно?", "direction": "по рации, на морозе; дыхание сбивается, жуёт жвачку" },
+        { "id": "c06.ice_open.002", "speaker": "dasha", "emotion": "neutral", "text": "Лёд чёрный, как стекло. Двадцать два сантиметра. Под ногами дно видно, бр-р.", "direction": "быстро, проглатывает окончания" },
+        { "id": "c06.ice_open.003", "speaker": "alla", "emotion": "smug", "text": "«Подлёдный лов», мы в эфире. Город катается по бывшей полынье. Без комментариев — тоже комментарий.", "direction": "стрим с телефона; прокуренное контральто, быстро, колко" },
+        { "id": "c06.ice_open.004", "speaker": "dasha", "emotion": "angry", "text": "Мирошник, уберите телефон с моего льда.", "direction": "резко, не оборачиваясь" },
+        { "id": "c06.ice_open.005", "speaker": "alla", "emotion": "neutral", "text": "Ваш лёд, лейтенант, построила «Глубина». Я просто смотрю.", "direction": "лениво, выдыхает пар от электронной сигареты" },
+        { "id": "c06.ice_open.006", "speaker": "dasha", "emotion": "neutral", "text": "Ноль, спроси у своих табличек, с какого дня тут перестало парить. Мне надо знать, сколько лёд держит.", "direction": "по рации, деловито" }
+      ]
+    },
+    {
+      "id": "ice",
+      "location": "polynya_ice_old_pier",
+      "music": "ice_wind",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.ice.001", "speaker": "narrator", "text": "Старый причал. Даша идёт по льду с фонарём. Её бодикамера ведёт запись, телефон Аллы — свой эфир." },
+        { "id": "c06.ice.002", "speaker": "dasha", "emotion": "neutral", "text": "С пятнадцатого года, значит. Одиннадцать лет тут вода не стояла.", "direction": "по рации, на ходу" },
+        { "id": "c06.ice.003", "speaker": "dasha", "emotion": "determined", "text": "Так. Стоп. Под мной что-то есть. Свечу.", "direction": "резко останавливается; дыхание сбито" },
+        { "id": "c06.ice.004", "speaker": "narrator", "text": "Под ледяным стеклом, ровно над трубой сброса, — крыша легковушки. Номер читается сквозь лёд." },
+        { "id": "c06.ice.005", "speaker": "dasha", "emotion": "scared", "text": "Машина. Под водой. Номер — тэ, сто семнадцать, а, у.", "direction": "шёпотом, по буквам; пар изо рта" },
+        { "id": "c06.ice.006", "speaker": "alla", "emotion": "tired", "text": "Оператор, крупнее. Нет. Стой. Не надо крупнее.", "direction": "впервые без иронии, тихо" },
+        { "id": "c06.ice.007", "speaker": "dasha", "emotion": "determined", "text": "Ноль, пробей номер. Я вызываю водолазов. И всех с этого льда — вон.", "direction": "громко, командным голосом" }
+      ]
+    },
+    {
+      "id": "lift",
+      "location": "polynya_shore_noon",
+      "music": "ice_wind",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.lift.001", "speaker": "narrator", "text": "Полдень. Водолазы МЧС пилят лёд у оголовка. Лебёдка тянет серебристую «Нордику», с неё стекает чёрная вода." },
+        { "id": "c06.lift.002", "speaker": "dasha", "emotion": "neutral", "text": "В салоне один. Пристёгнут. Документы в куртке, раскисли, но читаются.", "direction": "по рации, ровно, как протокол" },
+        { "id": "c06.lift.003", "speaker": "dasha", "emotion": "determined", "text": "Сазонов Пётр Ильич. Тот самый «бухгалтер-беглец». Никуда он не бегал.", "direction": "жёстко, с паузой перед последней фразой" },
+        { "id": "c06.lift.004", "speaker": "narrator", "text": "Водолаз раскрывает ладонь: командирские часы, стекло целое. На крышке гравировка — «Пете — 20 лет вместе»." },
+        { "id": "c06.lift.005", "speaker": "alla", "emotion": "ashamed", "text": "Выключай эфир. Я сказала — выключай.", "direction": "тихо, оператору; голос садится" }
+      ],
+      "next": "shore"
+    },
+    {
+      "id": "shore",
+      "location": "polynya_shore_noon",
+      "music": "shore_silence",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.shore.001", "speaker": "valentina", "emotion": "hurt", "text": "…", "direction": "дыхание, без слов: узнаёт часы на ладони водолаза" },
+        { "id": "c06.shore.002", "speaker": "dasha", "emotion": "neutral", "text": "Валентина Сергеевна, вам нельзя за ленту, здесь…", "direction": "мягче обычного, обрывается" },
+        { "id": "c06.shore.003", "speaker": "valentina", "emotion": "hurt", "text": "…место происшествия. Я знаю, лейтенант. Это его часы.", "direction": "договаривает за Дашу; сухо, отчётливо, без дрожи" },
+        { "id": "c06.shore.004", "speaker": "valentina", "emotion": "sad", "text": "Она с четырёх лет акростихи писала.", "direction": "тихо, глядя на часы, будто себе" },
+        { "id": "c06.shore.005", "speaker": "valentina", "emotion": "sad", "text": "К этим часам открытку подписала. Сверху вниз, по первым буквам — «папа».", "direction": "учительская дикция; на слове «папа» — пауза" },
+        { "id": "c06.shore.006", "speaker": "dasha", "emotion": "hurt", "text": "Кто — она?", "direction": "растерянно, быстро" },
+        { "id": "c06.shore.007", "speaker": "valentina", "emotion": "neutral", "text": "Моя дочь. Вы её не застали.", "direction": "сухо; разворачивается и уходит по снегу" },
+        { "id": "c06.shore.008", "speaker": "narrator", "text": "Алла Мирошник опускает телефон. Эфир идёт уже без неё." },
+        { "id": "c06.shore.009", "speaker": "dasha", "emotion": "determined", "text": "Ноль. Машина стоит прямо на трубе сброса. Ровно на ней. Узнай, кто эту трубу сюда положил.", "direction": "по рации; злость вместо холода" }
+      ]
+    },
+    {
+      "id": "grave",
+      "location": "basement_b0_03_morning",
+      "music": "twist_low",
+      "lines": [
+        { "id": "c06.grave.001", "speaker": "mira", "emotion": "neutral", "text": "Найдено строк: одна. Изменение три к проекту сто семнадцать, двенадцатое марта две тысячи пятнадцатого года.", "direction": "ровно, чуть слишком дружелюбно" },
+        { "id": "c06.grave.002", "speaker": "nina", "emotion": "scared", "text": "Через три недели после той ночи. Сброс поставили ровно на причал.", "direction": "медленно, пальцы перестают стучать по столу" },
+        { "id": "c06.grave.003", "speaker": "nina", "emotion": "sad", "text": "Тёплая вода — ни льда, ни зевак, ни водолазов. Одиннадцать лет полынья, голубчик.", "direction": "напевно, тихо" },
+        { "id": "c06.grave.004", "speaker": "dasha", "emotion": "angry", "text": "Это не сброс. Это крышка. Полынья — это могила.", "direction": "по рации; рублено, на выдохе" },
+        { "id": "c06.grave.005", "speaker": "dasha", "emotion": "angry", "text": "«Экономия сорок один миллион». Красиво написал, сука.", "direction": "сквозь зубы" },
+        { "id": "c06.grave.006", "speaker": "nina", "emotion": "scared", "text": "Тише ты. Подпись — Гранина. Он теперь в мэры идёт.", "direction": "шёпотом, оглядываясь на дверь" },
+        { "id": "c06.grave.007", "speaker": "dasha", "emotion": "determined", "text": "Подпись — не убийство, знаю. Но заявитель в строке семь — Ким эс а. Береговая, четыре.", "direction": "быстро, деловито" },
+        { "id": "c06.grave.008", "speaker": "nina", "emotion": "thinking", "text": "Береговая… Дашенька, а ты ведь у нас тоже Ким?", "direction": "осторожно, по-матерински" },
+        { "id": "c06.grave.009", "speaker": "dasha", "emotion": "smug", "text": "Ким в городе — полсотни. Не начинайте, Нина Фёдоровна.", "direction": "слишком быстро, с усмешкой" },
+        { "id": "c06.grave.010", "speaker": "dasha", "emotion": "neutral", "text": "Ноль, пробей, кто там был прописан той ночью. Чтоб закрыть.", "direction": "отрывисто; отключает рацию раньше, чем договорила" }
+      ]
+    },
+    {
+      "id": "scrap",
+      "location": "basement_b0_03_morning",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c06.scrap.001", "speaker": "dasha", "emotion": "angry", "text": "Металлолом. С номерами и фарами, да?", "direction": "по рации, зло, коротко" },
+        { "id": "c06.scrap.002", "speaker": "nina", "emotion": "ashamed", "text": "Восемнадцатый год. Проверял… майор. Ты подпись-то видишь, голубчик.", "direction": "тихо, не договаривая фамилию" },
+        { "id": "c06.scrap.003", "speaker": "dasha", "emotion": "determined", "text": "Так. Стоп. Потом. Сначала Гранин.", "direction": "резко, будто отрезает" }
+      ]
+    },
+    {
+      "id": "last_evening",
+      "location": "basement_b0_03_morning",
+      "music": "twist_low",
+      "lines": [
+        { "id": "c06.last_evening.001", "speaker": "nina", "emotion": "scared", "text": "Звонок с работы — и через девять минут «гость едет». Вот тебе и весь вечер.", "direction": "медленно, вполголоса" },
+        { "id": "c06.last_evening.002", "speaker": "nina", "emotion": "scared", "text": "Приёмная директора… Это ж не наше дело, голубчик. Это всё не по описи.", "direction": "почти шёпотом, снимает очки" },
+        { "id": "c06.last_evening.003", "speaker": "mira", "emotion": "neutral", "text": "Карточка сохранена. Время в источнике приведено к местному.", "direction": "ровно, без паузы" }
+      ]
+    },
+    {
+      "id": "dream_open",
+      "location": "pier_lantern_night",
+      "music": "dream_lantern",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_open.001", "speaker": "narrator", "text": "Вечер. Мостки у бывшей полыньи. Фонарь качается на столбе, под ним — чёрный лёд и вырубленная прорубь." },
+        { "id": "c06.dream_open.002", "speaker": "dasha", "emotion": "neutral", "text": "Ты зачем здесь, Ноль? Отчёт можно и почтой.", "direction": "не оборачиваясь; жуёт жвачку" },
+        { "id": "c06.dream_open.003", "speaker": "dasha", "emotion": "smug", "text": "Жвачку будешь? Курить бросаю. Третий раз за год.", "direction": "с кривой усмешкой" },
+        { "id": "c06.dream_open.004", "speaker": "dasha", "emotion": "neutral", "text": "Ну. Что там в твоих табличках про Береговую? Давай, не тяни.", "direction": "быстро, будто хочет скорее отбыть" }
+      ],
+      "next": "dream"
+    },
+    {
+      "id": "dream",
+      "location": "pier_lantern_night",
+      "music": "dream_lantern",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream.003", "speaker": "dasha", "emotion": "neutral", "text": "Я в Створе не жила.", "direction": "уверенно, быстро; не врёт — не помнит", "lie": true },
+        { "id": "c06.dream.005", "speaker": "dasha", "emotion": "neutral", "text": "В ту ночь я спала.", "direction": "пожимает плечами, слишком легко", "lie": true },
+        { "id": "c06.dream.007", "speaker": "dasha", "emotion": "neutral", "text": "Папа ни про какие машины не говорил.", "direction": "твёрдо, с нажимом на «ни про какие»", "lie": true }
+      ],
+      "interrogation": {
+        "suspect": "dasha",
+        "mode": "ally",
+        "breakSteps": ["neutral", "angry", "hurt", "broken"],
+        "trustFlag": "dasha_trust",
+        "liveQuery": true,
+        "points": [
+          {
+            "line": "c06.dream.003",
+            "press": "dream_press_home",
+            "present": {
+              "prompt": "Где Даша жила в 2015 году?",
+              "correct": ["ev.c06.beregovaya"],
+              "cards": [{ "all": [{ "column": ["id", "person_id"], "eq": 3071 }, { "eq": "2009-03-01" }] }],
+              "success": "dream_b1",
+              "failure": "dream_miss"
+            }
+          },
+          {
+            "line": "c06.dream.005",
+            "press": "dream_press_night",
+            "present": {
+              "prompt": "Что опровергает «я спала»?",
+              "correct": [],
+              "cards": [
+                { "all": [{ "column": "reg_no", "eq": 3313 }] },
+                { "all": [{ "contains": "несовершеннолетней Ким Д. С." }] }
+              ],
+              "success": "dream_b2",
+              "failure": "dream_miss"
+            }
+          },
+          {
+            "line": "c06.dream.007",
+            "press": "dream_press_father",
+            "present": {
+              "prompt": "Кто сообщил про свет под водой?",
+              "correct": [],
+              "cards": [{ "all": [{ "contains": "Ким С. А." }, { "contains": "фары" }] }],
+              "success": "dream_b3",
+              "failure": "dream_miss"
+            }
+          }
+        ],
+        "doneScene": "dream_break"
+      }
+    },
+    {
+      "id": "dream_press_home",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_press_home.001", "speaker": "dasha", "emotion": "angry", "text": "Я городская. Створ — это для рыбаков и чаек.", "direction": "отмахивается, слишком быстро" },
+        { "id": "c06.dream_press_home.002", "speaker": "dasha", "emotion": "neutral", "text": "И воду я не люблю. Вот вообще.", "direction": "тише, глядя на лёд" }
+      ]
+    },
+    {
+      "id": "dream_press_night",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_press_night.001", "speaker": "dasha", "emotion": "neutral", "text": "Мне тринадцать было. Дети ночью спят, Ноль. Нормальные дети.", "direction": "с усмешкой, которая не получается" }
+      ]
+    },
+    {
+      "id": "dream_press_father",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_press_father.001", "speaker": "dasha", "emotion": "hurt", "text": "Папа рыбачил. Про сети говорил, про погоду, про то, где клюёт.", "direction": "тепло, впервые медленно" },
+        { "id": "c06.dream_press_father.002", "speaker": "dasha", "emotion": "neutral", "text": "Про машины — никогда. Его пять лет как нет, не трогай его.", "direction": "обрывает, снова быстро" }
+      ]
+    },
+    {
+      "id": "dream_miss",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_miss.001", "speaker": "dasha", "emotion": "hurt", "text": "Это не то. Ты в меня просто бумажками кидаешься?", "direction": "больно, тихо; без злости" },
+        { "id": "c06.dream_miss.002", "speaker": "dasha", "emotion": "neutral", "text": "Если уж бьёшь — бей точно.", "direction": "отворачивается к фонарю" }
+      ]
+    },
+    {
+      "id": "dream_b1",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_b1.001", "speaker": "dasha", "emotion": "angry", "text": "Береговая, четыре. С девятого года по шестнадцатый.", "direction": "читает с планшета, медленно" },
+        { "id": "c06.dream_b1.002", "speaker": "dasha", "emotion": "angry", "text": "Так. Стоп. Ну жила. До пятнадцати лет. Потом папа дом продал. Довольно?", "direction": "резко, защищаясь" }
+      ]
+    },
+    {
+      "id": "dream_b2",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_b2.001", "speaker": "dasha", "emotion": "hurt", "text": "«Схема места происшествия. Составлена несовершеннолетней Ким Дэ Эс, тринадцать лет».", "direction": "читает вслух, голос ломается на «тринадцать»" },
+        { "id": "c06.dream_b2.002", "speaker": "dasha", "emotion": "hurt", "text": "Я не помню, как это рисовала. А рука помнит. Причал. Свет.", "direction": "почти шёпотом, водит пальцем по воздуху" }
+      ]
+    },
+    {
+      "id": "dream_b3",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_b3.001", "speaker": "dasha", "emotion": "hurt", "text": "Заявитель — Ким Сергей Андреевич. Папа. Он звонил.", "direction": "медленно, каждое слово отдельно" },
+        { "id": "c06.dream_b3.002", "speaker": "dasha", "emotion": "hurt", "text": "А мне потом сказал: «Не было ничего, Дашка. Спи».", "direction": "голосом отца, ниже и мягче" }
+      ],
+      "choices": [
+        { "id": "first_evening", "text": "Эта строка у меня с первого вечера.", "requires": ["ev.c00.sokol_hangers"], "goto": "dream_pinned" },
+        { "id": "let_her", "text": "Промолчать. Пусть договорит.", "goto": "dream_quiet" }
+      ]
+    },
+    {
+      "id": "dream_pinned",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_pinned.001", "speaker": "dasha", "emotion": "hurt", "text": "Это у тебя с первого вечера на доске висит?", "direction": "бонусная реплика; ошарашенно, без злости" },
+        { "id": "c06.dream_pinned.002", "speaker": "dasha", "emotion": "angry", "text": "И всё это время — ни слова. Ладно. Правильно. Я б не поверила.", "direction": "быстро, сама себя перебивая" }
+      ]
+    },
+    {
+      "id": "dream_quiet",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_quiet.001", "speaker": "narrator", "text": "Ноль молчит. Даша смотрит на лёд, под которым одиннадцать лет горели фары." }
+      ]
+    },
+    {
+      "id": "dream_break",
+      "location": "pier_lantern_night",
+      "music": "dream_lantern",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_break.001", "speaker": "dasha", "emotion": "broken", "text": "Это я его разбудила. Фары под водой.", "direction": "пробой; тихо, без дыхания между фразами (в библии — c06.dream.011)" },
+        { "id": "c06.dream_break.002", "speaker": "dasha", "emotion": "broken", "text": "А потом дядя Лёва сказал — приснилось.", "direction": "почти детским голосом (в библии — c06.dream.012)" },
+        { "id": "c06.dream_break.003", "speaker": "dasha", "emotion": "broken", "text": "Он мне чай с баранками принёс. Посадил рисовать. Я нарисовала причал и свет.", "direction": "медленно, с паузами" },
+        { "id": "c06.dream_break.004", "speaker": "dasha", "emotion": "hurt", "text": "А утром — «приснилось, Дашенька». И я поверила. Одиннадцать лет верила.", "direction": "ровно, страшно ровно" },
+        { "id": "c06.dream_break.005", "speaker": "narrator", "text": "Фонарь над мостками качается. Даша не плачет — жуёт жвачку, будто от этого зависит лёд." }
+      ],
+      "choices": [
+        { "id": "tell", "text": "Дело Сазонова в пятнадцатом вёл Ратников. Твой дядя Лёва.", "flag": "dasha_knows_burial", "goto": "dream_tell" },
+        { "id": "not_now", "text": "Пойдём греться. Разберёмся утром.", "goto": "dream_silent" }
+      ]
+    },
+    {
+      "id": "dream_tell",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_tell.001", "speaker": "dasha", "emotion": "angry", "text": "Дядя Лёва.", "direction": "одно слово; долгая пауза после" },
+        { "id": "c06.dream_tell.002", "speaker": "dasha", "emotion": "broken", "text": "Он меня в полицию привёл. За руку. В девятнадцатом.", "direction": "тихо, не веря себе" },
+        { "id": "c06.dream_tell.003", "speaker": "dasha", "emotion": "determined", "text": "Ладно. Завтра я сама к нему зайду. Без меня его не трогай.", "direction": "собирается; голос снова рубленый" }
+      ],
+      "next": "dream_end"
+    },
+    {
+      "id": "dream_silent",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_silent.001", "speaker": "dasha", "emotion": "neutral", "text": "Утром. Ага. Утром всё понятнее.", "direction": "устало, почти благодарно" },
+        { "id": "c06.dream_silent.002", "speaker": "dasha", "emotion": "hurt", "text": "Спасибо, что не дожимаешь.", "direction": "тихо, в сторону" }
+      ],
+      "next": "dream_end"
+    },
+    {
+      "id": "dream_end",
+      "location": "pier_lantern_night",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.dream_end.001", "speaker": "narrator", "text": "Даша выплёвывает жвачку в снег и закуривает — впервые за месяц. Протокол ждёт на планшете." }
+      ]
+    },
+    {
+      "id": "outro",
+      "location": "pier_lantern_night",
+      "music": "dream_lantern",
+      "outdoor": true,
+      "lines": [
+        { "id": "c06.outro.001", "speaker": "mira", "emotion": "neutral", "text": "Сверено. Пять позиций.", "direction": "ровно, одной интонацией" },
+        { "id": "c06.outro.002", "speaker": "narrator", "text": "Протокол уходит в дело 15-0219. Впервые за одиннадцать лет у него новая страница." },
+        { "id": "c06.outro.003", "speaker": "nina", "emotion": "ashamed", "text": "Это всё не по описи, голубчик. Иди домой. Завтра будет хуже.", "direction": "по телефону; устало, без напева" },
+        { "id": "c06.outro.004", "speaker": "narrator", "text": "Ночь на мостках. Фонарь качается, лёд под ним молчит." }
+      ]
+    }
+  ]
+}

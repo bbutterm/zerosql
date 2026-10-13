@@ -1,0 +1,475 @@
+{
+  "id": "case-09-matryoshka",
+  "order": 9,
+  "act": 3,
+  "code": "Дело № 09",
+  "title": "Матрёшка",
+  "subtitle": "Кто стоит за «Щитом»",
+  "date": "2026-12-28 11:00",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-28 15:00"
+  },
+  "location": "ГУ МВД, холл и кабинет ОЦР",
+  "difficulty": "hard",
+  "concepts": [
+    "h.recursive",
+    "h.cycle_guard",
+    "h.running_total",
+    "h.frames",
+    "w.ownership"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log",
+    "doc_registry",
+    "cases",
+    "statements",
+    "outfall_temp",
+    "construction_docs",
+    "registrations",
+    "addresses",
+    "diver_reports",
+    "gs_comms_2015",
+    "gs_phonebook",
+    "properties",
+    "employment",
+    "accounts",
+    "hospital_admissions",
+    "door_access",
+    "purchases",
+    "messenger_events",
+    "phones",
+    "cron_jobs",
+    "company_owners",
+    "share_deals",
+    "contracts",
+    "grant_requests",
+    "migration_jobs",
+    "bank_statements"
+  ],
+  "newTables": [
+    "company_owners",
+    "share_deals",
+    "contracts",
+    "grant_requests",
+    "migration_jobs",
+    "bank_statements"
+  ],
+  "briefing": "28 декабря, 11:00. В холле ГУ ленточка и камеры: Гранин лично привёз новые серверы для миграции и новогодние подарки от фонда «Тёплый берег». До финализации «Сокола» — 14 дней, до выборов — 20.\n\nРатников звонит из кардиологии: «Щит» гасил займ Лыкова, «Тайга» «Щита» была на Полярной в ночь смерти Ирины. Кто стоит за «Щитом»?\n\nЗЕРКАЛО открыло реестр владельцев «Сияния» и его соседей: company_owners, share_deals, contracts, grant_requests, расписание миграции migration_jobs. Банк «Северный кредит» прислал ответ на запрос ОЦР — bank_statements.\n\nОдно правило на этот день: журнал запросов читают не только свои. Фамилий в запросах не пиши.",
+  "starterSql": "-- Реестр владельцев: кто какой долей какой компании владеет\n-- owner_type = 'company' — владелец тоже компания (её id в owner_id)\nSELECT o.company_id, c.name, o.owner_type, o.owner_id, o.share, o.since, o.until\nFROM company_owners o\nJOIN companies c ON c.id = o.company_id\nWHERE c.name LIKE '%«Щит»%';",
+  "introScene": "intro",
+  "objectives": [
+    {
+      "id": "o9_1",
+      "order": 1,
+      "task": "Ратников: «Кто держит «Щит», коллега? Его владелец — тоже чья-то собственность. Поднимись от «Щита» до самого верха, до людей: компания, владелец, доля. И ни одной фамилии в запросе».",
+      "concept": "h.recursive",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Цепочка владельцев «Щита» поднята до людей.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT c.name AS компания, COALESCE(oc.name, p.full_name) AS владелец, o.share AS доля FROM company_owners o JOIN companies c ON c.id = o.company_id LEFT JOIN companies oc ON o.owner_type = 'company' AND oc.id = o.owner_id LEFT JOIN persons p ON o.owner_type = 'person' AND p.id = o.owner_id WHERE o.company_id IN (12, 13, 14, 17) AND o.until IS NULL",
+            "aliases": {
+              "компания": ["company", "name", "company_name"],
+              "владелец": ["owner", "owner_name"],
+              "доля": ["share", "pct"]
+            }
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT c.name AS компания, o.owner_id AS владелец, o.share AS доля FROM company_owners o JOIN companies c ON c.id = o.company_id WHERE o.company_id IN (12, 13, 14, 17) AND o.until IS NULL"
+          },
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT o.company_id, o.owner_id, o.share FROM company_owners o WHERE o.company_id IN (12, 13, 14, 17) AND o.until IS NULL"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_1.001",
+          "text": "Ну-с, коллега. «Щит» кому-то принадлежит. Тот — ещё кому-то. Иди вверх, пока не упрёшься в живых людей."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_1.002",
+          "text": "Цепочка неизвестной длины — WITH RECURSIVE: стартовая строка (владельцы «Щита»), UNION ALL, шаг — company_owners того, кто был владельцем на прошлом шаге. Нынешние владельцы — until IS NULL, в обеих частях. См. «Рекурсия: WITH RECURSIVE»."
+        },
+        {
+          "by": "mira",
+          "text": "WITH RECURSIVE up(company_id, owner_type, owner_id, share) AS (\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share\n  FROM company_owners o JOIN companies c ON c.id = o.company_id\n  WHERE c.name LIKE ___ AND o.until IS NULL\n  UNION ALL\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share\n  FROM up JOIN company_owners o\n    ON up.owner_type = 'company' AND o.company_id = ___ AND ___\n)\nSELECT * FROM up;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_1.004",
+          "text": "Монитор пищит, коллега, а я пишу. Одну строку я тут точно наврал — найди:\nWITH RECURSIVE up(company_id, owner_type, owner_id, share) AS (\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share\n  FROM company_owners o JOIN companies c ON c.id = o.company_id\n  WHERE c.name LIKE '%«Щит»%' AND o.until IS NULL\n  UNION ALL\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share\n  FROM up JOIN company_owners o\n    ON up.owner_type = 'company' AND o.company_id = up.owner_id\n)\nSELECT * FROM up;"
+        }
+      ],
+      "success": "Пять строк, четыре этажа. «Щит» ← «Ладога Инвест» ← «Северный кордон» ← Kordon Holdings Ltd. Наверху двое: 70 % и 30 %. Фамилию ты не набирал — её назвали данные.",
+      "evidence": {
+        "id": "ev.c09.matryoshka",
+        "title": "Матрёшка",
+        "text": "ЧОП «Щит» ← ООО «Ладога Инвест» (100 %) ← ООО «Северный кордон» (100 %) ← Kordon Holdings Ltd (100 %) ← Гранин Эдуард Витальевич (70 %) и Елисеев Кирилл Андреевич (30 %, номинал). Других владельцев на пути нет.",
+        "kind": "record"
+      },
+      "sceneAfter": "top",
+      "solution": "WITH RECURSIVE up(company_id, owner_type, owner_id, share, depth) AS (\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share, 1\n  FROM company_owners o JOIN companies c ON c.id = o.company_id\n  WHERE c.name LIKE '%«Щит»%' AND o.until IS NULL\n  UNION ALL\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share, up.depth + 1\n  FROM up JOIN company_owners o\n    ON up.owner_type = 'company' AND o.company_id = up.owner_id AND o.until IS NULL\n)\nSELECT up.depth, c.name AS компания,\n       COALESCE(oc.name, p.full_name) AS владелец, up.owner_id, up.share AS доля\nFROM up\nJOIN companies c ON c.id = up.company_id\nLEFT JOIN companies oc ON up.owner_type = 'company' AND oc.id = up.owner_id\nLEFT JOIN persons p ON up.owner_type = 'person' AND p.id = up.owner_id\nORDER BY up.depth, доля DESC;"
+    },
+    {
+      "id": "o9_2",
+      "order": 2,
+      "task": "Ратников: «Теперь деньги. Что группа платила «Щиту» в ноябре — каждый платёж, с датой и суммой. ЗЕРКАЛУ не верь на слово: банк прислал свою выписку».",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Ноябрьские платежи «Щиту» найдены.",
+        "rules": [
+          {
+            "type": "compound",
+            "successMessage": "Платежи «Щиту» за ноябрь.",
+            "rules": [
+              { "type": "column_values", "columns": ["amount", "сумма"], "values": [180000, 300000], "mode": "superset" },
+              { "type": "row_count", "expected": 3, "comparison": "lte" }
+            ]
+          },
+          { "type": "cell_value", "value": 480000 }
+        ]
+      },
+      "hints": [
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_2.001",
+          "text": "Кто платит «Щиту» — видно по счёту «Щита». Бери ноябрь целиком, с первого по тридцатое. И глянь, что пишет банк."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_2.002",
+          "text": "Платежи есть в transactions (account_id — счёт получателя, counterparty — плательщик) и в выписке банка bank_statements (payer → payee). Месяц — диапазон: ts >= '2026-11-01 00:00:00' AND ts < '2026-12-01 00:00:00'."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT ts, payer, payee, amount, purpose\nFROM bank_statements\nWHERE payee = ___\n  AND ts >= ___ AND ts < ___\nORDER BY ts;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_2.004",
+          "text": "Ну-с, вот как я бы искал. Только где-то тут ошибка, глаза уже не те:\nSELECT ts, payer, payee, amount, purpose\nFROM bank_statements\nWHERE payee = 'ЧОП «Щит»' AND ts LIKE '2026-11'\nORDER BY ts;"
+        }
+      ],
+      "success": "Пятого — 180 000, «абонентская охрана», как каждый месяц. Двадцатого — 300 000, «доп. соглашение № 7». Через два дня после того, как сбили Ирину.",
+      "evidence": {
+        "id": "ev.c09.payment_300",
+        "title": "300 000, доп. соглашение № 7",
+        "text": "20.11.2026 14:05 ООО «Ладога Инвест» → ЧОП «Щит»: 300 000 ₽, «доп. соглашение № 7». Обычный платёж — 180 000 ₽ каждое 5-е число, «абонентская охрана». Есть и в ЗЕРКАЛЕ, и в выписке банка «Северный кредит».",
+        "kind": "record"
+      },
+      "sceneAfter": "money",
+      "solution": "SELECT ts, payer, payee, amount, purpose\nFROM bank_statements\nWHERE payee = 'ЧОП «Щит»'\n  AND ts >= '2026-11-01 00:00:00' AND ts < '2026-12-01 00:00:00'\nORDER BY ts;"
+    },
+    {
+      "id": "o9_3",
+      "order": 3,
+      "task": "Ратников: «А теперь вниз, коллега. От Kordon Holdings — всё, чем они владеют, и всё, чем владеют те. С кем из живых людей эта семейка подписывала договоры? Осторожно: там есть пара, которые держат друг друга».",
+      "concept": "h.cycle_guard",
+      "validation": {
+        "type": "column_values",
+        "columns": ["doc_no", "договор", "номер"],
+        "values": ["ТБ-2026/117"],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_3.001",
+          "text": "Вниз — это наоборот: ищи тех, у кого владелец — уже найденная компания. А договоры — в contracts. С людьми — где есть person_id."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_3.002",
+          "text": "«Ладога-Логистик» и «Кордон-Сервис» владеют друг другом. UNION ALL на таком цикле не остановится и упрётся в таймаут. Используйте UNION без столбца глубины или ограничьте глубину: WHERE depth < 10. См. «Защита от циклов»."
+        },
+        {
+          "by": "mira",
+          "text": "WITH RECURSIVE grp(id) AS (\n  SELECT id FROM companies WHERE name = ___\n  UNION\n  SELECT o.company_id\n  FROM grp JOIN company_owners o\n    ON o.owner_type = 'company' AND o.owner_id = ___\n)\nSELECT k.*\nFROM grp JOIN contracts k ON k.company_id = grp.id\nWHERE ___;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_3.004",
+          "text": "Коллега, проверь за стариком. Одно условие я, кажется, перевернул:\nWITH RECURSIVE grp(id) AS (\n  SELECT id FROM companies WHERE name = 'Kordon Holdings Ltd'\n  UNION\n  SELECT o.company_id\n  FROM grp JOIN company_owners o\n    ON o.owner_type = 'company' AND o.owner_id = grp.id\n)\nSELECT k.*\nFROM grp JOIN contracts k ON k.company_id = grp.id\nWHERE k.person_id IS NULL;"
+        }
+      ],
+      "success": "Один договор с живым человеком на всю группу. ТБ-2026/117, фонд «Тёплый берег», 25.11.2026. Исполнитель — ты.",
+      "evidence": {
+        "id": "ev.c09.contract",
+        "title": "Договор ТБ-2026/117",
+        "text": "Фонд «Тёплый берег» (← ПАО «Сияние» ← Kordon Holdings Ltd) — исполнитель: ты. «Грант на ставку аналитика ОЦР на период миграции», 25.11.2026. П. 4.2: персональная ответственность за полноту переноса архивных данных при финализации. П. 4.3: фонд гасит твой образовательный кредит после акта финализации.",
+        "kind": "document"
+      },
+      "sceneAfter": "twist",
+      "solution": "WITH RECURSIVE grp(id) AS (\n  SELECT id FROM companies WHERE name = 'Kordon Holdings Ltd'\n  UNION\n  SELECT o.company_id\n  FROM grp JOIN company_owners o\n    ON o.owner_type = 'company' AND o.owner_id = grp.id\n)\nSELECT k.doc_no, c.name AS компания, k.counterparty_text, k.subject, k.signed_at, k.clause\nFROM grp\nJOIN companies c ON c.id = grp.id\nJOIN contracts k ON k.company_id = grp.id\nWHERE k.person_id IS NOT NULL;"
+    },
+    {
+      "id": "o9_4",
+      "order": 4,
+      "task": "Ратников: «Деньги переселенцев Старого Створа — 31 820 000. В пятнадцатом Kordon скупал акции «Сияния», сделка за сделкой. Складывай их по порядку. На какой сделке покупки перевалили эту сумму?»",
+      "concept": "h.running_total",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Сделка, на которой итог Kordon перевалил 31 820 000, найдена.",
+        "rules": [
+          { "type": "cell_value", "value": "СД-0147" },
+          { "type": "not", "rule": { "type": "cell_value", "value": "СД-0146" }, "message": "СД-0146 в результате быть не должно: её итог — 31 700 000, порог она не пробила. Проверьте рамку окна." },
+          { "type": "row_count", "expected": 3, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c09_o9_4.001",
+          "text": "По одной сделке не видно, голубчик. Складывай, как в кассовой книге: каждая строчка — плюс всё, что было до неё."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_4.002",
+          "text": "Нарастающий итог — SUM(amount) OVER (ORDER BY …). Рамка по умолчанию — RANGE: строки с одинаковым ключом сортировки получают общий итог. Нужны однозначный порядок и ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW. См. «Рамки окна: ROWS и RANGE»."
+        },
+        {
+          "by": "mira",
+          "text": "WITH t AS (\n  SELECT deal_no, deal_date, amount,\n         SUM(amount) OVER (ORDER BY ___, ___\n                           ROWS BETWEEN ___ AND ___) AS итог\n  FROM share_deals\n  WHERE buyer_company_id = (SELECT id FROM companies WHERE name = ___)\n)\nSELECT * FROM t WHERE итог >= ___ ORDER BY итог LIMIT 1;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_4.004",
+          "text": "Я так считал, коллега, и у меня вышло не то. Одно место тут кривое:\nWITH t AS (\n  SELECT deal_no, deal_date, amount,\n         SUM(amount) OVER (ORDER BY deal_date) AS итог\n  FROM share_deals\n  WHERE buyer_company_id = (SELECT id FROM companies WHERE name = 'Kordon Holdings Ltd')\n)\nSELECT * FROM t WHERE итог >= 31820000 ORDER BY итог LIMIT 1;"
+        }
+      ],
+      "success": "СД-0147, 07.12.2015: итог Kordon — 32 100 000. До неё — 31 700 000. Деньги переселенцев легли в контрольный пакет «Сияния».",
+      "evidence": {
+        "id": "ev.c09.deal_0147",
+        "title": "Сделка СД-0147",
+        "text": "Нарастающий итог покупок Kordon Holdings Ltd: после СД-0145 — 31 500 000, СД-0146 (07.12.2015, 200 000) — 31 700 000, СД-0147 (07.12.2015, 400 000) — 32 100 000. Порог 31 820 000 пробит сделкой СД-0147.",
+        "kind": "record"
+      },
+      "sceneAfter": "alla_offer",
+      "solution": "WITH kordon AS (\n  SELECT deal_no, deal_date, amount,\n         SUM(amount) OVER (ORDER BY deal_date, deal_no\n                           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS итог\n  FROM share_deals\n  WHERE buyer_company_id = (SELECT id FROM companies WHERE name = 'Kordon Holdings Ltd')\n)\nSELECT deal_no, deal_date, amount, итог\nFROM kordon\nWHERE итог >= 31820000\nORDER BY итог\nLIMIT 1;"
+    },
+    {
+      "id": "o9_5",
+      "order": 5,
+      "task": "Мельник в общем чате: «Коллеги, синхронизируемся по одиннадцатому января». Что назначено на одиннадцатое января и кто за это отвечает?",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT run_at, action, target, responsible_login FROM migration_jobs WHERE run_at >= '2027-01-11 00:00:00'"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c09_o9_5.001",
+          "text": "Расписание у айтишников своё, голубчик, в migration_jobs. Ты на даты гляди, а не на номера."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_5.002",
+          "text": "run_at хранится как 'YYYY-MM-DD HH:MM:SS'. Равенство с '2027-01-11' не найдёт строк со временем. Нужен диапазон или date(run_at). См. «Даты и время»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT run_at, action, target, responsible_login, status\nFROM migration_jobs\nWHERE run_at >= ___\nORDER BY run_at;"
+        },
+        {
+          "by": "ratnikov",
+          "line": "hint.c09_o9_5.004",
+          "text": "Ну-с, вот. Сам гляжу — пусто. Где-то я дату не так записал:\nSELECT run_at, action, target, responsible_login, status\nFROM migration_jobs\nWHERE run_at = '2027-01-11'\nORDER BY run_at;"
+        }
+      ],
+      "success": "Четыре строки на 11.01: 12:20, 12:40 и 13:00 — DROP трёх staging-таблиц «Сокола», в 13:00 — FINALIZE. Ответственный у всех — nol. Это твой логин.",
+      "evidence": {
+        "id": "ev.c09.finalization",
+        "title": "Финализация: 11.01 13:00 · ответственный: nol",
+        "text": "migration_jobs 17–20, 2027-01-11: 12:20 DROP sokol_stage_registry, 12:40 DROP sokol_stage_statements, 13:00 DROP sokol_stage_persons, 13:00 FINALIZE «Сокол → ПБД». responsible_login — nol, статус «запланировано».",
+        "kind": "record"
+      },
+      "sceneAfter": "schedule",
+      "solution": "SELECT run_at, action, target, responsible_login, status\nFROM migration_jobs\nWHERE run_at >= '2027-01-11 00:00:00'\nORDER BY run_at, id;"
+    },
+    {
+      "id": "o9_3b",
+      "order": 101,
+      "optional": true,
+      "task": "★ Ставку тебе оплатил фонд. А кто фонд об этом попросил? Заявки в «Тёплый берег» за ноябрь — с именем заявителя.",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Заявка ОЦР в фонд найдена.",
+        "rules": [
+          { "type": "cell_value", "value": "требуется кандидат без опыта работы в органах" },
+          { "type": "any_of", "successMessage": "Заявитель назван.", "rules": [
+            { "type": "cell_value", "value": "Ратников Лев Борисович" },
+            { "type": "cell_value", "value": "Ратников Л. Б." }
+          ] },
+          { "type": "row_count", "expected": 30, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c09_o9_3b.001",
+          "text": "Фонд деньги просто так не даёт, голубчик. Сначала бумажка-просьба. Глянь, кто просил в ноябре."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_3b.002",
+          "text": "Заявки — grant_requests, заявитель — requester_person_id. Имя — через JOIN persons. Фильтр по requested_at — диапазоном дат."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT g.requested_at, p.full_name, g.org_text, g.request_text, g.status\nFROM grant_requests g JOIN persons p ON p.id = ___\nWHERE g.requested_at >= ___\nORDER BY g.requested_at;"
+        }
+      ],
+      "success": "20.11.2026, 10:15. ГУ МВД, ОЦР: «требуется кандидат без опыта работы в органах». Заявитель — Ратников Л. Б. В тот же день, в 14:05, «Щит» получил 300 000.",
+      "evidence": {
+        "id": "ev.c09.request",
+        "title": "Заявка: «кандидат без опыта»",
+        "text": "grant_requests, 20.11.2026 10:15: Ратников Лев Борисович, «ГУ МВД, ОЦР» — «требуется кандидат без опыта работы в органах», исполнено. Через пять дней подписан договор ТБ-2026/117.",
+        "kind": "document"
+      },
+      "sceneAfter": "request",
+      "solution": "SELECT g.requested_at, p.full_name, g.org_text, g.request_text, g.status\nFROM grant_requests g\nJOIN persons p ON p.id = g.requester_person_id\nWHERE g.requested_at >= '2026-11-01 00:00:00' AND g.requested_at < '2026-12-01 00:00:00'\nORDER BY g.requested_at;"
+    },
+    {
+      "id": "o9_6s",
+      "order": 102,
+      "optional": true,
+      "task": "★ Коллекторы «Возврат» каждый месяц кому-то платят ровно 60 000 «за консультации». Кому — по имени владельца счёта?",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Получатель денег «Возврата» найден.",
+        "rules": [
+          { "type": "any_of", "successMessage": "Получатель назван.", "rules": [
+            { "type": "cell_value", "value": "ИП Мельник Е. А." },
+            { "type": "cell_value", "value": "Мельник Елена Андреевна" }
+          ] },
+          { "type": "row_count", "expected": 40, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c09_o9_6s.001",
+          "text": "Платёж приходит на счёт, а у счёта есть хозяин, голубчик. Хозяева — в accounts."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c09_o9_6s.002",
+          "text": "transactions.account_id — счёт получателя, counterparty — плательщик. JOIN accounts по id счёта даст holder_name. Название плательщика записано полностью: 'ООО «Возврат»' — точное равенство с 'Возврат' ничего не найдёт."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT t.ts, t.amount, t.purpose, a.holder_name\nFROM transactions t JOIN accounts a ON a.id = ___\nWHERE t.counterparty = ___\nORDER BY t.ts;"
+        }
+      ],
+      "success": "С июня 2025-го — по 60 000 в месяц на ИП Мельник Е. А. «Консультационные услуги». Елена Андреевна Мельник. Жена.",
+      "evidence": {
+        "id": "ev.c09.vozvrat",
+        "title": "«Возврат» → ИП Мельник Е. А.",
+        "text": "ООО «Возврат» (коллекторы) → ИП Мельник Е. А. (Мельник Елена Андреевна): по 60 000 ₽ ежемесячно с 10.06.2025, «консультационные услуги». Чужая матрёшка — к «Щиту» отношения не имеет.",
+        "kind": "record"
+      },
+      "sceneAfter": "melnik",
+      "solution": "SELECT t.ts, t.amount, t.purpose, a.holder_name, p.full_name\nFROM transactions t\nJOIN accounts a ON a.id = t.account_id\nLEFT JOIN persons p ON p.id = a.holder_person_id\nWHERE t.counterparty = 'ООО «Возврат»'\nORDER BY t.ts;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Конечный бенефициар «Щита» — {owner} ({share} %).",
+      "{paid_at} группа заплатила «Щиту» {amount} ₽.",
+      "Ставку аналитика оплатили по договору {contract}.",
+      "Ответственный за финализацию — {responsible}.",
+      "Деньги переселенцев покрыты сделкой {deal}."
+    ],
+    "blanks": [
+      {
+        "id": "owner",
+        "kind": "person",
+        "options": ["Гранин Эдуард Витальевич", "Елисеев Кирилл Андреевич", "Бурцев Валерий Николаевич", "Мельник Елена Андреевна"],
+        "answer": "Гранин Эдуард Витальевич",
+        "aliases": {
+          "Гранин Эдуард Витальевич": [1001, "Гранин Э. В."],
+          "Елисеев Кирилл Андреевич": [3305, "Елисеев К. А."],
+          "Бурцев Валерий Николаевич": [2214, "Бурцев В. Н.", "взнос наличными, вноситель Бурцев В. Н."],
+          "Мельник Елена Андреевна": ["ИП Мельник Е. А.", "Мельник Е. А."]
+        }
+      },
+      {
+        "id": "share",
+        "kind": "number",
+        "options": ["30", "51", "70", "100"],
+        "answer": "70"
+      },
+      {
+        "id": "paid_at",
+        "kind": "datetime",
+        "precision": "day",
+        "options": ["2026-11-05", "2026-11-12", "2026-11-20", "2026-12-05"],
+        "answer": "2026-11-20"
+      },
+      {
+        "id": "amount",
+        "kind": "number",
+        "options": ["180000", "300000", "380000", "480000"],
+        "answer": "300000"
+      },
+      {
+        "id": "contract",
+        "kind": "text",
+        "options": ["ТБ-2026/112", "ТБ-2026/117", "ТБ-2026/118"],
+        "answer": "ТБ-2026/117"
+      },
+      {
+        "id": "responsible",
+        "kind": "text",
+        "options": ["nol", "k.melnik", "i.valts"],
+        "answer": "nol"
+      },
+      {
+        "id": "deal",
+        "kind": "text",
+        "options": ["СД-0145", "СД-0146", "СД-0147"],
+        "answer": "СД-0147"
+      }
+    ],
+    "successScene": "finale",
+    "failureLines": [
+      "Ратников: «Не сходится, коллега. Матрёшку открывают по одной, сверху вниз».",
+      "МИРА: «Не сходится. Проверьте даты: точность — день».",
+      "Ратников: «Ну-с. Деньги не врут, врут подписи. Перечитай выписку»."
+    ]
+  },
+  "events": [
+    { "id": "bank_reply", "atTime": "2026-12-28 11:00", "patch": "late.bank_statements" },
+    { "id": "dont_run", "after": { "flag": "watcher_warned" }, "when": { "tokha_turned": false }, "scene": "call_rat" },
+    { "id": "dont_run_tokha", "after": { "flag": "watcher_warned" }, "when": { "tokha_turned": true }, "scene": "call_tokha" },
+    { "id": "watcher", "after": { "flag": "watcher_tripped" }, "patch": "c09.watcher", "scene": "watcher" },
+    { "id": "bastion", "after": { "scene": "final_call" }, "when": { "watcher_tripped": true }, "scene": "bastion" }
+  ],
+  "outroScene": "outro"
+}

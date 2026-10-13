@@ -1,0 +1,88 @@
+[
+  {
+    "id": "h.aggregates",
+    "title": "Агрегаты: COUNT, SUM, AVG, MIN, MAX",
+    "summary": "Агрегат сворачивает много строк в одно значение: сколько их (`COUNT`), сумма (`SUM`), среднее (`AVG`), наименьшее (`MIN`), наибольшее (`MAX`). Без `GROUP BY` результат — ровно одна строка.",
+    "syntax": "SELECT COUNT(*), MIN(столбец), MAX(столбец)\nFROM таблица\nWHERE условие;",
+    "example": "SELECT COUNT(*), MIN(reported_at), MAX(reported_at)\nFROM incidents\nWHERE district = 'Шахтный';",
+    "pitfalls": [
+      "`COUNT(*)` считает строки, `COUNT(столбец)` — только строки, где в столбце не NULL.",
+      "`SUM`, `AVG`, `MIN`, `MAX` пропускают NULL. Но значение-заглушку вроде −999 они честно учитывают: отсейте его в WHERE.",
+      "`MIN` и `MAX` работают и со временем: в ISO-строке самый ранний момент — наименьший.",
+      "Агрегат вместе с обычным столбцом без GROUP BY SQLite не запрещает, но значение такого столбца берётся из случайной строки. Не полагайтесь на него."
+    ]
+  },
+  {
+    "id": "h.round",
+    "title": "Округление: ROUND",
+    "summary": "`ROUND(x, n)` округляет число до n знаков после запятой; без n — до целого. Удобно для средних, у которых хвост из десятка цифр.",
+    "syntax": "SELECT ROUND(AVG(столбец), 1)\nFROM таблица;",
+    "example": "SELECT camera_id, ROUND(AVG(confidence), 2) AS avg_conf\nFROM plate_reads\nGROUP BY camera_id;",
+    "pitfalls": [
+      "В SQLite `ROUND` всегда возвращает дробное число: `ROUND(19082.5)` — это `19083.0`, а не `19083`.",
+      "Половина округляется от нуля: `ROUND(2.5)` = 3.0, `ROUND(-2.5)` = −3.0.",
+      "Округляйте в конце: сначала `AVG`, потом `ROUND`. Средняя из округлённых — уже другое число."
+    ]
+  },
+  {
+    "id": "h.alias",
+    "title": "Имена столбцов: AS",
+    "summary": "`AS` даёт столбцу результата понятное имя: `COUNT(*) AS n`. Под этим именем на столбец можно сослаться в `ORDER BY`.",
+    "syntax": "SELECT выражение AS имя\nFROM таблица\nORDER BY имя;",
+    "example": "SELECT kind, COUNT(*) AS calls\nFROM incidents\nGROUP BY kind\nORDER BY calls DESC;",
+    "pitfalls": [
+      "Имя пишется латиницей без пробелов: `first_pay`, а не «первый платёж». С пробелами — только в двойных кавычках.",
+      "В WHERE алиас ещё не существует: WHERE выполняется раньше SELECT. Повторите выражение целиком.",
+      "Без `AS` столбец называется текстом выражения: `MIN(ts)` — читать такую таблицу неудобно."
+    ]
+  },
+  {
+    "id": "h.group_by",
+    "title": "Группировка: GROUP BY",
+    "summary": "`GROUP BY` делит строки на группы с одинаковым значением столбца, и агрегаты считаются в каждой группе отдельно. Одна группа — одна строка результата.",
+    "syntax": "SELECT столбец, COUNT(*), MIN(…), MAX(…)\nFROM таблица\nGROUP BY столбец;",
+    "example": "SELECT district, COUNT(*) AS calls, MAX(reported_at) AS last_call\nFROM incidents\nGROUP BY district;",
+    "pitfalls": [
+      "Строк в результате столько, сколько разных значений, а не сколько исходных строк.",
+      "Группы делятся по точному совпадению текста: «СФР» и «СФР » с пробелом — две группы.",
+      "WHERE отбирает строки до группировки. Хотите считать только поступления — `WHERE amount > 0` до `GROUP BY`."
+    ]
+  },
+  {
+    "id": "h.having",
+    "title": "Фильтр групп: HAVING",
+    "summary": "`HAVING` отбирает уже готовые группы по значению агрегата: «только те, где строк не меньше 12». WHERE так не умеет: он работает до группировки.",
+    "syntax": "SELECT столбец, COUNT(*) AS n\nFROM таблица\nGROUP BY столбец\nHAVING COUNT(*) >= 12;",
+    "example": "SELECT district, COUNT(*) AS n\nFROM incidents\nGROUP BY district\nHAVING COUNT(*) >= 100;",
+    "pitfalls": [
+      "`WHERE COUNT(*) > 1` — ошибка `misuse of aggregate`. Условие на агрегат — только в HAVING.",
+      "Сортировка по среднему не заменяет порог: разовый платёж на 25 000 «обгонит» ежемесячные по 7 000. Сначала HAVING по количеству, потом ORDER BY.",
+      "Порядок частей запроса: WHERE → GROUP BY → HAVING → ORDER BY → LIMIT."
+    ]
+  },
+  {
+    "id": "h.count_distinct",
+    "title": "Разные значения: COUNT(DISTINCT …)",
+    "summary": "`COUNT(DISTINCT столбец)` считает, сколько в столбце разных значений. `COUNT(*)` считает строки.",
+    "syntax": "SELECT COUNT(DISTINCT столбец)\nFROM таблица;",
+    "example": "SELECT COUNT(DISTINCT plate)\nFROM plate_reads\nWHERE camera_id = 12;",
+    "pitfalls": [
+      "NULL в число разных значений не входит.",
+      "`COUNT(DISTINCT a, b)` в SQLite не работает: DISTINCT внутри COUNT берёт только один столбец.",
+      "Разное написание — разные значения: «Сайгак» и «САЙГАК» посчитаются дважды."
+    ]
+  },
+  {
+    "id": "w.sentinels",
+    "title": "Карточка мира: −999 — это не температура",
+    "summary": "Датчики «Сияние.Дом» при сбое пишут заглушку −999 вместо NULL. Это «нет данных», а не мороз. `MIN` такую строку выберет первой, `AVG` — уронит.",
+    "syntax": "SELECT MIN(temp_c)\nFROM heat_readings\nWHERE temp_c <> -999;",
+    "example": "SELECT flat_id, ts, temp_c\nFROM heat_readings\nWHERE temp_c = -999;",
+    "pitfalls": [
+      "Заглушку отсекают в WHERE до агрегата: `temp_c <> -999` или `temp_c > -999`.",
+      "`temp_c <> 999` без минуса ничего не отсеет.",
+      "Заглушки бывают и в других системах: 0, 9999, '1900-01-01'. Если значение выглядит невозможным — проверьте, не служебное ли оно.",
+      "LIKE в SQLite не уравнивает ё и е: `'%Теплый%'` не найдёт «Тёплый берег». Пишите как в данных или ищите по части без ё: `'%берег%'`."
+    ]
+  }
+]

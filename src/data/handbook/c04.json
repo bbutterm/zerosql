@@ -1,0 +1,102 @@
+[
+  {
+    "id": "h.left_join",
+    "title": "LEFT JOIN: все строки слева",
+    "summary": "`LEFT JOIN` берёт **каждую** строку левой таблицы. Если пары справа нет, её столбцы приходят как `NULL`. Так видно и тех, у кого «ничего нет».",
+    "syntax": "SELECT …\nFROM левая l\nLEFT JOIN правая r ON r.ключ = l.ключ;",
+    "example": "SELECT c.id, c.name, r.plate, r.read_at\nFROM cameras c\nLEFT JOIN plate_reads r ON r.camera_id = c.id\n  AND r.read_at >= '2026-12-10 00:00:00'\n  AND r.read_at <  '2026-12-11 00:00:00';\n-- камеры без единого считывания за 10.12 тоже в списке: plate и read_at у них NULL",
+    "pitfalls": [
+      "Порядок важен: `staff LEFT JOIN persons` и `persons LEFT JOIN staff` — разные вопросы. Слева та таблица, чьи строки нельзя потерять.",
+      "Условие на **правую** таблицу в `WHERE` превращает LEFT JOIN обратно в INNER: строки с `NULL` справа его не проходят. Такие условия пишут в `ON`.",
+      "Строк в результате не меньше, чем в левой таблице. Больше — если справа несколько пар на одну строку.",
+      "`RIGHT JOIN` и `FULL JOIN` SQLite понимает с версии 3.39, но читать их труднее. Обычно таблицы просто меняют местами."
+    ]
+  },
+  {
+    "id": "h.anti_join",
+    "title": "Анти-джойн: у кого пары нет",
+    "summary": "Чтобы найти строки **без** пары, делают LEFT JOIN и оставляют только те, где ключ правой таблицы `IS NULL`. Это анти-джойн: сироты, пропуски, «мёртвые души».",
+    "syntax": "SELECT l.*\nFROM левая l\nLEFT JOIN правая r ON r.ключ = l.ключ\nWHERE r.ключ IS NULL;",
+    "example": "SELECT c.id, c.name, c.district\nFROM cameras c\nLEFT JOIN plate_reads r ON r.camera_id = c.id\nWHERE r.id IS NULL;\n-- камеры, которые не считали ни одного номера",
+    "pitfalls": [
+      "`= NULL` никогда не истинно: только `IS NULL`.",
+      "Проверяйте на `NULL` столбец, который у настоящей пары заполнен всегда — первичный ключ правой таблицы. Столбец, который бывает пустым и у найденной пары, даст ложных сирот.",
+      "С INNER JOIN анти-джойн не работает: строки без пары он выбрасывает ещё до `WHERE`, и результат всегда пустой.",
+      "Если у левой строки сам ключ `NULL` (`staff_id IS NULL`), пары у неё нет тоже — она попадёт в сироты. Обычно это и нужно."
+    ]
+  },
+  {
+    "id": "h.join_chain",
+    "title": "Цепочка JOIN: три таблицы и больше",
+    "summary": "JOIN можно продолжать: каждая следующая таблица пристёгивается к уже собранным строкам своим `ON`. Сотрудник → ЗАГС → аудит — один запрос.",
+    "syntax": "SELECT …\nFROM a\nJOIN b ON b.a_id = a.id\nLEFT JOIN c ON c.b_id = b.id;",
+    "example": "SELECT i.kusp_no, i.reported_at, p.full_name, ip.role\nFROM incidents i\nJOIN incident_persons ip ON ip.incident_id = i.id\nLEFT JOIN persons p ON p.id = ip.person_id\nWHERE i.reported_at >= '2026-12-10 00:00:00';",
+    "pitfalls": [
+      "Каждый INNER JOIN в цепочке может отрезать строки. Если после LEFT JOIN идёт обычный JOIN к его правой таблице, строки с `NULL` снова пропадут — тогда и дальше нужен LEFT.",
+      "Алиасы обязательны: в трёх таблицах почти наверняка есть три столбца `id`. Без префикса SQLite скажет `ambiguous column name`.",
+      "Ключ связи бывает не числом: `audit_log.login` = `staff.login`, `zags_deaths.person_id` = `staff.person_id`. Смотрите на смысл столбца, а не на имя."
+    ]
+  },
+  {
+    "id": "h.coalesce",
+    "title": "COALESCE / IFNULL: подставить вместо NULL",
+    "summary": "`COALESCE(a, b, …)` возвращает первое значение, которое не `NULL`. `IFNULL(a, b)` — то же для двух аргументов. Так пустоту превращают в понятное «нет данных».",
+    "syntax": "COALESCE(выражение, запасное значение)\nIFNULL(выражение, запасное значение)",
+    "example": "SELECT c.name, COUNT(r.id) AS reads,\n       COALESCE(MAX(r.read_at), 'нет считываний') AS last_read\nFROM cameras c\nLEFT JOIN plate_reads r ON r.camera_id = c.id\nGROUP BY c.id, c.name;",
+    "pitfalls": [
+      "Запасное значение должно подходить по смыслу: `COALESCE(MAX(ts), 'нет действий')` — текст в столбце дат. Для отчёта годится, для дальнейших сравнений — нет.",
+      "`COALESCE(COUNT(x), 0)` бессмысленно: COUNT никогда не возвращает `NULL`. Для `SUM` и `MAX` по пустой группе — наоборот, нужно.",
+      "COALESCE не исправляет данные в базе, только вывод запроса."
+    ]
+  },
+  {
+    "id": "h.null_logic",
+    "title": "NULL: третье значение логики",
+    "summary": "`NULL` — «неизвестно». Любое сравнение с ним (`=`, `<>`, `>`, `<`) даёт не `TRUE` и не `FALSE`, а `NULL`, и `WHERE` такую строку отбрасывает.",
+    "syntax": "x IS NULL\nx IS NOT NULL\nNULL = NULL      -- NULL, не истина\nNULL > '2026-…'  -- тоже NULL",
+    "example": "SELECT id, plate, read_at, confidence\nFROM plate_reads\nWHERE confidence IS NULL;\n-- а `WHERE confidence < 0.5` эти строки не покажет: их уверенность неизвестна",
+    "pitfalls": [
+      "После LEFT JOIN столбцы правой таблицы у строк без пары — `NULL`. Условие `WHERE r.ts > …` выкинет их молча: `NULL > …` не истина.",
+      "`WHERE x <> 'значение'` теряет строки с `x IS NULL`. Нужны они — допишите `OR x IS NULL`.",
+      "`NOT (NULL)` — тоже `NULL`. Отрицание неизвестного остаётся неизвестным.",
+      "В `ORDER BY` SQLite ставит `NULL` первыми при сортировке по возрастанию и последними — по убыванию."
+    ]
+  },
+  {
+    "id": "h.count_col",
+    "title": "COUNT(*) против COUNT(столбец)",
+    "summary": "`COUNT(*)` считает строки. `COUNT(столбец)` — только строки, где в этом столбце не `NULL`. После LEFT JOIN это разница между «1» и честным «0».",
+    "syntax": "COUNT(*)            -- все строки группы\nCOUNT(r.id)         -- строки, где пара справа нашлась\nCOUNT(DISTINCT r.x) -- разные непустые значения",
+    "example": "SELECT c.name,\n       COUNT(*)    AS rows_in_group,\n       COUNT(r.id) AS reads\nFROM cameras c\nLEFT JOIN plate_reads r ON r.camera_id = c.id\n  AND r.read_at >= '2026-12-10 00:00:00'\n  AND r.read_at <  '2026-12-11 00:00:00'\nGROUP BY c.id, c.name;\n-- у камеры без считываний rows_in_group = 1, reads = 0",
+    "pitfalls": [
+      "`COUNT(*)` в LEFT JOIN даёт 1 там, где пар ноль: строка с `NULL` справа — всё равно строка.",
+      "Считайте по первичному ключу правой таблицы (`COUNT(a.id)`): он у настоящей пары заполнен всегда.",
+      "`COUNT(столбец)` по столбцу, где `NULL` бывает и у настоящих строк, недосчитает."
+    ]
+  },
+  {
+    "id": "w.mirror",
+    "title": "Как устроено ЗЕРКАЛО",
+    "summary": "ЗЕРКАЛО — терминал «Сияние.Город»: копии городских баз (ЗАГС, камеры, транспорт, банк, домофоны) рядом с полицейской ПБД. Городские данные полиция читает, но не правит.",
+    "syntax": "ПБД (правит полиция):   incidents, incident_persons, persons, staff, logins, audit_log, query_log\nЗЕРКАЛО (только чтение): zags_deaths, plate_reads, cameras, transit_taps, transactions, intercom_events, …",
+    "example": "SELECT m.kusp_no, m.full_name_text, p.death_date AS pbd, z.died_at AS zags\nFROM morgue_records m\nLEFT JOIN persons p ON p.id = m.person_id\nLEFT JOIN zags_deaths z ON z.person_id = m.person_id\nWHERE m.received_at >= '2026-11-01 00:00:00';",
+    "pitfalls": [
+      "`persons.death_date` в ПБД заполнена не у всех: полиция верит ЗАГСу. Дату смерти берут из `zags_deaths`.",
+      "Если ПБД и ЗЕРКАЛО расходятся, первой правили ПБД: у ЗЕРКАЛА для полиции нет записи.",
+      "Время в ЗЕРКАЛЕ — местное, строкой 'YYYY-MM-DD HH:MM:SS', как и в ПБД. Исключения встретятся позже, их помечает справочник."
+    ]
+  },
+  {
+    "id": "w.audit_order",
+    "title": "Журнал аудита: id — не время",
+    "summary": "`audit_log.id` — порядок, в котором строки **дошли** до сервера. Офлайн-станции отдают действия пачками, поэтому «последнее» ищут по `ts`, а не по `id`.",
+    "syntax": "-- последнее действие\nORDER BY ts DESC LIMIT 1   -- верно\nORDER BY id DESC LIMIT 1   -- последнее ДОСТАВЛЕННОЕ, а не совершённое\nMAX(ts)                    -- то же одним числом",
+    "example": "SELECT id, ts, login, workstation, action, table_name, row_id\nFROM audit_log\nWHERE workstation = 'WS-IT-01'\nORDER BY ts DESC\nLIMIT 10;",
+    "pitfalls": [
+      "Станция без сети копит действия и досылает их потом: у ночной правки может оказаться id старше утренней.",
+      "Аудит маскирует только **старое** значение полей ПДн — `special_marks`, паспорт, телефон, домашний адрес: `'[ПДн скрыто]'`. Видно, кого обнулили, но не что стёрли.",
+      "ФИО аудит не маскирует никогда: правки фамилий видны целиком.",
+      "Действия: UPDATE, INSERT, DELETE, EXPORT, SESSION. У INSERT и EXPORT `old_value` пуст — это не маскировка."
+    ]
+  }
+]

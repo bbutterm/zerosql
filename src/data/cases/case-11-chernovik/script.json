@@ -1,0 +1,629 @@
+{
+  "scenes": [
+    {
+      "id": "intro",
+      "location": "Подвал ГУ, ОЦР, кабинет Б0-03",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c11.intro.001",
+          "speaker": "narrator",
+          "text": "31 декабря, 23:00. ГУ пустое. Светится только подвал."
+        },
+        {
+          "id": "c11.intro.002",
+          "speaker": "narrator",
+          "text": "На крышке системника — разделочная доска. Нина режет оливье, как на семью из шести."
+        },
+        {
+          "id": "c11.intro.003",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "Садись, голубчик. Новый год — он и в подвале Новый год.",
+          "direction": "напевно, с северным оканьем, нож стучит по доске"
+        },
+        {
+          "id": "c11.intro.004",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Колбаса докторская, горошек мой, с дачи. Майонез магазинный — не обессудь."
+        },
+        {
+          "id": "c11.intro.005",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Мандарины. Последняя сетка в «Сиянии». Очередь — как на подлёдной. Клюнуло.",
+          "direction": "входит с мороза, дыхание сбито, шуршит пакет"
+        },
+        {
+          "id": "c11.intro.006",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Куда ставить? Тут везде провода."
+        },
+        {
+          "id": "c11.intro.007",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "На клавиатуру ставь. Всё равно сегодня печатать немного."
+        },
+        {
+          "id": "c11.intro.008",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Одиннадцатого будем переносить по-настоящему. Сегодня — на черновике.",
+          "direction": "серьёзнее, нож замирает"
+        },
+        {
+          "id": "c11.intro.009",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Репетиция, значит."
+        },
+        {
+          "id": "c11.intro.010",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Репетиция. В пятнадцатом я без черновиков печатала. Одну строчку — и на всю жизнь."
+        },
+        {
+          "id": "c11.intro.011",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "А тут можно ошибиться. Откатить. Попробовать ещё раз. Роскошь, голубчик.",
+          "direction": "тихо"
+        },
+        {
+          "id": "c11.intro.012",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Правило одно. Сначала BEGIN. Как перекреститься."
+        },
+        {
+          "id": "c11.intro.013",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "А если забыть?"
+        },
+        {
+          "id": "c11.intro.014",
+          "speaker": "nina",
+          "emotion": "angry",
+          "text": "Тогда что сделано — то сделано. Как в жизни. Без черновика.",
+          "direction": "постукивает пальцем по столу, раз-два"
+        },
+        {
+          "id": "c11.intro.015",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Запись разрешена в: draft_statements, draft_persons, draft_publication. Остальное — только чтение.",
+          "direction": "ровно, чуть слишком дружелюбно"
+        },
+        {
+          "id": "c11.intro.016",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Ну-ка. С двух пропавших начнём. Диск у нас открыт — arch16_statements."
+        }
+      ]
+    },
+    {
+      "id": "helper_tokha",
+      "lines": [
+        {
+          "id": "c11.helper_tokha.001",
+          "speaker": "tokha",
+          "emotion": "uneasy",
+          "text": "Короч, черновик поднял. Три таблицы, с нуля, хе.",
+          "direction": "нервный смешок, быстро"
+        },
+        {
+          "id": "c11.helper_tokha.002",
+          "speaker": "tokha",
+          "emotion": "neutral",
+          "text": "Дублей нет. Я проверил. Дважды. После того диска — ну, вы поняли."
+        },
+        {
+          "id": "c11.helper_tokha.003",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Спасибо, Антоша. Садись, оливье бери."
+        },
+        {
+          "id": "c11.helper_tokha.004",
+          "speaker": "tokha",
+          "emotion": "ashamed",
+          "text": "Я потом. Мне ещё логи… Не, вру. Просто кусок в горло не лезет.",
+          "direction": "сбивается, тише"
+        },
+        {
+          "id": "c11.helper_tokha.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Ешь давай. Новый год, а ты как на допросе."
+        },
+        {
+          "id": "c11.helper_tokha.006",
+          "speaker": "tokha",
+          "emotion": "happy",
+          "text": "Жиза. Ладно. Мандарин — база.",
+          "direction": "выдыхает, почти смеётся"
+        }
+      ]
+    },
+    {
+      "id": "helper_melnik",
+      "lines": [
+        {
+          "id": "c11.helper_melnik.001",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Коллеги, синхронизируемся. Черновик развёрнут: draft_statements, draft_persons, draft_publication.",
+          "direction": "чётко, чуть в нос"
+        },
+        {
+          "id": "c11.helper_melnik.002",
+          "speaker": "melnik",
+          "emotion": "smug",
+          "text": "Чистая копия, без дублей. В отличие от импорта — да, я в курсе."
+        },
+        {
+          "id": "c11.helper_melnik.003",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "Права на запись — только в эти три. Остальное read-only, по регламенту."
+        },
+        {
+          "id": "c11.helper_melnik.004",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Константин Игоревич, салатику?"
+        },
+        {
+          "id": "c11.helper_melnik.005",
+          "speaker": "melnik",
+          "emotion": "neutral",
+          "text": "У меня интервальное голодание. …Ладно, ложку. Без майонеза есть?",
+          "direction": "пауза, сдаётся"
+        },
+        {
+          "id": "c11.helper_melnik.006",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Это оливье. Без майонеза — это просто овощи."
+        }
+      ]
+    },
+    {
+      "id": "helper_nina",
+      "lines": [
+        {
+          "id": "c11.helper_nina.001",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Черновик я сама подняла, голубчик. Старым ридером, как умею."
+        },
+        {
+          "id": "c11.helper_nina.002",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Три таблицы, копии. Дублей нет — каждую строчку глазами. Это всё не по описи, конечно.",
+          "direction": "постукивает пальцем по столу"
+        },
+        {
+          "id": "c11.helper_nina.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Нина Фёдоровна, вы когда спите вообще?"
+        },
+        {
+          "id": "c11.helper_nina.004",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "В пятнадцатом году выспалась. На всю жизнь вперёд.",
+          "direction": "с улыбкой, но без смеха"
+        },
+        {
+          "id": "c11.helper_nina.005",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Помощник не назначен. Реплики помощника беру на себя. С Новым годом.",
+          "direction": "ровно"
+        }
+      ]
+    },
+    {
+      "id": "rollback",
+      "lines": [
+        {
+          "id": "c11.rollback.001",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "Вот. Было двести две — стало двести. Будто и не было."
+        },
+        {
+          "id": "c11.rollback.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Так. Стоп. Мы их сейчас взяли и стёрли?"
+        },
+        {
+          "id": "c11.rollback.003",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Не стёрли — отложили. На диске лежат, никуда не денутся. Одиннадцатого — COMMIT, и навсегда."
+        },
+        {
+          "id": "c11.rollback.004",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Жалко, в жизни так нельзя. Я бы одну ночь в пятнадцатом откатила.",
+          "direction": "тихо, после паузы"
+        }
+      ]
+    },
+    {
+      "id": "tv",
+      "music": "twist_low",
+      "lines": [
+        {
+          "id": "c11.tv.001",
+          "speaker": "narrator",
+          "text": "Без пяти двенадцать. Даша делает громче: на всех каналах одно лицо."
+        },
+        {
+          "id": "c11.tv.002",
+          "speaker": "granin",
+          "emotion": "smug",
+          "text": "Дорогие мои створчане! Понимаешь, год был непростой.",
+          "direction": "из телевизора, раскатисто, пауза на аплодисменты"
+        },
+        {
+          "id": "c11.tv.003",
+          "speaker": "granin",
+          "emotion": "neutral",
+          "text": "Морозы, лёд, ремонт сетей. Но мы с вами — по-человечески — не замёрзли.",
+          "direction": "из телевизора"
+        },
+        {
+          "id": "c11.tv.004",
+          "speaker": "granin",
+          "emotion": "happy",
+          "text": "Тепло, которое не кончается, — это не лозунг. Это вы. Это мы.",
+          "direction": "из телевизора, на подъёме"
+        },
+        {
+          "id": "c11.tv.005",
+          "speaker": "granin",
+          "emotion": "neutral",
+          "text": "Кто-то говорит: старое надо ворошить. А я скажу, понимаешь, — смотреть надо вперёд.",
+          "direction": "из телевизора"
+        },
+        {
+          "id": "c11.tv.006",
+          "speaker": "granin",
+          "emotion": "smug",
+          "text": "Прошлое пусть лежит, где лежит. Нам строить.",
+          "direction": "из телевизора, весомо"
+        },
+        {
+          "id": "c11.tv.007",
+          "speaker": "narrator",
+          "text": "В подвале никто не говорит ни слова. Нина перестала резать. Нож лежит на крышке системника."
+        },
+        {
+          "id": "c11.tv.008",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "«Где лежит». На дне он лежит, сука.",
+          "direction": "сквозь зубы, почти шёпотом"
+        },
+        {
+          "id": "c11.tv.009",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Тише, Дашенька. Тише."
+        },
+        {
+          "id": "c11.tv.010",
+          "speaker": "granin",
+          "emotion": "happy",
+          "text": "С Новым годом, Створ! Тепла вашему дому!",
+          "direction": "из телевизора, фанфары"
+        },
+        {
+          "id": "c11.tv.011",
+          "speaker": "narrator",
+          "text": "Даша выдёргивает шнур из розетки. Экран гаснет с сухим щелчком."
+        }
+      ],
+      "next": "draft"
+    },
+    {
+      "id": "draft",
+      "lines": [
+        {
+          "id": "c11.draft.001",
+          "speaker": "narrator",
+          "text": "В тишине гудит WS-03. В редакторе — чужая заготовка: её набрали, пока все смотрели телевизор."
+        },
+        {
+          "id": "c11.draft.002",
+          "speaker": "narrator",
+          "text": "DELETE FROM draft_statements WHERE person_text LIKE 'Ким Д%'; — и комментарий: «чтоб девчонку не светить»."
+        },
+        {
+          "id": "c11.draft.003",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Это кто тут обо мне так заботится?",
+          "direction": "резко, с обидой"
+        },
+        {
+          "id": "c11.draft.004",
+          "speaker": "nina",
+          "emotion": "angry",
+          "text": "Не нажимай.",
+          "direction": "накрывает ладонью руку игрока поверх мыши, твёрдо"
+        },
+        {
+          "id": "c11.draft.005",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Улики не удаляют, голубчик."
+        },
+        {
+          "id": "c11.draft.006",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Из газеты — можно. Из дела — никогда.",
+          "direction": "раздельно, как диктует машинистке"
+        },
+        {
+          "id": "c11.draft.007",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Так. Стоп. Там же я. Мне там тринадцать."
+        },
+        {
+          "id": "c11.draft.008",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Там ты. И там ты останешься. Тебя десять лет из этого дела вынимали — хватит."
+        },
+        {
+          "id": "c11.draft.009",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Удалишь из дела — Гранину подарок. Строки нет, девочки нет, ничего не было."
+        },
+        {
+          "id": "c11.draft.010",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "…Ладно. Не трогаем.",
+          "direction": "после паузы, выдох"
+        },
+        {
+          "id": "c11.draft.011",
+          "speaker": "narrator",
+          "text": "Нина сама стирает заготовку. Открывает draft_publication и листает до седьмой строки."
+        },
+        {
+          "id": "c11.draft.012",
+          "speaker": "narrator",
+          "text": "«Ким Д. С., 2001-06-14, свидетель, 20.02.2015 01:40». Ниже, девятнадцатой, — схема 3313."
+        },
+        {
+          "id": "c11.draft.013",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Видишь? Это не дело. Это газета. Её весь Створ прочтёт."
+        },
+        {
+          "id": "c11.draft.014",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "А вот девочку из газеты убери. Ей с этим жить.",
+          "direction": "мягко, почти по-матерински"
+        },
+        {
+          "id": "c11.draft.015",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "И Шпалу убери. Информатора по первой же строчке вычислят."
+        },
+        {
+          "id": "c11.draft.016",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "И его. Остальное пусть читают. Взрослые свидетели сами под своими словами подписывались."
+        },
+        {
+          "id": "c11.draft.017",
+          "speaker": "mira",
+          "emotion": "neutral",
+          "text": "Запись в draft_publication разрешена. Удаление из draft_statements — тоже. Я не вмешиваюсь.",
+          "direction": "ровно"
+        }
+      ]
+    },
+    {
+      "id": "redacted",
+      "lines": [
+        {
+          "id": "c11.redacted.001",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Сорок шесть. Меня в газете нет."
+        },
+        {
+          "id": "c11.redacted.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "А в деле есть. Тринадцатилетняя. Со своей схемой. Нормально.",
+          "direction": "рублено, сглатывая окончания"
+        },
+        {
+          "id": "c11.redacted.003",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "В деле ты свидетель. В газете была бы — девочка, которая видела. Разница, голубчик."
+        },
+        {
+          "id": "c11.redacted.004",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Пусть читают про машины. Про меня — не надо."
+        },
+        {
+          "id": "c11.redacted.005",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "Вот и умница. Мандаринку возьми."
+        }
+      ]
+    },
+    {
+      "id": "chimes",
+      "music": "theme_polynya",
+      "lines": [
+        {
+          "id": "c11.chimes.001",
+          "speaker": "narrator",
+          "text": "Из телефона Даши бьют куранты. Двенадцать ударов. На каждый Нина шевелит губами."
+        },
+        {
+          "id": "c11.chimes.002",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "С Новым годом, голубчики. Пусть он будет честнее старого.",
+          "direction": "растроганно"
+        },
+        {
+          "id": "c11.chimes.003",
+          "speaker": "narrator",
+          "text": "Звонит телефон. Номер — кардиология ГБ № 1."
+        },
+        {
+          "id": "c11.chimes.004",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Ну-с. С Новым годом, коллега.",
+          "direction": "по телефону, хрипло, на фоне писк монитора"
+        },
+        {
+          "id": "c11.chimes.005",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Медсестра выпустила на пять минут. У нас тут ёлка из капельниц.",
+          "direction": "по телефону"
+        },
+        {
+          "id": "c11.chimes.006",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Нина говорит — репетируете. Две строки нашлись?",
+          "direction": "по телефону"
+        },
+        {
+          "id": "c11.chimes.007",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Нашлись, Лев Борисович. Девочка и отец."
+        },
+        {
+          "id": "c11.chimes.008",
+          "speaker": "ratnikov",
+          "emotion": "ashamed",
+          "text": "…Хорошо. Одиннадцатого не отступайте. Даже если я попрошу.",
+          "direction": "по телефону, долгая пауза, выдох"
+        },
+        {
+          "id": "c11.chimes.009",
+          "speaker": "ratnikov",
+          "emotion": "hurt",
+          "text": "Особенно если я попрошу.",
+          "direction": "по телефону, тише"
+        },
+        {
+          "id": "c11.chimes.010",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Выздоравливайте. Нам вас ещё допрашивать."
+        },
+        {
+          "id": "c11.chimes.011",
+          "speaker": "ratnikov",
+          "emotion": "happy",
+          "text": "Ну-с, это по-нашему. До связи.",
+          "direction": "по телефону, смеётся и кашляет"
+        }
+      ]
+    },
+    {
+      "id": "valentina_sms",
+      "lines": [
+        {
+          "id": "c11.valentina_sms.001",
+          "speaker": "narrator",
+          "text": "Телефон вибрирует ещё раз. СМС, номер не подписан."
+        },
+        {
+          "id": "c11.valentina_sms.002",
+          "speaker": "valentina",
+          "emotion": "determined",
+          "text": "Спасибо, что сказали. Я буду там.",
+          "direction": "текст СМС: ровно, отчётливо, учительской дикцией"
+        },
+        {
+          "id": "c11.valentina_sms.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Валентина Сергеевна. Значит, одиннадцатого и она придёт.",
+          "direction": "тихо"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "lines": [
+        {
+          "id": "c11.outro.001",
+          "speaker": "narrator",
+          "text": "Половина первого. Оливье доели. Мандарины — нет."
+        },
+        {
+          "id": "c11.outro.002",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Так. Ноль."
+        },
+        {
+          "id": "c11.outro.003",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "С Новым годом, Ноль.",
+          "direction": "просто, без шутки"
+        },
+        {
+          "id": "c11.outro.004",
+          "speaker": "nina",
+          "emotion": "happy",
+          "text": "Одиннадцатого — по-настоящему. Без черновика."
+        },
+        {
+          "id": "c11.outro.005",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Без черновика. Зато с BEGIN."
+        },
+        {
+          "id": "c11.outro.006",
+          "speaker": "narrator",
+          "text": "Черновик сохранён. Настоящий перенос — через одиннадцать дней."
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,0 @@
-[
-  "Начните с таблицы crimes — найдите дело с type = 'контрабанда'.",
-  "JOIN crime_suspects ON crimes.id = crime_suspects.crime_id — связывает дела с подозреваемыми.",
-  "Добавьте ещё JOIN suspects ON crime_suspects.suspect_id = suspects.id для имён.",
-  "WHERE role = 'организатор' — фильтр по роли в преступлении."
-]

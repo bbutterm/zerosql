@@ -1,0 +1,460 @@
+{
+  "id": "case-05-nomer-3312",
+  "order": 5,
+  "act": 2,
+  "code": "Дело № 05",
+  "title": "Номер 3312",
+  "subtitle": "Ночная заливка журнала «Сокола» за 2015 год",
+  "date": "2026-12-15 02:40",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-15 06:00",
+    "holds": [
+      {
+        "at": "2026-12-15 03:11",
+        "until": { "objective": "o5_1" },
+        "resumeAt": "2026-12-15 03:12:30"
+      }
+    ]
+  },
+  "location": "ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03 и архив",
+  "difficulty": "medium",
+  "concepts": [
+    "h.subquery_in",
+    "h.scalar_subquery",
+    "h.correlated",
+    "h.exists",
+    "h.not_in_null",
+    "h.case",
+    "w.registry"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log",
+    "doc_registry",
+    "cases",
+    "statements"
+  ],
+  "newTables": [
+    "doc_registry",
+    "cases",
+    "statements"
+  ],
+  "briefing": "Записка на мониторе, почерк Ратникова: «Ноль. Ночью ИТ заливает в ПБД журнал регистрации «Сокола» за I квартал 2015 года. Проверь, что нумерация не рвётся, — пока «Сокол» не погасили. Р.»\n\nЗаливка — через staging-контур миграции, 14.12 с 01:30. В журнале около 65 документов в день, номера сквозные с 1 января.\n\nДопуск на ночь: журнал регистрации (doc_registry), дела (cases), объяснения (statements). Только чтение.",
+  "starterSql": "SELECT * FROM doc_registry WHERE year = 2015 ORDER BY reg_no LIMIT 20;",
+  "introScene": "intro",
+  "objectives": [
+    {
+      "id": "o5_1",
+      "order": 1,
+      "task": "Ратников просил проверить, что нумерация не рвётся. Найди пропущенные номера журнала 2015 года: номер reg_no + 1, которого в журнале нет. Это подзапрос — NOT IN (SELECT …) или NOT EXISTS (SELECT …). Номер после последнего — не пропуск.",
+      "concept": "h.exists",
+      "validation": {
+        "type": "column_values",
+        "values": [3312, 4471],
+        "mode": "equal"
+      },
+      "prediction": {
+        "question": "Сколько строк вернёт NOT IN?",
+        "sql": "SELECT reg_no + 1 AS gap FROM doc_registry WHERE year = 2015 AND reg_no + 1 NOT IN (SELECT reg_no FROM doc_registry WHERE year = 2015);",
+        "options": [3, 2, 0],
+        "answer": 0,
+        "explanation": "Ноль. В подзапросе двенадцать черновиков с reg_no = NULL. «x NOT IN (…, NULL)» — не истина и не ложь, а NULL, и WHERE выбрасывает каждую строку. Лечится IS NOT NULL в подзапросе или NOT EXISTS."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_1.001",
+          "text": "Номера, голубчик, идут как бусы — один за другим. Ищи бусину, за которой следующей нет."
+        },
+        {
+          "by": "mira",
+          "text": "NOT EXISTS оставляет строку, если подзапрос для неё ничего не нашёл. Подзапрос может смотреть на столбцы внешней строки: SELECT l.login, l.role FROM logins l WHERE NOT EXISTS (SELECT 1 FROM staff s WHERE s.id = l.staff_id). См. «EXISTS и NOT EXISTS»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT d.reg_no + 1 AS gap FROM doc_registry d WHERE d.year = 2015 AND NOT EXISTS (SELECT 1 FROM doc_registry x WHERE x.year = 2015 AND x.reg_no = __________) AND d.reg_no < (SELECT ___(reg_no) FROM doc_registry WHERE year = 2015);"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT reg_no + 1 AS gap FROM doc_registry WHERE year = 2015 AND reg_no + 1 NOT IN (SELECT reg_no FROM doc_registry WHERE year = 2015) AND reg_no < (SELECT MAX(reg_no) FROM doc_registry WHERE year = 2015); — одна ошибка. Черновики без номера тоже лежат в журнале."
+        }
+      ],
+      "success": "Два пропуска: 3312 и 4471. Остальные номера квартала идут подряд.",
+      "evidence": {
+        "id": "ev.c05.gaps",
+        "title": "Пропуски журнала 2015 года: 3312 и 4471",
+        "text": "Журнал регистрации «Сокола», I квартал 2015 года: номера сквозные, кроме двух. 3312 — ночь на 20.02.2015, 4471 — 10.03.2015, день. Двенадцать черновиков без номера (reg_no NULL) — не пропуски, но NOT IN о них спотыкается.",
+        "kind": "record"
+      },
+      "sceneAfter": "gaps",
+      "solution": "SELECT d.reg_no + 1 AS gap\nFROM doc_registry d\nWHERE d.year = 2015\n  AND NOT EXISTS (SELECT 1 FROM doc_registry x WHERE x.year = 2015 AND x.reg_no = d.reg_no + 1)\n  AND d.reg_no < (SELECT MAX(reg_no) FROM doc_registry WHERE year = 2015);"
+    },
+    {
+      "id": "o5_1b",
+      "order": 2,
+      "optional": true,
+      "task": "Нина говорит, 4471 — «Валька-практикантка кофе пролила». Проверь: к какому делу относятся соседи пропуска, номера 4470 и 4472? Карточку дела достань через IN (SELECT case_id …).",
+      "concept": "h.subquery_in",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Соседи 4471.",
+        "rules": [
+          {
+            "type": "compound",
+            "successMessage": "Номера 4470 и 4472.",
+            "rules": [
+              { "type": "column_values", "columns": ["reg_no"], "values": [4470, 4472], "mode": "superset" },
+              { "type": "row_count", "expected": 20, "comparison": "lte" }
+            ]
+          },
+          {
+            "type": "compound",
+            "successMessage": "Дело 15-0310.",
+            "rules": [
+              { "type": "cell_value", "value": "15-0310" },
+              { "type": "row_count", "expected": 5, "comparison": "lte" }
+            ]
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_1b.001",
+          "text": "Валька у нас на практике была, руки-крюки. Глянь, что лежит рядом с её номером, — всё и поймёшь."
+        },
+        {
+          "by": "mira",
+          "text": "IN принимает список из подзапроса: SELECT full_name, position FROM staff WHERE id IN (SELECT staff_id FROM logins WHERE enabled = 0). Подзапрос должен отдавать один столбец. См. «IN (SELECT …)»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT id, title, applicant_text, investigator FROM cases WHERE id IN (SELECT _______ FROM doc_registry WHERE year = 2015 AND reg_no BETWEEN ____ AND ____);"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT id, title, applicant_text, investigator FROM cases WHERE id IN (SELECT id FROM doc_registry WHERE year = 2015 AND reg_no BETWEEN 4470 AND 4472); — одна ошибка. Подзапрос отдаёт не то, с чем сравнивают."
+        }
+      ],
+      "success": "Кража велосипеда «Кама» из подъезда. № 4472 записан «взамен испорченного № 4471». Кофе, похоже, и правда был.",
+      "evidence": {
+        "id": "ev.c05.bike",
+        "title": "Пропуск 4471: кража велосипеда",
+        "text": "Соседи 4471 — дело 15-0310, кража велосипеда «Кама» из подъезда на Шахтной, 9. № 4472 зарегистрировала практикантка Валеева В. А. «взамен испорченного № 4471, повторно не выдавался». Ложный след: этот номер просто испортили.",
+        "kind": "record"
+      },
+      "sceneAfter": "coffee",
+      "solution": "SELECT id, title, applicant_text, investigator, status\nFROM cases\nWHERE id IN (SELECT case_id FROM doc_registry WHERE year = 2015 AND reg_no BETWEEN 4470 AND 4472);"
+    },
+    {
+      "id": "o5_2",
+      "order": 3,
+      "task": "Номер 3312 пропал, а соседи остались. Что лежит в журнале 2015 года по соседству — номера с 3309 по 3315? Нужны все поля документа: время, тип, дело, кто регистрировал, примечание.",
+      "concept": "w.registry",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Соседи 3312.",
+        "rules": [
+          { "type": "column_values", "columns": ["reg_no"], "values": [3311, 3313], "mode": "superset" },
+          { "type": "row_count", "expected": 20, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_2.001",
+          "text": "Номер пропал — а соседи-то на месте. Глянь, что в журнале до него и после, голубчик."
+        },
+        {
+          "by": "mira",
+          "text": "Диапазон — BETWEEN, обе границы включительно, меньшая первой: SELECT * FROM incidents WHERE kusp_no BETWEEN 4514 AND 4519 ORDER BY kusp_no. См. «Журнал регистрации «Сокола»»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT reg_no, registered_at, doc_type, case_id, registered_by, note FROM doc_registry WHERE year = 2015 AND reg_no BETWEEN ____ AND ____ ORDER BY reg_no;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT reg_no, registered_at, doc_type, case_id, registered_by, note FROM doc_registry WHERE year = 2015 AND reg_no BETWEEN 3315 AND 3309 ORDER BY reg_no; — одна ошибка. BETWEEN не умеет считать назад."
+        }
+      ],
+      "success": "Та же ночь, то же дело 15-0219: рапорт о выезде в 01:05 и схема в 01:55 — «к объяснению № 3312», нарисовала девочка тринадцати лет.",
+      "evidence": {
+        "id": "ev.c05.scheme_3313",
+        "title": "Соседи 3312: рапорт 3311 и схема 3313",
+        "text": "3311 — рапорт о выезде, 20.02.2015 01:05, дело 15-0219: «выезд на Береговую, 4 по сообщению Ким С. А.». 3313 — схема места происшествия, 01:55: «составлена несовершеннолетней Ким Д. С., 13 л., к объяснению № 3312». Обе зарегистрировала Шустова Н. Ф.",
+        "kind": "document"
+      },
+      "sceneAfter": "rec02",
+      "solution": "SELECT reg_no, registered_at, doc_type, case_id, registered_by, note\nFROM doc_registry\nWHERE year = 2015 AND reg_no BETWEEN 3309 AND 3315\nORDER BY reg_no;"
+    },
+    {
+      "id": "o5_3",
+      "order": 4,
+      "task": "Что за дело 15-0219 и кто его вёл? Достань карточку из cases одним запросом: номер дела возьми из строки журнала 3311 скалярным подзапросом — id = (SELECT …). Нужны название, заявитель, следователь и статус.",
+      "concept": "h.scalar_subquery",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT title, applicant_text, investigator, status FROM cases WHERE id = '15-0219'"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_3.001",
+          "text": "Номер дела в журнале записан, а сама папка — в делах лежит. Одно из другого и достань."
+        },
+        {
+          "by": "mira",
+          "text": "Скалярный подзапрос возвращает одно значение, и с ним сравнивают через =: SELECT full_name, position FROM staff WHERE id = (SELECT staff_id FROM logins WHERE login = 'k.melnik'). См. «Скалярный подзапрос»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT id, title, opened_at, applicant_text, investigator, status, status_at FROM cases WHERE id = (SELECT _______ FROM doc_registry WHERE year = 2015 AND reg_no = ____);"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT * FROM cases WHERE id = (SELECT case_id FROM doc_registry WHERE year = 2015 AND reg_no BETWEEN 3309 AND 3315); — одна ошибка. Скалярный подзапрос молча берёт первую строку."
+        }
+      ],
+      "success": "«Безвестное исчезновение Сазонова Петра Ильича». Заявила жена, вёл майор Ратников Л. Б. Приостановлено 20.05.2015.",
+      "evidence": {
+        "id": "ev.c05.case_15_0219",
+        "title": "Дело 15-0219: Сазонов",
+        "text": "Открыто 19.02.2015 23:20. «Безвестное исчезновение Сазонова Петра Ильича». Заявитель — Сазонова В. С. (жена). Следователь — майор Ратников Л. Б. Приостановлено 20.05.2015.",
+        "kind": "document"
+      },
+      "sceneAfter": "folder",
+      "solution": "SELECT id, title, opened_at, applicant_text, investigator, status, status_at\nFROM cases\nWHERE id = (SELECT case_id FROM doc_registry WHERE year = 2015 AND reg_no = 3311);"
+    },
+    {
+      "id": "o5_4",
+      "order": 5,
+      "task": "3311 и 3313 регистрировала Шустова Н. Ф. Сколько документов квартала на ней — в процентах? Разложи журнал 2015 года на «Шустова» и «остальные» через CASE WHEN, посчитай строки и долю.",
+      "concept": "h.case",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Доля Шустовой.",
+        "rules": [
+          {
+            "type": "any_of",
+            "successMessage": "Шестьдесят один процент.",
+            "rules": [
+              { "type": "cell_value", "value": 61, "tolerance": 1 },
+              { "type": "cell_value", "value": 0.61, "tolerance": 0.01 }
+            ]
+          },
+          { "type": "row_count", "expected": 6, "comparison": "lte" },
+          {
+            "type": "not",
+            "message": "Это строки журнала, а не доля. Посчитай документы по корзинам.",
+            "rule": {
+              "type": "any_of",
+              "successMessage": "строки журнала",
+              "rules": [
+                { "type": "contains_columns", "columns": ["reg_no"] },
+                { "type": "contains_columns", "columns": ["registered_at"] }
+              ]
+            }
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_4.001",
+          "text": "Ну я, я регистрировала. Половину журнала, а то и больше. Посчитай, коли не веришь."
+        },
+        {
+          "by": "mira",
+          "text": "CASE WHEN раскладывает строки по корзинам, GROUP BY их считает: SELECT CASE WHEN enabled = 1 THEN 'включён' ELSE 'отключён' END AS state, COUNT(*) FROM logins GROUP BY state. Доля — 100.0 * часть / целое. См. «CASE WHEN: ветвление в запросе»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT CASE WHEN registered_by = 'Шустова Н. Ф.' THEN 'Шустова' ELSE 'остальные' END AS clerk, COUNT(*) AS docs, ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM doc_registry WHERE year = 2015), 1) AS pct FROM doc_registry WHERE year = 2015 GROUP BY _____;"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT ROUND(SUM(CASE WHEN registered_by = 'Шустова Н. Ф.' THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) AS pct FROM doc_registry WHERE year = 2015; — одна ошибка. Целое на целое SQLite делит нацело."
+        }
+      ],
+      "success": "Шестьдесят один процент — у Шустовой. Корреляция, а не вина: в 2015 году она была единственной машинисткой отдела.",
+      "evidence": {
+        "id": "ev.c05.nina_share",
+        "title": "61 % журнала — Шустова Н. Ф.",
+        "text": "Из 5 850 документов I квартала 2015 года 3 569 зарегистрировала Шустова Н. Ф. — 61 %. Она была единственной машинисткой: такая доля — штатное расписание, а не улика. Но 3311 и 3313 — тоже её.",
+        "kind": "record"
+      },
+      "sceneAfter": "talk",
+      "solution": "SELECT CASE WHEN registered_by = 'Шустова Н. Ф.' THEN 'Шустова Н. Ф.' ELSE 'остальные' END AS clerk,\n       COUNT(*) AS docs,\n       ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM doc_registry WHERE year = 2015), 1) AS pct\nFROM doc_registry\nWHERE year = 2015\nGROUP BY clerk\nORDER BY docs DESC;"
+    },
+    {
+      "id": "o5_5",
+      "order": 6,
+      "task": "Ирина Петровна Вальц — persons 4127. «Петровна». Кто её отец? Найди его карточку: id отца возьми подзапросом из father_id Ирины.",
+      "concept": "h.scalar_subquery",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Отец Ирины.",
+        "rules": [
+          {
+            "type": "any_of",
+            "successMessage": "Сазонов Пётр Ильич.",
+            "rules": [
+              { "type": "cell_value", "value": "Сазонов Пётр Ильич" },
+              { "type": "cell_value", "value": 1388, "columns": ["id", "father_id"] }
+            ]
+          },
+          { "type": "row_count", "expected": 3, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_5.001",
+          "text": "Сама не скажу. В карточке у неё графа есть — «отец». Номер там, а человек — по номеру."
+        },
+        {
+          "by": "mira",
+          "text": "Скалярный подзапрос подставляет значение из другой строки той же таблицы: SELECT full_name, birth_date FROM persons WHERE id = (SELECT mother_id FROM persons WHERE id = 3612). См. «Скалярный подзапрос»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT id, full_name FROM persons WHERE id = (SELECT _________ FROM persons WHERE id = 4127);"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT id, full_name FROM persons WHERE id = (SELECT mother_id FROM persons WHERE id = 4127); — одна ошибка. Отчество подскажет, какую графу брать."
+        }
+      ],
+      "success": "Вальц Ирина Петровна. Отец — Сазонов Пётр Ильич, тот самый, из дела 15-0219.",
+      "evidence": {
+        "id": "ev.c05.petrovna",
+        "title": "«Петровна»: отец Ирины — Сазонов",
+        "text": "persons 4127, Вальц Ирина Петровна: father_id 1388 — Сазонов Пётр Ильич, безвестно исчез 19.02.2015 (дело 15-0219); mother_id 1389 — Вальц Валентина Сергеевна.",
+        "kind": "record"
+      },
+      "sceneAfter": "petrovna",
+      "solution": "SELECT id, full_name, patronymic, father_id\nFROM persons\nWHERE id = 4127 OR id = (SELECT father_id FROM persons WHERE id = 4127);"
+    },
+    {
+      "id": "o5_5b",
+      "order": 7,
+      "optional": true,
+      "task": "★ У Ирины фамилия Вальц, у отца — Сазонов. А у матери? Найди карточку матери Ирины и её прежнюю фамилию (prev_last_name).",
+      "concept": "h.scalar_subquery",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Прежняя фамилия матери.",
+        "rules": [
+          { "type": "cell_value", "value": "Сазонова" },
+          { "type": "cell_value", "value": "Вальц Валентина Сергеевна" },
+          { "type": "row_count", "expected": 3, "comparison": "lte" }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c05_o5_5b.001",
+          "text": "В карточке, голубчик, есть графа «прежняя фамилия». Женщины её не просто так меняют."
+        },
+        {
+          "by": "mira",
+          "text": "Тот же приём, другая графа: SELECT full_name, birth_date FROM persons WHERE id = (SELECT mother_id FROM persons WHERE id = 3612). См. «Скалярный подзапрос»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT id, full_name, prev_last_name FROM persons WHERE id = (SELECT _________ FROM persons WHERE id = 4127);"
+        },
+        {
+          "by": "irina",
+          "text": "Тетрадь Ирины: SELECT id, full_name, prev_last_name FROM persons WHERE id = (SELECT father_id FROM persons WHERE id = 4127); — одна ошибка. Не та графа."
+        }
+      ],
+      "success": "Прежняя фамилия Валентины Сергеевны — Сазонова. Заявление 2015 года подала мать Ирины.",
+      "evidence": {
+        "id": "ev.c05.maiden",
+        "title": "Сазонова В. С. — это Вальц В. С.",
+        "text": "persons 1389, Вальц Валентина Сергеевна, prev_last_name — «Сазонова». Заявитель по делу 15-0219 «Сазонова В. С. (жена)» и мать Ирины — один человек.",
+        "kind": "record"
+      },
+      "solution": "SELECT id, full_name, prev_last_name\nFROM persons\nWHERE id = (SELECT mother_id FROM persons WHERE id = 4127);"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Пропущен № {reg} по делу {case} об исчезновении {missing}.",
+      "Дело вёл {investigator}.",
+      "Заявление подала {applicant} — мать Ирины."
+    ],
+    "blanks": [
+      {
+        "id": "reg",
+        "kind": "number",
+        "options": ["3312", "4471", "3311", "3313"],
+        "answer": "3312"
+      },
+      {
+        "id": "case",
+        "kind": "text",
+        "options": ["15-0219", "15-0310", "15-0129", "15-0119"],
+        "answer": "15-0219"
+      },
+      {
+        "id": "missing",
+        "kind": "person",
+        "options": ["Сазонов Пётр Ильич", "Вальц Ирина Петровна", "Вальц Валентина Сергеевна"],
+        "answer": "Сазонов Пётр Ильич",
+        "aliases": {
+          "Сазонов Пётр Ильич": [1388],
+          "Вальц Ирина Петровна": [4127],
+          "Вальц Валентина Сергеевна": [1389]
+        }
+      },
+      {
+        "id": "investigator",
+        "kind": "text",
+        "options": ["майор Ратников Л. Б.", "капитан Дьячков Е. М.", "Шустова Н. Ф."],
+        "answer": "майор Ратников Л. Б."
+      },
+      {
+        "id": "applicant",
+        "kind": "text",
+        "options": ["Сазонова В. С. (жена)", "Тарасов Г. Н."],
+        "answer": "Сазонова В. С. (жена)"
+      }
+    ],
+    "batchSize": 3,
+    "successScene": "sealed",
+    "failureLines": [
+      "Нина: Не сходится, голубчик. Ты по журналу сверь, не по памяти.",
+      "МИРА: Не сходится. Позиции не названы.",
+      "Нина: Ох, не так. Номер к номеру, голубчик, как бусы."
+    ]
+  },
+  "events": [
+    {
+      "id": "zero_0312",
+      "atTime": "2026-12-15 03:12:30",
+      "scene": "night_0312",
+      "patch": "cron.fire"
+    }
+  ]
+}

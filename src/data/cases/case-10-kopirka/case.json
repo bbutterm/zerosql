@@ -1,0 +1,810 @@
+{
+  "id": "case-10-kopirka",
+  "order": 10,
+  "act": 3,
+  "code": "Дело № 10",
+  "title": "Копирка",
+  "subtitle": "Под твоим логином правили улики",
+  "date": "2026-12-31 09:00",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-31 13:00"
+  },
+  "location": "Подвал ГУ, Б0-03 и архив",
+  "difficulty": "hard",
+  "concepts": [
+    "h.is_not",
+    "h.snapshot_diff",
+    "h.strings",
+    "h.group_concat",
+    "h.glob_hex",
+    "h.legacy_dates",
+    "w.homoglyphs",
+    "w.sokol16"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies",
+    "logins",
+    "workstations",
+    "audit_log",
+    "zags_deaths",
+    "query_log",
+    "doc_registry",
+    "cases",
+    "statements",
+    "outfall_temp",
+    "construction_docs",
+    "registrations",
+    "addresses",
+    "diver_reports",
+    "gs_comms_2015",
+    "gs_phonebook",
+    "properties",
+    "employment",
+    "accounts",
+    "hospital_admissions",
+    "door_access",
+    "purchases",
+    "messenger_events",
+    "phones",
+    "cron_jobs",
+    "company_owners",
+    "share_deals",
+    "contracts",
+    "grant_requests",
+    "migration_jobs",
+    "bank_statements",
+    "attachments",
+    "evidence_registry",
+    "nina_carbon",
+    "arch16_persons",
+    "arch16_statements",
+    "arch16_registry"
+  ],
+  "newTables": [
+    "attachments",
+    "evidence_registry",
+    "nina_carbon",
+    "arch16_persons",
+    "arch16_statements",
+    "arch16_registry"
+  ],
+  "briefing": "31.12, 09:00. Приказ и. о. начальника ОЦР: аналитик по договору отстранён до выяснения. 28.12 под логином nol в ПБД правили улики: удалена карточка из описи, сдвинут документ 3313, отозвано показание. Терминал оставлен «для объяснений». «Сияние» объявило плановое обслуживание. У Нины Фёдоровны на столе жестяная коробка из-под печенья, и открывать её она не хочет.",
+  "starterSql": "-- 28.12: что правили под моим логином\nSELECT id, ts, workstation, action, table_name, row_id, field\nFROM audit_log\nWHERE login = 'nol' AND date(ts) = '2026-12-28'\nORDER BY ts;",
+  "introScene": "cold_open",
+  "objectives": [
+    {
+      "id": "o10_1",
+      "order": 1,
+      "task": "Мельник: «Двадцать восьмого под логином nol правили улики. Объяснись». Правки лежат в audit_log, твои запросы — в query_log. Сведи их по логину: какие правки сделаны с другого терминала и не дальше полутора минут (90 секунд) от твоего запроса? Каждой правке — её запрос и терминал.",
+      "concept": "h.strings",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "rows_match",
+            "referenceQuery": "SELECT a.id FROM audit_log a JOIN query_log q ON q.login = a.login AND q.terminal <> a.workstation AND abs(unixepoch(q.logged_at) - unixepoch(a.ts)) <= 90 WHERE a.login = 'nol' AND date(a.ts) = '2026-12-28'"
+          },
+          {
+            "type": "cell_value",
+            "value": "WS-03"
+          }
+        ],
+        "successMessage": "Каждая правка — сразу за твоим запросом."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c10_o10_1.001",
+          "text": "Так. Стоп. Не спорь с ним — положи рядом два журнала. Его правки и твои запросы. Время к времени."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_1.002",
+          "text": "Две таблицы склеиваются по логину, а близость во времени — условием в ON. Разница в секундах: unixepoch(a) − unixepoch(b), по модулю — abs(). Длинный текст запроса укоротит substr(текст, 1, 60). См. «Строки: substr, ||, replace»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT a.id, a.ts, a.workstation, q.logged_at, q.terminal,\n       substr(q.query_text, 1, 60) AS запрос\nFROM audit_log a\nJOIN query_log q ON q.login = a.login\n  AND q.terminal <> ___\n  AND abs(unixepoch(___) - unixepoch(___)) <= ___\nWHERE a.login = 'nol' AND date(a.ts) = '2026-12-28'\nORDER BY a.ts;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_1.004",
+          "text": "Ирочка, голубчик, так сличала. Только тут одно не по описи — найди.\nSELECT a.id, a.ts, a.workstation, q.logged_at, q.terminal\nFROM audit_log a\nJOIN query_log q ON q.login = a.login\n  AND q.terminal <> a.workstation\n  AND abs(julianday(q.logged_at) - julianday(a.ts)) <= 90\nWHERE a.login = 'nol' AND date(a.ts) = '2026-12-28'\nORDER BY a.ts;"
+        }
+      ],
+      "success": "Каждая правка 28.12 сделана с WS-07 через 20–40 секунд после моего запроса с WS-03. Скрипт ждал, пока я что-нибудь запущу, чтобы правки легли в мой сеанс.",
+      "evidence": {
+        "id": "ev.c10.pairs",
+        "title": "Правки вслед за запросами",
+        "text": "audit_log 28.12, логин nol: все подставные правки сделаны с WS-07 (серверная Б0-11), каждая — через 20–40 секунд после запроса аналитика с WS-03. Удалена карточка описи, сдвинут документ 3313, изменён статус показания.",
+        "kind": "record"
+      },
+      "sceneAfter": "pairs",
+      "solution": "SELECT a.id, a.ts, a.workstation, a.table_name, a.field,\n       q.logged_at, q.terminal, substr(q.query_text, 1, 60) AS запрос\nFROM audit_log a\nJOIN query_log q ON q.login = a.login\n  AND q.terminal <> a.workstation\n  AND abs(unixepoch(q.logged_at) - unixepoch(a.ts)) <= 90\nWHERE a.login = 'nol' AND date(a.ts) = '2026-12-28'\nORDER BY a.ts, q.logged_at;"
+    },
+    {
+      "id": "o10_1d",
+      "order": 2,
+      "task": "Мельник: «Запустить запрос и сбегать в серверную — минута». Твой пропуск — B-9000, СКУД — door_access. Покажи все проходы этого пропуска через дверь «Серверная».",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "row_count",
+            "expected": 0,
+            "comparison": "eq"
+          },
+          {
+            "type": "contains_columns",
+            "columns": [
+              "badge_id",
+              "door"
+            ]
+          }
+        ],
+        "successMessage": "Ноль строк — это и есть алиби."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c10_o10_1d.001",
+          "text": "Пропуск не врёт и не устаёт. Открой проходы своего — и только в серверную."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_1d.002",
+          "text": "Отбор по двум условиям: badge_id и door. Пустой результат — тоже результат: «Найдено строк: ноль». Буква B в пропуске латинская."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT *\nFROM door_access\nWHERE badge_id = ___\n  AND door = ___;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_1d.004",
+          "text": "Вот так, голубчик, только одно условие лишнее выкинули — верни.\nSELECT *\nFROM door_access\nWHERE badge_id = 'B-9000';"
+        }
+      ],
+      "success": "Ноль строк. Пропуск B-9000 ни разу не открывал серверную, а WS-07 стоит именно там.",
+      "evidence": {
+        "id": "ev.c10.zero_rows",
+        "title": "Ноль проходов",
+        "text": "door_access: badge_id 'B-9000', дверь «Серверная» — 0 строк. Аналитик ни разу не входил в серверную, где стоит WS-07.",
+        "kind": "record"
+      },
+      "solution": "SELECT *\nFROM door_access\nWHERE badge_id = 'B-9000'\n  AND door = 'Серверная';"
+    },
+    {
+      "id": "o10_2",
+      "order": 3,
+      "task": "Нина: «Ирочка в ночь на семнадцатое фамилии правила. Десять опечаток, с часу до двух. Она с первой буквы всегда начинала, голубчик». Правки Ирины — audit_log, логин i.valts, поле last_name, 17.11 с 01:00 до 02:00. Склей первые буквы новых фамилий в одну строку — в том порядке, в каком она их писала.",
+      "concept": "h.group_concat",
+      "validation": {
+        "type": "any_of",
+        "rules": [
+          {
+            "type": "cell_value",
+            "value": "СПРОСИНИНУ"
+          },
+          {
+            "type": "cell_value",
+            "value": "СПРОСИ НИНУ"
+          },
+          {
+            "type": "cell_value",
+            "value": "С П Р О С И Н И Н У"
+          },
+          {
+            "type": "cell_value",
+            "value": "С,П,Р,О,С,И,Н,И,Н,У"
+          }
+        ],
+        "successMessage": "Читается само."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_2.001",
+          "text": "А по порядку — это по какому, голубчик? По номеру строки или по часам? Она ночью писала, не по номерам."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_2.002",
+          "text": "Первая буква: substr(new_value, 1, 1). Склейка строк в одну: group_concat(выражение, разделитель). Порядок склейки задаётся внутри агрегата: group_concat(x, '' ORDER BY …). Без ORDER BY порядок не гарантирован. См. «group_concat»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT group_concat(substr(new_value, 1, 1), '' ORDER BY ___) AS послание\nFROM audit_log\nWHERE login = 'i.valts'\n  AND field = 'last_name'\n  AND ts BETWEEN ___ AND ___;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_2.004",
+          "text": "Я бы так склеила, голубчик. Только выйдет абракадабра — сама не пойму почему.\nSELECT group_concat(substr(new_value, 1, 1), '' ORDER BY id) AS послание\nFROM audit_log\nWHERE login = 'i.valts' AND field = 'last_name'\n  AND ts BETWEEN '2026-11-17 01:00:00' AND '2026-11-17 02:00:00';"
+        }
+      ],
+      "success": "СПРОСИНИНУ. По id — «НИСПУИРОСН»: станция Ирины работала офлайн и влилась пачкой, id — порядок репликации, а не время.",
+      "evidence": {
+        "id": "ev.c10.acrostic",
+        "title": "Акростих",
+        "text": "audit_log, i.valts, 17.11.2026 01:02–01:41: десять исправленных фамилий (Сидорв → Сидоров … Ульнов → Ульянов). Первые буквы по времени: СПРОСИНИНУ. По id: НИСПУИРОСН.",
+        "kind": "record"
+      },
+      "sceneAfter": "tin",
+      "solution": "SELECT group_concat(substr(new_value, 1, 1), '' ORDER BY ts) AS послание\nFROM audit_log\nWHERE login = 'i.valts'\n  AND field = 'last_name'\n  AND ts BETWEEN '2026-11-17 01:00:00' AND '2026-11-17 02:00:00';"
+    },
+    {
+      "id": "o10_2b",
+      "order": 4,
+      "when": {
+        "tokha_turned": false
+      },
+      "task": "Нина: «Ридер старый, голубчик, строки двоит, как ксерокс». В arch16_statements у некоторых объяснений есть двойники с тем же id. Сколько в архиве настоящих объяснений — каждое по одному разу?",
+      "concept": "w.sokol16",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "row_count",
+            "expected": 1,
+            "comparison": "eq"
+          },
+          {
+            "type": "cell_value",
+            "value": 1100
+          }
+        ],
+        "successMessage": "Двойники отброшены."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_2b.001",
+          "text": "Двойник — он с тем же номером, голубчик. Номер у объяснения один. Считай номера, а не листы."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_2b.002",
+          "text": "Дубли с одинаковым id нумеруются внутри группы: ROW_NUMBER() OVER (PARTITION BY id …). Первый экземпляр — тот, у кого номер 1. Подойдёт и COUNT(DISTINCT id)."
+        },
+        {
+          "by": "mira",
+          "text": "WITH t AS (\n  SELECT id, ROW_NUMBER() OVER (PARTITION BY ___ ORDER BY id) AS n\n  FROM arch16_statements\n)\nSELECT COUNT(*) AS объяснений\nFROM t\nWHERE n = ___;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_2b.004",
+          "text": "Посчитала, голубчик. Только цифра больше, чем я подшивала. Что-то тут лишнее.\nSELECT COUNT(*) AS объяснений\nFROM arch16_statements;"
+        }
+      ],
+      "success": "1 100 объяснений. Ещё 37 строк — двойники старого ридера: те же id, те же тексты.",
+      "evidence": {
+        "id": "ev.c10.duplicates",
+        "title": "Двойники ридера",
+        "text": "arch16_statements: 1 137 строк, 1 100 разных id. 37 строк — дубли импорта старым ридером «Сокола».",
+        "kind": "record"
+      },
+      "sceneAfter": "dupes",
+      "solution": "WITH t AS (\n  SELECT id, ROW_NUMBER() OVER (PARTITION BY id ORDER BY id) AS n\n  FROM arch16_statements\n)\nSELECT COUNT(*) AS объяснений\nFROM t\nWHERE n = 1;"
+    },
+    {
+      "id": "o10_3",
+      "order": 5,
+      "task": "Даша: «Так. Стоп. Диск — как было в шестнадцатом. ПБД — как стало. Что было тогда и исчезло теперь?» Найди объяснения из arch16_statements, которых нет в statements, и покажи их целиком.",
+      "concept": "h.snapshot_diff",
+      "validation": {
+        "type": "column_values",
+        "columns": [
+          "id"
+        ],
+        "values": [
+          1187,
+          1342,
+          1468,
+          1590,
+          1723,
+          1856,
+          1914,
+          2033,
+          2071,
+          2072,
+          2098
+        ],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c10_o10_3.001",
+          "text": "Берёшь старое и ищешь ему пару в новом. У кого пары нет — тот и пропал. Как в пятом деле, только наоборот."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_3.002",
+          "text": "Анти-джойн: LEFT JOIN нового снимка к старому и WHERE <ключ справа> IS NULL. Сравнение «= NULL» не находит ничего. См. «Сравнение снимков»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT a.*\nFROM arch16_statements a\nLEFT JOIN statements s ON s.id = ___\nWHERE s.id ___;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_3.004",
+          "text": "Ирочка так сличала. Только у меня пусто выходит, голубчик, а не может быть пусто.\nSELECT a.*\nFROM arch16_statements a\nLEFT JOIN statements s ON s.id = a.id\nWHERE s.id = NULL;"
+        }
+      ],
+      "success": "Одиннадцать объяснений 2015 года есть на диске и пропали из ПБД. Среди них № 3312 — «Ким Д. С., 13 л.», и объяснение её отца.",
+      "evidence": {
+        "id": "ev.c10.child_words",
+        "title": "Детские слова",
+        "text": "arch16_statements 2071: дело 15-0219, № 3312, «Ким Д. С., 13 л.», 20.02.2015 01:40, принял майор Ратников Л. Б., печатала Шустова Н. Ф. «…две машины без фар, одну столкнули в воду… дядя с усами держался за косяк, у него на пальце кусочка не было. Он сказал папе — это прожектора». В ПБД такой строки нет.",
+        "kind": "document"
+      },
+      "sceneAfter": "reading",
+      "solution": "SELECT a.*\nFROM arch16_statements a\nLEFT JOIN statements s ON s.id = a.id\nWHERE s.id IS NULL\nORDER BY a.id;"
+    },
+    {
+      "id": "o10_4",
+      "order": 6,
+      "task": "Нина: «Приметы, голубчик, люди сами с себя не стирают». Сличи особые приметы (special_marks) в persons и arch16_persons по id: у кого на диске одно, а в ПБД — другое или ничего. Покажи, что было и что стало.",
+      "concept": "h.is_not",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "row_count",
+            "expected": 27,
+            "comparison": "eq"
+          },
+          {
+            "type": "column_values",
+            "columns": [
+              "id"
+            ],
+            "values": [
+              2214,
+              1288,
+              1471,
+              2650,
+              3015,
+              3390
+            ],
+            "mode": "superset"
+          }
+        ],
+        "successMessage": "Все расхождения, включая стёртые."
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_4.001",
+          "text": "Шрам, голубчик, бывает новый. А бывает — был и пропал. Пропавший ищи внимательнее: его глазами не видно."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_4.002",
+          "text": "«!=» с NULL возвращает NULL, и строка выпадает. Сравнение с учётом NULL — IS NOT: 'шрам' IS NOT NULL — истина, NULL IS NOT NULL — ложь. См. «IS и IS NOT»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT p.id, p.full_name, a.special_marks AS было, p.special_marks AS стало\nFROM persons p\nJOIN arch16_persons a ON a.id = p.id\nWHERE p.special_marks ___ a.special_marks;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_4.004",
+          "text": "Сличила, голубчик. Двадцать одна. А сердце говорит — мало.\nSELECT p.id, p.full_name, a.special_marks AS было, p.special_marks AS стало\nFROM persons p\nJOIN arch16_persons a ON a.id = p.id\nWHERE p.special_marks != a.special_marks;"
+        }
+      ],
+      "success": "27 расхождений. 21 — законные: было и стало не NULL. Шесть — стёрты до NULL: Бурцев и пятеро из его наряда 2015 года. «!=» их не видит.",
+      "evidence": {
+        "id": "ev.c10.finger",
+        "title": "Палец",
+        "text": "persons 2214, Бурцев Валерий Николаевич: на диске 2016 года — «отсутствует ногтевая фаланга 4-го пальца левой кисти», в ПБД — NULL. Так же стёрты приметы наряда охраны 2015 года: 1288, 1471, 2650, 3015, 3390.",
+        "kind": "record"
+      },
+      "sceneAfter": "finger",
+      "solution": "SELECT p.id, p.full_name, a.special_marks AS было, p.special_marks AS стало\nFROM persons p\nJOIN arch16_persons a ON a.id = p.id\nWHERE p.special_marks IS NOT a.special_marks;"
+    },
+    {
+      "id": "o10_5",
+      "order": 7,
+      "task": "Даша: «Обратная сторона. Что есть в ПБД по делу Сазонова, а на диске нет? И что под этими номерами было в журнале шестнадцатого года?» Объяснения дела 15-0219 без пары в arch16_statements; рядом — человек из persons и запись arch16_registry с тем же номером. Дату журнала (ДД.ММ.ГГГГ) переведи в вид ГГГГ-ММ-ДД.",
+      "concept": "h.legacy_dates",
+      "validation": {
+        "type": "column_values",
+        "columns": [
+          "id"
+        ],
+        "values": [
+          5203,
+          5204,
+          5207
+        ],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c10_o10_5.001",
+          "text": "Тот же анти-джойн, только с другой стороны. Новое против старого. Что появилось — то и вписали."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_5.002",
+          "text": "Отсутствие пары: NOT EXISTS (SELECT 1 FROM … WHERE …). Дата 'ДД.ММ.ГГГГ' собирается заново: substr(d, 7, 4) || '-' || substr(d, 4, 2) || '-' || substr(d, 1, 2). См. «Даты «Сокола»»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT s.id, s.person_text, p.full_name, s.doc_reg_no, r.doc_type,\n       substr(r.reg_date, ___, 4) || '-' || substr(r.reg_date, ___, 2) || '-' || substr(r.reg_date, ___, 2) AS дата\nFROM statements s\nLEFT JOIN persons p ON p.id = s.person_id\nLEFT JOIN arch16_registry r ON r.year = 2015 AND r.reg_no = s.doc_reg_no\nWHERE s.case_id = '15-0219'\n  AND NOT EXISTS (SELECT 1 FROM arch16_statements a WHERE a.id = ___);"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_5.004",
+          "text": "Вот, голубчик. Только я, кажется, не тот номер с не тем сличаю.\nSELECT s.id, s.person_text, p.full_name, s.doc_reg_no\nFROM statements s\nLEFT JOIN persons p ON p.id = s.person_id\nWHERE s.case_id = '15-0219'\n  AND s.id NOT IN (SELECT doc_reg_no FROM arch16_statements);"
+        }
+      ],
+      "success": "Три показания, которых в 2016 году не было: 5203 (Кравец Н. Н.), 5204 (Лапина Г. П.), 5207 (Пахомова З. П.). В журнале 2016 года под 3320 — «запрос в ГИБДД», под 3322 — «рапорт о ДТП».",
+      "evidence": {
+        "id": "ev.c10.forgeries",
+        "title": "Подделки",
+        "text": "statements 5203, 5204, 5207 (дело 15-0219, «21.02.2015»): Кравец Н. Н. — «видел Сазонова в аэропорту», persons 4301 заведён 2026-11-20 02:22:00; Лапина Г. П. (умерла в 2019 году) — «грузил чемоданы»; Пахомова З. П. — «деньги выдала лично Сазонову». На диске их нет. В журнале 2016 года 3320 — «запрос в ГИБДД», 3322 — «рапорт о ДТП».",
+        "kind": "document"
+      },
+      "sceneAfter": "forgeries",
+      "solution": "SELECT s.id, s.person_text, p.full_name, p.created_at, s.doc_reg_no,\n       r.doc_type AS в_журнале_2016,\n       substr(r.reg_date, 7, 4) || '-' || substr(r.reg_date, 4, 2) || '-' || substr(r.reg_date, 1, 2) AS дата_2016\nFROM statements s\nLEFT JOIN persons p ON p.id = s.person_id\nLEFT JOIN arch16_registry r ON r.year = 2015 AND r.reg_no = s.doc_reg_no\nWHERE s.case_id = '15-0219'\n  AND NOT EXISTS (SELECT 1 FROM arch16_statements a WHERE a.id = s.id);"
+    },
+    {
+      "id": "o10_s1",
+      "order": 90,
+      "optional": true,
+      "task": "★ Даша: «Камеры номера читают как бог на душу. К372ОК в первом деле помнишь?» Найди все считывания plate_reads, где в номере есть латинская буква. Покажи и байты номера.",
+      "concept": "h.glob_hex",
+      "validation": {
+        "type": "compound",
+        "rules": [
+          {
+            "type": "row_count",
+            "expected": 17,
+            "comparison": "eq"
+          },
+          {
+            "type": "column_values",
+            "columns": [
+              "plate"
+            ],
+            "referenceQuery": "SELECT plate FROM plate_reads WHERE plate GLOB '*[A-Z]*'",
+            "mode": "equal"
+          }
+        ],
+        "successMessage": "Латиница найдена."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c10_o10_s1.001",
+          "text": "Глазами не отличишь: К и K одинаковые. А база отличает. Спроси её про буквы, а не про номер."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_s1.002",
+          "text": "GLOB различает регистр и алфавит: '*[A-Z]*' — хотя бы одна латинская заглавная. hex(plate) показывает байты: кириллица — по два байта (D0…), латиница — по одному. См. «GLOB и hex»."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT id, plate, hex(plate) AS байты, read_at, camera_id\nFROM plate_reads\nWHERE plate GLOB ___;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_s1.004",
+          "text": "Я бы так, голубчик. Только у меня ни одной не нашлось — а Даша говорит, есть.\nSELECT id, plate, hex(plate) AS байты, read_at\nFROM plate_reads\nWHERE plate GLOB '*[a-z]*';"
+        }
+      ],
+      "success": "17 считываний с латиницей: шестнадцать гомоглифов распознавания и K372OK из первого дела.",
+      "evidence": {
+        "id": "ev.c10.latin",
+        "title": "Латиница в номерах",
+        "text": "plate_reads: 17 считываний с латинскими буквами в номере (GLOB '*[A-Z]*'), среди них K372OK, камера 12, 01.12 02:41. На глаз не отличить, hex(plate) — отличает.",
+        "kind": "record"
+      },
+      "solution": "SELECT id, plate, hex(plate) AS байты, read_at, camera_id\nFROM plate_reads\nWHERE plate GLOB '*[A-Z]*'\nORDER BY read_at;"
+    },
+    {
+      "id": "o10_s2",
+      "order": 91,
+      "optional": true,
+      "task": "★ Нина: «Ирочка закладки оставляла, как ниточки. Глянь, где она стояла, голубчик». Найди в attachments все закладки Ирины (логин i.valts).",
+      "concept": "w.sokol16",
+      "validation": {
+        "type": "column_values",
+        "columns": [
+          "id"
+        ],
+        "values": [
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          208,
+          209
+        ],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_s2.001",
+          "text": "Закладки у всех есть, голубчик. А у Ирочки — с номерами. Как записи на её диктофоне."
+        },
+        {
+          "by": "mira",
+          "line": "hint.c10_o10_s2.002",
+          "text": "Отбор по автору: author_login. В row_key_json — ключ строки, на которой стояла закладка, note_no — номер записи."
+        },
+        {
+          "by": "mira",
+          "text": "SELECT id, table_name, row_key_json, created_at, note_no\nFROM attachments\nWHERE author_login = ___\nORDER BY note_no;"
+        },
+        {
+          "by": "nina",
+          "line": "hint.c10_o10_s2.004",
+          "text": "Вот, голубчик. Только первую-то я, кажется, потеряла.\nSELECT id, table_name, row_key_json, created_at, note_no\nFROM attachments\nWHERE note_no > 2\nORDER BY note_no;"
+        }
+      ],
+      "success": "Девять закладок Ирины, записи со 2-й по 10-ю. У первой записи якоря нет: её она надиктовала последней.",
+      "evidence": {
+        "id": "ev.c10.anchors",
+        "title": "Закладки Ирины",
+        "text": "attachments 201–209, author_login i.valts, 29.10–18.11.2026: строки, на которых стояла Ирина, — от журнала 3311 до её запланированного голосового. Номера записей диктофона — 2…10.",
+        "kind": "record"
+      },
+      "solution": "SELECT id, table_name, row_key_json, created_at, note_no\nFROM attachments\nWHERE author_login = 'i.valts'\nORDER BY note_no;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Из базы пропало {missing} объяснений, в том числе № {regno}.",
+      "У {changed} человек изменены особые приметы, у {erased} примету стёрли.",
+      "Три показания вписаны после смерти Ирины, одно — от несуществующего {ghost}."
+    ],
+    "blanks": [
+      {
+        "id": "missing",
+        "kind": "number",
+        "options": [
+          "9",
+          "11",
+          "21",
+          "37"
+        ],
+        "answer": "11"
+      },
+      {
+        "id": "regno",
+        "kind": "number",
+        "options": [
+          "3311",
+          "3312",
+          "3313",
+          "3320"
+        ],
+        "answer": "3312"
+      },
+      {
+        "id": "changed",
+        "kind": "number",
+        "options": [
+          "6",
+          "21",
+          "27",
+          "37"
+        ],
+        "answer": "27"
+      },
+      {
+        "id": "erased",
+        "kind": "person",
+        "options": [
+          "Бурцев Валерий Николаевич",
+          "Сазонов Пётр Ильич",
+          "Ратников Лев Борисович",
+          "Шпаков Георгий Ильич"
+        ],
+        "answer": "Бурцев Валерий Николаевич",
+        "aliases": {
+          "Бурцев Валерий Николаевич": [
+            2214,
+            "Бурцев В. Н."
+          ],
+          "Сазонов Пётр Ильич": [
+            1388,
+            "Сазонов П. И."
+          ],
+          "Ратников Лев Борисович": [
+            1104,
+            "Ратников Л. Б."
+          ],
+          "Шпаков Георгий Ильич": [
+            2307,
+            "Шпаков Г. И."
+          ]
+        }
+      },
+      {
+        "id": "ghost",
+        "kind": "person",
+        "options": [
+          "Кравец Николай Николаевич",
+          "Лапина Галина Петровна",
+          "Пахомова Зинаида Павловна",
+          "Сазонов Пётр Ильич"
+        ],
+        "answer": "Кравец Николай Николаевич",
+        "aliases": {
+          "Кравец Николай Николаевич": [
+            4301,
+            "Кравец Н. Н."
+          ],
+          "Лапина Галина Петровна": [
+            3550,
+            "Лапина Г. П."
+          ],
+          "Пахомова Зинаида Павловна": [
+            2588,
+            "Пахомова З. П."
+          ],
+          "Сазонов Пётр Ильич": [
+            1388,
+            "Сазонов П. И."
+          ]
+        }
+      }
+    ],
+    "successScene": "outro",
+    "failureLines": [
+      "Нина: «Не сходится, голубчик. Число строк — тоже улика. Пересчитай».",
+      "Даша: «Так. Стоп. Мимо. Сверяй с результатом, а не с памятью».",
+      "МИРА: «Не сходится»."
+    ]
+  },
+  "events": [
+    {
+      "id": "frame",
+      "after": {
+        "scene": "cold_open"
+      },
+      "patch": "c10.frame"
+    },
+    {
+      "id": "alibi_ally",
+      "after": {
+        "objective": "o10_1d"
+      },
+      "when": {
+        "melnik": "blackmail"
+      },
+      "scene": "alibi_ally"
+    },
+    {
+      "id": "alibi",
+      "after": {
+        "objective": "o10_1d"
+      },
+      "when": {
+        "melnik": [
+          null,
+          "reported"
+        ]
+      },
+      "scene": "alibi"
+    },
+    {
+      "id": "agent_tokha",
+      "after": {
+        "objective": "o10_1d"
+      },
+      "when": {
+        "tokha_turned": true
+      },
+      "scene": "agent_tokha"
+    },
+    {
+      "id": "rollback",
+      "after": {
+        "objective": "o10_1d"
+      },
+      "patch": "c10.rollback"
+    },
+    {
+      "id": "ws07_removed",
+      "after": {
+        "objective": "o10_1d"
+      },
+      "patch": "ws07.removed"
+    },
+    {
+      "id": "purge",
+      "after": {
+        "objective": "o10_1d"
+      },
+      "patch": "c10.purge",
+      "clockTo": "2026-12-31 10:30",
+      "scene": "maintenance"
+    },
+    {
+      "id": "abracadabra",
+      "after": {
+        "scene": "archive"
+      },
+      "when": {
+        "tokha_turned": true
+      },
+      "scene": "abracadabra"
+    },
+    {
+      "id": "import",
+      "after": {
+        "scene": "tin"
+      },
+      "patch": "c10.import"
+    },
+    {
+      "id": "carbon",
+      "after": {
+        "scene": "tin"
+      },
+      "patch": "late.nina_carbon"
+    },
+    {
+      "id": "import_tokha",
+      "after": {
+        "scene": "tin"
+      },
+      "when": {
+        "tokha_turned": true
+      },
+      "scene": "import_tokha"
+    },
+    {
+      "id": "import_melnik",
+      "after": {
+        "scene": "tin"
+      },
+      "when": {
+        "tokha_turned": false,
+        "melnik": [
+          null,
+          "blackmail"
+        ]
+      },
+      "scene": "import_melnik"
+    },
+    {
+      "id": "import_nina",
+      "after": {
+        "scene": "tin"
+      },
+      "when": {
+        "tokha_turned": false,
+        "melnik": "reported"
+      },
+      "scene": "import_nina"
+    }
+  ],
+  "outroScene": "outro"
+}

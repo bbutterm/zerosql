@@ -1,0 +1,462 @@
+{
+  "id": "case-03-polyarnaya",
+  "order": 3,
+  "act": 1,
+  "code": "Дело № 03",
+  "title": "Наезд на Полярной",
+  "subtitle": "Сорок первый звонок по закрытому делу",
+  "date": "2026-12-09 15:00",
+  "minutesPerQuery": 1,
+  "clock": {
+    "cap": "2026-12-09 18:00"
+  },
+  "location": "ГУ МВД по г. Полынья, цокольный этаж, кабинет Б0-03",
+  "difficulty": "medium",
+  "concepts": [
+    "h.inner_join",
+    "h.table_alias",
+    "h.order_multi",
+    "w.kusp"
+  ],
+  "tables": [
+    "incidents",
+    "staff",
+    "transit_taps",
+    "cameras",
+    "plate_reads",
+    "vehicles",
+    "heat_readings",
+    "transactions",
+    "intercom_events",
+    "delivery_orders",
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies"
+  ],
+  "newTables": [
+    "incident_persons",
+    "persons",
+    "morgue_records",
+    "companies"
+  ],
+  "briefing": "18.11.2026 в 23:10 у дома 17 по Полярной улице сбита женщина. Водитель скрылся. В ту же ночь директор ЧОП «Щит» заявил об угоне служебной «Тайги». Материал приостановлен: «угон, виновный не установлен».\n\nМать погибшей звонит в отдел в сорок первый раз.\n\nДопуск расширен: участники происшествий (incident_persons), реестр жителей ПБД (persons), морг Горздрава (morgue_records), реестр юрлиц (companies). Таблицы склеиваются по общим полям: incidents.vehicle_id → vehicles.id, incident_persons.person_id → persons.id, companies.director_person_id → persons.id, morgue_records.kusp_no → incidents.kusp_no.",
+  "starterSql": "SELECT * FROM incidents WHERE kusp_no IN (4515, 4518);",
+  "introScene": "intro",
+  "objectives": [
+    {
+      "id": "o3_1",
+      "order": 1,
+      "task": "Новое понятие — JOIN: он склеивает строки двух таблиц по общему полю. У происшествия в incidents есть vehicle_id — это id машины в vehicles. Выведи КУСП 4515 (наезд) и 4518 (угон) вместе с номером и маркой машины: incidents JOIN vehicles ON vehicles.id = incidents.vehicle_id.",
+      "concept": "h.inner_join",
+      "validation": {
+        "type": "rows_match",
+        "referenceQuery": "SELECT incidents.kusp_no, vehicles.plate FROM incidents JOIN vehicles ON vehicles.id = incidents.vehicle_id WHERE incidents.kusp_no IN (4515, 4518)"
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c03_o3_1.001",
+          "text": "Так. Стоп. Наезд и угон в одну ночь, а машина в бумагах только у одного. Склей их с реестром машин — увидишь."
+        },
+        {
+          "by": "mira",
+          "text": "JOIN … ON склеивает строку одной таблицы со строкой другой, если совпало общее поле. Пример: SELECT staff.full_name, persons.birth_date FROM staff JOIN persons ON persons.id = staff.person_id LIMIT 5. См. «INNER JOIN»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT incidents.kusp_no, vehicles.plate, vehicles.make FROM incidents JOIN vehicles ON ________.id = incidents.__________ WHERE incidents.kusp_no IN (____, ____);"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT incidents.kusp_no, vehicles.plate, vehicles.make FROM incidents JOIN vehicles ON vehicles.id = incidents.id WHERE incidents.kusp_no IN (4515, 4518); — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Одна строка вместо двух. У наезда vehicle_id пустой, и INNER JOIN молча выбросил его: склеивать не с чем. Зато у угона машина есть — «Тайга» К404ТО.",
+      "evidence": {
+        "id": "ev.c03.taiga",
+        "title": "«Тайга» К404ТО",
+        "text": "КУСП 4518, угон: «Тайга 4×4» К404ТО, владелец — ЧОП «Щит». У КУСП 4515 (наезд на Полярной, 17) машина не записана: vehicle_id пуст, INNER JOIN эту строку не выводит.",
+        "kind": "record"
+      },
+      "sceneAfter": "taiga",
+      "solution": "SELECT incidents.kusp_no, incidents.kind, vehicles.plate, vehicles.make, vehicles.model FROM incidents JOIN vehicles ON vehicles.id = incidents.vehicle_id WHERE incidents.kusp_no IN (4515, 4518);"
+    },
+    {
+      "id": "o3_2",
+      "order": 2,
+      "task": "Алиасы: после имени таблицы пишут короткое имя — plate_reads r, cameras c — и дальше r.plate вместо plate_reads.plate. Маршрут К404ТО вечером 18.11, с 22:00 до полуночи: время проезда и название камеры, по порядку времени. plate_reads r JOIN cameras c ON c.id = r.camera_id.",
+      "concept": "h.table_alias",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Маршрут восстановлен.",
+        "rules": [
+          {
+            "type": "not",
+            "message": "19.11 в 03:10 — это уже следующая ночь. Нужен только вечер 18.11, до полуночи.",
+            "rule": {
+              "type": "cell_value",
+              "value": "2026-11-19 03:10:00"
+            }
+          },
+          {
+            "type": "rows_match",
+            "ordered": true,
+            "referenceQuery": "SELECT r.read_at, c.name FROM plate_reads r JOIN cameras c ON c.id = r.camera_id WHERE r.plate = 'К404ТО' AND r.read_at BETWEEN '2026-11-18 22:00:00' AND '2026-11-18 23:59:59' ORDER BY r.read_at"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c03_o3_2.001",
+          "text": "Номер есть. Теперь — где эта «Тайга» каталась. Камеры знают, только у них названия, а не номера. Склей."
+        },
+        {
+          "by": "mira",
+          "text": "Алиас — короткое имя таблицы сразу после FROM или JOIN: FROM incidents i. Дальше пишут i.kusp_no. Пример: SELECT i.kusp_no, s.full_name FROM incidents i JOIN staff s ON s.id = i.officer_staff_id LIMIT 5. См. «Алиасы таблиц»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT r.read_at, c.name FROM plate_reads r JOIN cameras c ON c.id = r.__________ WHERE r.plate = '______' AND r.read_at BETWEEN '2026-11-18 __:00:00' AND '2026-11-18 23:59:59' ORDER BY _________;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT r.read_at, c.name FROM plate_reads r JOIN cameras c ON c.id = r.camera_id WHERE r.plate = 'К404ТО' ORDER BY r.read_at; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "22:52 — выезд с базы «Щита». 23:08 — Полярная / Мира, за две минуты до наезда. 23:21 — Объездная. 23:34 — снова база. «Угнанная» машина вернулась домой.",
+      "evidence": {
+        "id": "ev.c03.route",
+        "title": "Маршрут «Тайги»",
+        "text": "К404ТО, 18.11.2026: 22:52 камера 15 «Промзона — база ЧОП «Щит»» (выезд), 23:08 камера 7 «Полярная / Мира», 23:21 камера 3 «Объездная», 23:34 камера 15 (въезд). Наезд на Полярной, 17 — в 23:10.",
+        "kind": "record"
+      },
+      "sceneAfter": "route",
+      "solution": "SELECT r.read_at, c.name, r.direction FROM plate_reads r JOIN cameras c ON c.id = r.camera_id WHERE r.plate = 'К404ТО' AND r.read_at BETWEEN '2026-11-18 22:00:00' AND '2026-11-18 23:59:59' ORDER BY r.read_at;"
+    },
+    {
+      "id": "o3_3",
+      "order": 3,
+      "task": "«Тайга» записана на ЧОП «Щит». Кто директор? У компании в companies есть director_person_id — это id человека в persons. Нужно его полное имя: companies c JOIN persons p.",
+      "concept": "h.inner_join",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Директор найден.",
+        "rules": [
+          {
+            "type": "cell_value",
+            "value": "Бурцев Валерий Николаевич"
+          },
+          {
+            "type": "row_count",
+            "expected": 3,
+            "comparison": "lte"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c03_o3_3.001",
+          "text": "«Щит» в реестре пишут как придётся, голубчик. То ёлочки, то лапки. Ищи не целиком, а по кусочку."
+        },
+        {
+          "by": "mira",
+          "text": "Склейка с третьей таблицей — та же схема: общее поле director_person_id ↔ persons.id. Пример: SELECT c.name, p.full_name FROM companies c JOIN persons p ON p.id = c.director_person_id WHERE c.kind = 'МУП'. См. «INNER JOIN»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT c.name, p.full_name FROM companies c JOIN persons p ON p.id = c.__________________ WHERE c.name LIKE '%___%';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT c.name, p.full_name FROM companies c JOIN persons p ON p.id = c.director_person_id WHERE c.name = 'ЧОП \"Щит\"'; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Бурцев Валерий Николаевич, директор ЧОП «Щит». Заявление об угоне он писал сам.",
+      "evidence": {
+        "id": "ev.c03.director",
+        "title": "Директор «Щита»",
+        "text": "ЧОП «Щит» (companies 17), директор — Бурцев Валерий Николаевич (persons 2214). Он же заявитель по КУСП 4518. В реестре название в «ёлочках»: условие = 'ЧОП \"Щит\"' ничего не находит.",
+        "kind": "record"
+      },
+      "sceneAfter": "tokha",
+      "solution": "SELECT c.name, c.director_person_id, p.full_name FROM companies c JOIN persons p ON p.id = c.director_person_id WHERE c.name LIKE '%Щит%';"
+    },
+    {
+      "id": "o3_4",
+      "order": 4,
+      "task": "КУСП — сквозной номер: дежурный ставит его по порядку, в момент регистрации. Все сообщения с 22:00 18.11 до 01:00 19.11 — номер КУСП и время — по порядку номеров.",
+      "concept": "w.kusp",
+      "validation": {
+        "type": "rows_match",
+        "ordered": true,
+        "referenceQuery": "SELECT kusp_no, reported_at FROM incidents WHERE reported_at BETWEEN '2026-11-18 22:00:00' AND '2026-11-19 01:00:00' ORDER BY kusp_no"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c03_o3_4.001",
+          "text": "Номера дежурный ставит подряд, голубчик, как записал. Время потом поправить можно, а номер — нет. Разложи по номерам."
+        },
+        {
+          "by": "mira",
+          "text": "ORDER BY сортирует по любому столбцу, не только по времени. Пример: SELECT kusp_no, reported_at FROM incidents WHERE kind = 'угон' ORDER BY kusp_no DESC LIMIT 5. См. «Как нумеруется КУСП»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT kusp_no, reported_at, kind FROM incidents WHERE reported_at BETWEEN '2026-11-18 __:00:00' AND '2026-11-19 __:00:00' ORDER BY _______;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT kusp_no, reported_at, kind FROM incidents WHERE reported_at BETWEEN '2026-11-18 22:00:00' AND '2026-11-19 01:00:00' ORDER BY reported_at; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "4514 — 22:55, 4515 — 23:10, 4516 — 23:25, 4517 — 23:40, 4518 — 22:40, 4519 — 00:05. Угон «в 22:40» получил номер после сообщения в 23:40. Его зарегистрировали после наезда, а время потом переписали.",
+      "evidence": {
+        "id": "ev.c03.kusp_order",
+        "title": "КУСП не по порядку",
+        "text": "Ночь 18–19.11: КУСП 4514 (22:55), 4515 (23:10, наезд), 4516 (23:25), 4517 (23:40), 4518 (угон, записано 22:40), 4519 (00:05). Номер 4518 выдан после 23:40 — заявление об угоне зарегистрировано позже наезда.",
+        "kind": "record"
+      },
+      "sceneAfter": "kusp",
+      "solution": "SELECT kusp_no, reported_at, kind, description FROM incidents WHERE reported_at BETWEEN '2026-11-18 22:00:00' AND '2026-11-19 01:00:00' ORDER BY kusp_no;"
+    },
+    {
+      "id": "o3_5",
+      "order": 5,
+      "task": "Кто погиб? В incident_persons по КУСП 4515 записана потерпевшая — но без человека. Найди её строку и склей с моргом Горздрава (morgue_records) по номеру КУСП.",
+      "concept": "h.inner_join",
+      "validation": {
+        "type": "any_of",
+        "successMessage": "Погибшая установлена.",
+        "rules": [
+          {
+            "type": "cell_value",
+            "value": 4127,
+            "columns": [
+              "person_id"
+            ]
+          },
+          {
+            "type": "cell_value",
+            "value": "Вальц Ирина Петровна"
+          }
+        ]
+      },
+      "prediction": {
+        "question": "Сколько строк вернёт JOIN по КУСП 4515?",
+        "sql": "SELECT ip.role, p.full_name FROM incident_persons ip JOIN persons p ON p.id = ip.person_id WHERE ip.kusp_no = 4515;",
+        "options": [
+          0,
+          1,
+          2
+        ],
+        "answer": 0,
+        "explanation": "У потерпевшей person_id пустой. NULL ничему не равен — даже другому NULL, — и INNER JOIN такую строку не склеит."
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c03_o3_5.001",
+          "text": "Пусто — не значит нет. Потерпевшая в бумагах есть, только без фамилии. Ищи пустую графу, а не человека."
+        },
+        {
+          "by": "mira",
+          "text": "Пустую ячейку ищут через IS NULL: сравнение = NULL всегда даёт «неизвестно», и строк не будет. Пример: SELECT id, plate, deregistered_at FROM vehicles WHERE deregistered_at IS NULL LIMIT 5. См. «INNER JOIN»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT ip.role, ip.note, m.full_name_text, m.person_id FROM incident_persons ip JOIN morgue_records m ON m.______ = ip.______ WHERE ip.kusp_no = ____ AND ip.person_id __ ____;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT ip.role, ip.note, m.full_name_text, m.person_id FROM incident_persons ip JOIN morgue_records m ON m.kusp_no = ip.kusp_no WHERE ip.kusp_no = 4515 AND ip.person_id = NULL; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Вальц Ирина Петровна, persons 4127. Поступила в морг 19.11 в 00:40, опознана матерью. При себе — ключ с биркой «Б0-03».",
+      "evidence": {
+        "id": "ev.c03.victim",
+        "title": "Погибшая — Вальц И. П.",
+        "text": "КУСП 4515: потерпевшая без person_id, «при себе ключ с биркой «Б0-03»». Морг Горздрава, запись 311: «Вальц Ирина Петровна», person_id 4127, поступила 19.11.2026 в 00:40, опознана 19.11 в 09:30 — «Вальц В. С. (мать)».",
+        "kind": "record"
+      },
+      "sceneAfter": "morgue",
+      "solution": "SELECT ip.role, ip.note, m.full_name_text, m.person_id, m.received_at, m.identified_by FROM incident_persons ip JOIN morgue_records m ON m.kusp_no = ip.kusp_no WHERE ip.kusp_no = 4515 AND ip.person_id IS NULL;"
+    },
+    {
+      "id": "o3_1b",
+      "order": 6,
+      "optional": true,
+      "task": "Дополнительно. Что стало с «Тайгой» потом? Все происшествия, где записана машина К404ТО: КУСП, время, описание. Условие — на номер машины в vehicles.",
+      "concept": "h.inner_join",
+      "validation": {
+        "type": "column_values",
+        "columns": [
+          "kusp_no"
+        ],
+        "values": [
+          4518,
+          4549
+        ],
+        "mode": "equal"
+      },
+      "hints": [
+        {
+          "by": "nina",
+          "line": "hint.c03_o3_1b.001",
+          "text": "Угнанные машины, голубчик, потом всплывают. Где-нибудь да всплывают. Глянь, где ещё записан этот номер."
+        },
+        {
+          "by": "mira",
+          "text": "Условие можно ставить на столбец любой из склеенных таблиц. Пример: SELECT i.kusp_no, v.make FROM incidents i JOIN vehicles v ON v.id = i.vehicle_id WHERE v.make = 'Ладья' LIMIT 5. См. «INNER JOIN»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT i.kusp_no, i.reported_at, i.description FROM incidents i JOIN vehicles v ON v.__ = i.__________ WHERE v.plate = '______';"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT i.kusp_no, i.reported_at, i.description FROM incidents i JOIN vehicles v ON v.id = i.vehicle_id WHERE v.plate = 'K404TO'; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "КУСП 4549, 20.11, 10:40: «Тайгу» нашли сгоревшей на Объездной. Кузов выгорел — осматривать нечего.",
+      "evidence": {
+        "id": "ev.c03.burnt",
+        "title": "Сгоревшая «Тайга»",
+        "text": "КУСП 4549, 20.11.2026 10:40, рапорт ДПС: «Обнаружена сгоревшая «Тайга» К404ТО (в угоне по КУСП 4518)». Объездная, 7-й км.",
+        "kind": "record"
+      },
+      "sceneAfter": "burnt",
+      "solution": "SELECT i.kusp_no, i.reported_at, i.kind, i.description FROM incidents i JOIN vehicles v ON v.id = i.vehicle_id WHERE v.plate = 'К404ТО' ORDER BY i.kusp_no;"
+    },
+    {
+      "id": "o3_2b",
+      "order": 7,
+      "optional": true,
+      "task": "Дополнительно. Кто ещё проехал камеру 7 «Полярная / Мира» 18.11 с 23:00 до 23:15? Номер, время, направление и марка из vehicles. Сортировка по двум ключам: сначала по направлению, а внутри направления — от поздних проездов к ранним.",
+      "concept": "h.order_multi",
+      "validation": {
+        "type": "compound",
+        "successMessage": "Все машины у камеры.",
+        "rules": [
+          {
+            "type": "rows_match",
+            "ordered": true,
+            "referenceQuery": "SELECT r.plate, r.read_at FROM plate_reads r WHERE r.camera_id = 7 AND r.read_at BETWEEN '2026-11-18 23:00:00' AND '2026-11-18 23:15:00' ORDER BY r.direction, r.read_at DESC"
+          },
+          {
+            "type": "cell_value",
+            "value": "Сайгак Next"
+          }
+        ]
+      },
+      "hints": [
+        {
+          "by": "dasha",
+          "line": "hint.c03_o3_2b.001",
+          "text": "Тёмных машин ночью — полгорода. Кто ещё мимо камеры шёл? Разложи по сторонам — кто в центр, кто из центра."
+        },
+        {
+          "by": "mira",
+          "text": "В ORDER BY можно перечислить несколько ключей через запятую: второй работает внутри одинаковых значений первого, у каждого свой ASC или DESC. Пример: SELECT district, reported_at, kind FROM incidents WHERE reported_at LIKE '2026-11-19%' ORDER BY district, reported_at DESC. См. «Сортировка по нескольким ключам»."
+        },
+        {
+          "by": "mira",
+          "text": "Шаблон: SELECT r.direction, r.read_at, r.plate, v.make FROM plate_reads r JOIN vehicles v ON v.plate = r.plate WHERE r.camera_id = _ AND r.read_at BETWEEN '2026-11-18 23:00:00' AND '2026-11-18 23:15:00' ORDER BY ___________, _________ ____;"
+        },
+        {
+          "by": "nina",
+          "text": "Ирочкина шпаргалка: SELECT r.direction, r.read_at, r.plate, v.make FROM plate_reads r JOIN vehicles v ON v.plate = r.plate WHERE r.camera_id = 7 AND r.read_at BETWEEN '2026-11-18 23:00:00' AND '2026-11-18 23:15:00' ORDER BY r.direction, r.read_at; — одна ошибка. Ищи, голубчик."
+        }
+      ],
+      "success": "Такси М412КС, «Сайгак» «Сияния», «Вега» Медсанчасти — у всех своя работа. В центр в 23:08, к дому 17, шла «Тайга».",
+      "evidence": {
+        "id": "ev.c03.cars",
+        "title": "Ещё три машины",
+        "text": "Камера 7, 18.11.2026, 23:00–23:15: К404ТО «Тайга» (23:08, в центр), В615КР «Сайгак Next» ПАО «Сияние» (23:11, в центр), М412КС «Нордика», такси (23:02, из центра), Х286ВС «Вега» АНО «Медсанчасть Створ» (23:14, из центра).",
+        "kind": "lead"
+      },
+      "sceneAfter": "cars",
+      "solution": "SELECT r.direction, r.read_at, r.plate, v.make, v.owner_name FROM plate_reads r JOIN vehicles v ON v.plate = r.plate WHERE r.camera_id = 7 AND r.read_at BETWEEN '2026-11-18 23:00:00' AND '2026-11-18 23:15:00' ORDER BY r.direction, r.read_at DESC;"
+    }
+  ],
+  "protocol": {
+    "statements": [
+      "Заявление об угоне № {claim} зарегистрировано позже наезда;",
+      "«угнанная» машина {plate} вернулась на базу «Щита» в {back};",
+      "погибшая — {victim}."
+    ],
+    "blanks": [
+      {
+        "id": "claim",
+        "kind": "number",
+        "options": [
+          "4515",
+          "4517",
+          "4518",
+          "4519"
+        ],
+        "answer": "4518"
+      },
+      {
+        "id": "plate",
+        "kind": "text",
+        "options": [
+          "К404ТО",
+          "М412КС",
+          "В615КР",
+          "Х286ВС"
+        ],
+        "answer": "К404ТО"
+      },
+      {
+        "id": "back",
+        "kind": "datetime",
+        "precision": "minute",
+        "options": [
+          "2026-11-18 22:40:00",
+          "2026-11-18 22:52:00",
+          "2026-11-18 23:08:00",
+          "2026-11-18 23:10:00",
+          "2026-11-18 23:34:00"
+        ],
+        "answer": "2026-11-18 23:34:00"
+      },
+      {
+        "id": "victim",
+        "kind": "person",
+        "options": [
+          "Вальц Ирина Петровна",
+          "Бурцев Валерий Николаевич",
+          "Арсланов Тимур Рустамович"
+        ],
+        "answer": "Вальц Ирина Петровна",
+        "aliases": {
+          "Вальц Ирина Петровна": [
+            4127
+          ]
+        }
+      }
+    ],
+    "batchSize": 3,
+    "successScene": "outro",
+    "failureLines": [
+      "Даша: Так. Стоп. Не сходится. Его адвокат такое за минуту разберёт.",
+      "Нина: Не сходится, голубчик. Номер — по порядку, время — до минуты. Глянь ещё раз.",
+      "Даша: Мимо. Мать сорок раз слышала «не установлено». Давай без дыр."
+    ]
+  },
+  "events": [
+    {
+      "id": "ratnikov_call",
+      "after": {
+        "interrogation": "int_burtsev",
+        "breaks": 2
+      },
+      "scene": "ratnikov_call"
+    }
+  ],
+  "outroScene": "outro"
+}

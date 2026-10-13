@@ -1,0 +1,1199 @@
+{
+  "scenes": [
+    {
+      "id": "intro",
+      "location": "basement_b0_03_evening",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c07.intro.001",
+          "speaker": "narrator",
+          "text": "Двадцать первое декабря, четыре часа дня. Самая длинная ночь года. В подвале её не отличить от любой другой."
+        },
+        {
+          "id": "c07.intro.002",
+          "speaker": "narrator",
+          "text": "…прокуратура города завершила проверку. Гибель бухгалтера Сазонова признана несчастным случаем: в феврале пятнадцатого года его машина съехала в промоину.",
+          "direction": "радиодиктор из приёмника Нины: бодро, чуть искажённо"
+        },
+        {
+          "id": "c07.intro.003",
+          "speaker": "nina",
+          "emotion": "angry",
+          "text": "Съехал. Одиннадцать лет «сбежал», а теперь — «съехал». И хоть бы кто извинился.",
+          "direction": "щёлкает выключателем приёмника; стучит пальцем по столу"
+        },
+        {
+          "id": "c07.intro.004",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Ратников где? Третий раз звоню — сбрасывает.",
+          "direction": "быстро, жуёт жвачку"
+        },
+        {
+          "id": "c07.intro.005",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Лев Борисович на совещании. В прокуратуре. Велел не беспокоить."
+        },
+        {
+          "id": "c07.intro.006",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "В прокуратуре. Ага. В той самой, у которой «съехал»."
+        },
+        {
+          "id": "c07.intro.007",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Это всё не по описи, Дашенька. Не нашего ума."
+        },
+        {
+          "id": "c07.intro.008",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "А ты, голубчик, Ирочкину тетрадку до конца долистай. На последней странице — Северная."
+        },
+        {
+          "id": "c07.intro.009",
+          "speaker": "narrator",
+          "text": "Последняя исписанная страница. Почерк торопливый, ручка продавила бумагу насквозь."
+        },
+        {
+          "id": "c07.intro.010",
+          "speaker": "irina",
+          "emotion": "neutral",
+          "text": "Кто въехал на Северную в пятнадцатом? Не строители.",
+          "direction": "голос из памяти, ночной полушёпот — так она прочла бы свою запись"
+        },
+        {
+          "id": "c07.intro.011",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Северная, четырнадцать и шестнадцать — дома «Глубина-Строя». Я туда в патруле на вызовы ездила. Квартирки — ничего так."
+        },
+        {
+          "id": "c07.intro.012",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Реестр недвижимости тебе открыли, голубчик. И кадры, и счета, и горздрав. Мельник с утра подписал — под миграцию."
+        },
+        {
+          "id": "c07.intro.013",
+          "speaker": "dasha",
+          "emotion": "smug",
+          "text": "Ну. Клюёт, Ноль. Давай."
+        }
+      ]
+    },
+    {
+      "id": "flats",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        {
+          "id": "c07.flats.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Двадцать две. А строителей там в пятнадцатом — сотни были. Интересно, кого выбрали."
+        },
+        {
+          "id": "c07.flats.002",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Северная, четырнадцать… Туда в пятнадцатом пол-отдела на новоселья бегало. С тортами.",
+          "direction": "стучит пальцем по столу, вспоминает"
+        },
+        {
+          "id": "c07.flats.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Не к рабочим, голубчик. Рабочие нас на новоселья не звали."
+        }
+      ]
+    },
+    {
+      "id": "list",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        {
+          "id": "c07.list.001",
+          "speaker": "narrator",
+          "text": "Четыре строки. Первая — Ратников Лев Борисович. Северная, четырнадцать, квартира двадцать семь. Восемнадцатое декабря пятнадцатого."
+        },
+        {
+          "id": "c07.list.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Твою ж… Так. Стоп. Какой из него строитель?"
+        },
+        {
+          "id": "c07.list.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Никакой, Дашенька.",
+          "direction": "тихо, не глядя на экран"
+        },
+        {
+          "id": "c07.list.004",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Он в декабре пятнадцатого в новом пальто на работу пришёл. Я ещё порадовалась — наконец-то."
+        },
+        {
+          "id": "c07.list.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Шубин, Мирошник, Петров. Петров — это кто?"
+        },
+        {
+          "id": "c07.list.006",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "Виктор Семёнович — доктор. Всю стройку лечил, и нас заодно. Только числился он в медсанчасти."
+        },
+        {
+          "id": "c07.list.007",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "А медсанчасть, голубчик, — своя контора, с договором на стройку. Проверь, что это поле значит, прежде чем человека вешать."
+        },
+        {
+          "id": "c07.list.008",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Мирошник — это Алла? Которая со льда стримила?"
+        },
+        {
+          "id": "c07.list.009",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Она самая. Это она в пятнадцатом про «бухгалтера-беглеца» писала."
+        },
+        {
+          "id": "c07.list.010",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Значит, с доктором — серо. А со стариком — чёрным по белому."
+        }
+      ]
+    },
+    {
+      "id": "ledger",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        {
+          "id": "c07.ledger.001",
+          "speaker": "narrator",
+          "text": "Сорок восемь строк. Плюс двадцать пять тысяч — и через пару дней минус двадцать пять тысяч. Каждый месяц, два года подряд."
+        },
+        {
+          "id": "c07.ledger.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Он что, возвращал? Всё?"
+        },
+        {
+          "id": "c07.ledger.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "«Лечение члена семьи»… Тамара Викторовна болела, голубчик. Лёгкие. Они в бараке на Угольной жили, плесень по стенам."
+        },
+        {
+          "id": "c07.ledger.004",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "А восьмого ноября шестнадцатого — две строки одинаковые. Не ошибка. Два возврата одним днём."
+        },
+        {
+          "id": "c07.ledger.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Два месяца держал. А потом отнёс. Хрен поймёшь этих святых."
+        }
+      ]
+    },
+    {
+      "id": "tamara",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        {
+          "id": "c07.tamara.001",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Я на похоронах была, голубчик. Март, ветер с залива. Он стоял без шапки и мёрз."
+        },
+        {
+          "id": "c07.tamara.002",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "А потом месяц ходил на работу в том самом новом пальто. Застёгнутом на все пуговицы."
+        },
+        {
+          "id": "c07.tamara.003",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "…Ладно. Это к делу не подошьёшь."
+        }
+      ]
+    },
+    {
+      "id": "kept",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        {
+          "id": "c07.kept.001",
+          "speaker": "narrator",
+          "text": "Шестьдесят строк. Пахомова, Шубин, Мирошник и пятьдесят семь фамилий из Старого Створа. Ратникова в списке нет."
+        },
+        {
+          "id": "c07.kept.002",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Так. Стоп. Деньги не брал. А квартиру взял."
+        },
+        {
+          "id": "c07.kept.003",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Серость, Дашенька. Ни белое, ни чёрное. Сам себя пополам разрезал."
+        },
+        {
+          "id": "c07.kept.004",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Мне от этой серости не легче."
+        },
+        {
+          "id": "c07.kept.005",
+          "speaker": "nina",
+          "emotion": "thinking",
+          "text": "А переселенцам — по пятнадцать тысяч, разово, на всю зиму. Фонд добрый, голубчик. Когда ему надо."
+        }
+      ]
+    },
+    {
+      "id": "shubin",
+      "location": "basement_b0_03_evening",
+      "lines": [
+        {
+          "id": "c07.shubin.001",
+          "speaker": "narrator",
+          "text": "Две строки. Шубин Аркадий Алексеевич и Мирошник Алла Дмитриевна. Квартира и деньги — без единого возврата."
+        },
+        {
+          "id": "c07.shubin.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Шубин. Прокурор города. Тот самый, что Сазонова в «съехал» записал."
+        },
+        {
+          "id": "c07.shubin.003",
+          "speaker": "nina",
+          "emotion": "scared",
+          "text": "Тише, Дашенька. Такие вещи вслух не говорят. Это не по описи."
+        },
+        {
+          "id": "c07.shubin.004",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "А я скажу. Мирошник его в пятнадцатом записала в «беглецы», Шубин теперь — в «несчастный случай». Конвейер."
+        },
+        {
+          "id": "c07.shubin.005",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Лев Борисович вернулся. Сидит у себя, дверь прикрыта. Чай заварил — на двоих."
+        },
+        {
+          "id": "c07.shubin.006",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Иди, голубчик. Он тебя ждёт."
+        }
+      ]
+    },
+    {
+      "id": "office_dasha",
+      "location": "ratnikov_office",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c07.office_dasha.001",
+          "speaker": "narrator",
+          "text": "Кабинет Ратникова. Чай в подстаканнике с ледоколом. Даша заходит первой и садится у окна."
+        },
+        {
+          "id": "c07.office_dasha.002",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Даша, выйди."
+        },
+        {
+          "id": "c07.office_dasha.003",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Не выйду."
+        },
+        {
+          "id": "c07.office_dasha.004",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "…Ну-с. Значит, на троих. Третьего стакана, правда, нет."
+        },
+        {
+          "id": "c07.office_dasha.005",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Обойдусь. Я послушаю."
+        }
+      ],
+      "next": "office"
+    },
+    {
+      "id": "office_alone",
+      "location": "ratnikov_office",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c07.office_alone.001",
+          "speaker": "narrator",
+          "text": "Кабинет Ратникова. Чай в подстаканнике с ледоколом. Даша остаётся в коридоре, дверь закрыта неплотно."
+        },
+        {
+          "id": "c07.office_alone.002",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Садись, коллега. Даша пусть погуляет — ей это слушать незачем."
+        }
+      ],
+      "next": "office"
+    },
+    {
+      "id": "office",
+      "location": "ratnikov_office",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c07.office.001",
+          "speaker": "narrator",
+          "text": "Второй стакан он подвигает через стол. Чай ещё горячий: он знал, когда ждать гостей."
+        },
+        {
+          "id": "c07.office.002",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Ну-с, коллега. По Северной, да? У Нины всё на лице написано."
+        },
+        {
+          "id": "c07.office.003",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Спрашивай. Только по порядку — сердце у меня не казённое."
+        },
+        {
+          "id": "c07.office.004",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Квартиру получил по очереди, как все.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office.005",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "В установленном порядке, коллега. Список, печать, подпись.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office.006",
+          "speaker": "narrator",
+          "text": "Он отпивает чай. Ложечка звякает о стакан."
+        },
+        {
+          "id": "c07.office.007",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Что ещё у тебя?"
+        },
+        {
+          "id": "c07.office.008",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Дело Сазонова вёл как положено.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office.009",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Все материалы приобщены надлежащим образом. Розыск без результата — так бывает.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office.010",
+          "speaker": "narrator",
+          "text": "Пальцы сами находят трубочку нитроглицерина в нагрудном кармане. Он трогает её — и убирает руку."
+        },
+        {
+          "id": "c07.office.011",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Дальше."
+        },
+        {
+          "id": "c07.office.012",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "В пятнадцатом на Береговую я не выезжал.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office.013",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Створ — не мой район был. Туда выезжал наряд, в установленном порядке.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office.014",
+          "speaker": "narrator",
+          "text": "За окном ни огня. До первого солнца — двадцать один день."
+        },
+        {
+          "id": "c07.office.015",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Ну? Последнее?"
+        },
+        {
+          "id": "c07.office.016",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "От фонда я ничего не брал.",
+          "direction": "без паузы, устало, просто — это правда"
+        },
+        {
+          "id": "c07.office.017",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Вот это — правда. Хочешь — проверяй, коллега."
+        }
+      ],
+      "interrogation": {
+        "suspect": "ratnikov",
+        "mode": "ally",
+        "breakSteps": [
+          "neutral",
+          "uneasy",
+          "ashamed",
+          "broken"
+        ],
+        "trustFlag": "ratnikov_trust",
+        "lieTell": "Книжный канцелярит («надлежащим образом», «в установленном порядке») и пауза в полсекунды перед ответом",
+        "liveQuery": true,
+        "doneScene": "confession",
+        "points": [
+          {
+            "line": "c07.office.004",
+            "press": "office_press_flat",
+            "present": {
+              "prompt": "«По очереди, как все». Чем ответить?",
+              "correct": [
+                "ev.c07.flat"
+              ],
+              "cards": [
+                {
+                  "all": [
+                    {
+                      "column": "address_text",
+                      "eq": "Северная, 14-27"
+                    }
+                  ]
+                }
+              ],
+              "success": "office_break_flat",
+              "failure": "office_miss_flat"
+            }
+          },
+          {
+            "line": "c07.office.008",
+            "press": "office_press_case",
+            "present": {
+              "prompt": "«Как положено». Где в деле 15-0219 дыра?",
+              "correct": [],
+              "cards": [
+                {
+                  "any": [
+                    {
+                      "column": "note",
+                      "contains": "к объяснению № 3312"
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": [
+                        "reg_no",
+                        "doc_reg_no"
+                      ],
+                      "eq": 3313
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": [
+                        "id",
+                        "case_id"
+                      ],
+                      "eq": "15-0219"
+                    },
+                    {
+                      "column": "investigator",
+                      "contains": "Ратников"
+                    }
+                  ]
+                }
+              ],
+              "success": "office_break_case",
+              "failure": "office_miss_case"
+            }
+          },
+          {
+            "line": "c07.office.012",
+            "press": "office_press_shore",
+            "present": {
+              "prompt": "«Не выезжал». Кто его видел на Береговой?",
+              "correct": [],
+              "cards": [
+                {
+                  "all": [
+                    {
+                      "column": "applicant_text",
+                      "contains": "Береговая, 4"
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": [
+                        "reg_no",
+                        "doc_reg_no"
+                      ],
+                      "eq": 3311
+                    }
+                  ]
+                },
+                {
+                  "all": [
+                    {
+                      "column": "note",
+                      "contains": "строительный металлолом"
+                    }
+                  ]
+                }
+              ],
+              "success": "office_break_shore",
+              "failure": "office_miss_shore"
+            }
+          },
+          {
+            "line": "c07.office.016",
+            "press": "office_press_fund",
+            "present": {
+              "prompt": "«От фонда ничего не брал». Это правда — докажи её двумя карточками.",
+              "correct": [
+                "ev.c07.ledger",
+                "ev.c07.kept"
+              ],
+              "requireAll": true,
+              "success": "office_break_fund",
+              "failure": "office_miss_fund"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "office_press_flat",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_press_flat.001",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Очередь была, коллега. Жилищная комиссия, протокол заседания. Всё надлежащим образом.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        },
+        {
+          "id": "c07.office_press_flat.002",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Тамара тогда… Неважно. Дальше спрашивай."
+        }
+      ]
+    },
+    {
+      "id": "office_press_case",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_press_case.001",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Дело приостановлено в установленном порядке. Люди, бывает, уезжают. Бухгалтеры — особенно.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        }
+      ]
+    },
+    {
+      "id": "office_press_shore",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_press_shore.001",
+          "speaker": "ratnikov",
+          "emotion": "neutral",
+          "text": "Наряд стройки проверил. Отблеск прожекторов. В рапорте всё записано надлежащим образом.",
+          "direction": "книжный регистр, пауза в полсекунды перед фразой — ложь",
+          "lie": true
+        }
+      ]
+    },
+    {
+      "id": "office_press_fund",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_press_fund.001",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Фонд мне предлагал. Я отказался. Не веришь — спроси у фонда, у них бухгалтерия аккуратная."
+        }
+      ]
+    },
+    {
+      "id": "office_break_flat",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_break_flat.001",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "…Северная, четырнадцать, квартира двадцать семь. Восемнадцатое декабря. Число помню."
+        },
+        {
+          "id": "c07.office_break_flat.002",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Очереди не было, коллега. Был список. И я в нём — между прорабом и крановщиком."
+        }
+      ]
+    },
+    {
+      "id": "office_break_case",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_break_case.001",
+          "speaker": "ratnikov",
+          "emotion": "ashamed",
+          "text": "Схема есть. Девочка рисовала: машина, лёд, два человека. А объяснения к схеме нет."
+        },
+        {
+          "id": "c07.office_break_case.002",
+          "speaker": "ratnikov",
+          "emotion": "ashamed",
+          "text": "Три-три-один-два. Номер помню, как свой. Не дави. Дойдём."
+        }
+      ]
+    },
+    {
+      "id": "office_break_shore",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_break_shore.001",
+          "speaker": "ratnikov",
+          "emotion": "ashamed",
+          "text": "Выезжал. Двадцатого февраля, в час ночи. Береговая, четыре."
+        },
+        {
+          "id": "c07.office_break_shore.002",
+          "speaker": "ratnikov",
+          "emotion": "ashamed",
+          "text": "Ким Сергей Андреевич. Мы с ним корюшку ловили. А дочка его на крыльце стояла — в одной ночнушке, в мороз."
+        }
+      ]
+    },
+    {
+      "id": "office_break_fund",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_break_fund.001",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Вернул. Все двадцать четыре, до копейки."
+        },
+        {
+          "id": "c07.office_break_fund.002",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Два месяца в шестнадцатом держал. Думал — оставлю, всё равно никто не узнает… Восьмого ноября отнёс оба."
+        },
+        {
+          "id": "c07.office_break_fund.003",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Деньги вернуть можно, коллега. А квартиру я не вернул."
+        }
+      ]
+    },
+    {
+      "id": "office_miss_flat",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_miss_flat.001",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Не то, коллега. Бумажкой не той в меня тычешь. Обидно, между прочим."
+        }
+      ]
+    },
+    {
+      "id": "office_miss_case",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_miss_case.001",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Это к Сазонову не относится. Ты меня наугад не бей, коллега."
+        }
+      ]
+    },
+    {
+      "id": "office_miss_shore",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_miss_shore.001",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Береговая тут ни при чём. Ищи, где я был, а не где меня не было."
+        }
+      ]
+    },
+    {
+      "id": "office_miss_fund",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_miss_fund.001",
+          "speaker": "ratnikov",
+          "emotion": "uneasy",
+          "text": "Мало, коллега. Одной бумажкой этого не докажешь. Где платежи — и где возвраты?"
+        }
+      ]
+    },
+    {
+      "id": "confession",
+      "location": "ratnikov_office",
+      "music": "interrogation",
+      "lines": [
+        {
+          "id": "c07.confession.001",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Я взял квартиру. Тамара умирала в бараке с плесенью.",
+          "direction": "медленно, глядя в стакан; без пауз-уловок"
+        },
+        {
+          "id": "c07.confession.002",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Я сказал девочке, что ей приснилось."
+        },
+        {
+          "id": "c07.confession.003",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "В восемнадцатом я видел кузов. И написал «металлолом»."
+        },
+        {
+          "id": "c07.confession.004",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Ирину — не трогал. Я ей сам дал ключ от архива."
+        },
+        {
+          "id": "c07.confession.005",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Я знал, чья она дочь. Петровна. Глаза отцовские.",
+          "direction": "почти шёпотом, выдох после «Петровна»"
+        },
+        {
+          "id": "c07.confession.006",
+          "speaker": "narrator",
+          "text": "Он замолкает. Чай остыл. Ложечка в стакане больше не звякает."
+        }
+      ],
+      "choices": [
+        {
+          "id": "tamara",
+          "text": "Тамара Викторовна умерла четырнадцатого марта. Через три месяца после ключей.",
+          "requires": [
+            "ev.c07.ledger",
+            "ev.c07.kept",
+            "ev.c07.tamara"
+          ],
+          "goto": "office_tamara",
+          "flag": "ratnikov_sympathy"
+        },
+        {
+          "id": "next",
+          "text": "Что теперь, Лев Борисович?",
+          "goto": "record"
+        }
+      ]
+    },
+    {
+      "id": "office_tamara",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.office_tamara.001",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Четырнадцатого. В пять сорок утра. В тепле. Первый раз за десять лет — в тепле."
+        },
+        {
+          "id": "c07.office_tamara.002",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "Фонд прислал «на лечение», когда лечить было уже нечего. Поэтому и вернул."
+        },
+        {
+          "id": "c07.office_tamara.003",
+          "speaker": "ratnikov",
+          "emotion": "broken",
+          "text": "А квартиру не вернул. Ради этих трёх месяцев я девочке и сказал — «приснилось»."
+        },
+        {
+          "id": "c07.office_tamara.004",
+          "speaker": "narrator",
+          "text": "Он смотрит в стакан, как в прорубь."
+        }
+      ],
+      "next": "record"
+    },
+    {
+      "id": "record",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.record.001",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Ну-с, коллега. Что теперь — протокол?"
+        }
+      ],
+      "choices": [
+        {
+          "id": "on_record",
+          "text": "Да. Под протокол, слово в слово.",
+          "goto": "record_on",
+          "flag": "ratnikov_full"
+        },
+        {
+          "id": "off_record",
+          "text": "Нет. Это останется в этом кабинете.",
+          "goto": "record_off"
+        }
+      ]
+    },
+    {
+      "id": "record_on",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.record_on.001",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Правильно. Пиши, коллега. Я подпишу."
+        },
+        {
+          "id": "c07.record_on.002",
+          "speaker": "narrator",
+          "text": "Он тянется за ручкой — и не дотягивается."
+        }
+      ],
+      "next": "collapse"
+    },
+    {
+      "id": "record_off",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.record_off.001",
+          "speaker": "ratnikov",
+          "emotion": "tired",
+          "text": "Жалеешь старика. Зря, коллега. Зря."
+        },
+        {
+          "id": "c07.record_off.002",
+          "speaker": "narrator",
+          "text": "Он поднимается налить ещё чаю — и не поднимается."
+        }
+      ],
+      "next": "collapse"
+    },
+    {
+      "id": "collapse",
+      "location": "ratnikov_office",
+      "lines": [
+        {
+          "id": "c07.collapse.001",
+          "speaker": "narrator",
+          "text": "Подстаканник катится по полу. Ратников хватается за кардиган — там, где трубочка нитроглицерина."
+        },
+        {
+          "id": "c07.collapse.002",
+          "speaker": "ratnikov",
+          "emotion": "hurt",
+          "text": "Погоди… коллега… что-то… давит…",
+          "direction": "хрип, не хватает воздуха; боль в груди"
+        },
+        {
+          "id": "c07.collapse.003",
+          "speaker": "narrator",
+          "text": "Он оседает набок вместе со стулом. Трубочка выкатывается из кармана и замирает у твоей ноги."
+        },
+        {
+          "id": "c07.collapse.004",
+          "speaker": "narrator",
+          "text": "Дальше — обрывками, как плёнка, которую рвут."
+        }
+      ]
+    },
+    {
+      "id": "ambulance",
+      "location": "basement_b0_03_night",
+      "lines": [
+        {
+          "id": "c07.ambulance.001",
+          "speaker": "nina",
+          "emotion": "scared",
+          "text": "Скорую! Господи, скорую…",
+          "direction": "кричит в трубку, голос срывается"
+        },
+        {
+          "id": "c07.ambulance.002",
+          "speaker": "narrator",
+          "text": "Двенадцать минут. Носилки в узком коридоре цоколя. Фельдшеры не отвечают ни на один вопрос."
+        },
+        {
+          "id": "c07.ambulance.003",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Куда вы его?! Куда везёте, я спрашиваю?!",
+          "direction": "кричит вслед, бежит за носилками"
+        },
+        {
+          "id": "c07.ambulance.004",
+          "speaker": "narrator",
+          "text": "Двери лифта закрываются у неё перед лицом."
+        },
+        {
+          "id": "c07.ambulance.005",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ноль. Горздрав у тебя открыт. Найди его. Я уже в машине.",
+          "direction": "на бегу; хлопает дверца, заводится мотор"
+        }
+      ]
+    },
+    {
+      "id": "corridor",
+      "location": "cardiology_corridor",
+      "lines": [
+        {
+          "id": "c07.corridor.001",
+          "speaker": "narrator",
+          "text": "Кардиология первой горбольницы, третий этаж. Половина ламп не горит. Даша бежит по коридору, парка нараспашку."
+        },
+        {
+          "id": "c07.corridor.002",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Куда его повезли?!",
+          "direction": "кричит на пост медсестры, задыхается после лестницы: в приёмном его уже нет"
+        },
+        {
+          "id": "c07.corridor.003",
+          "speaker": "narrator",
+          "text": "Медсестра кивает в конец коридора: интенсивная терапия. Туда нельзя."
+        },
+        {
+          "id": "c07.corridor.004",
+          "speaker": "narrator",
+          "text": "Даша встаёт спиной к двери палаты. По коридору идёт широкий человек в коричневой кожанке. Спичка в зубах."
+        },
+        {
+          "id": "c07.corridor.005",
+          "speaker": "burtsev",
+          "emotion": "cold",
+          "text": "Не надо.",
+          "direction": "почти шёпот, на ходу, не останавливаясь и не глядя"
+        },
+        {
+          "id": "c07.corridor.006",
+          "speaker": "narrator",
+          "text": "Он проходит мимо. Левая рука на перилах: безымянный палец короче остальных."
+        },
+        {
+          "id": "c07.corridor.007",
+          "speaker": "dasha",
+          "emotion": "scared",
+          "text": "Бурцев…",
+          "direction": "одними губами"
+        },
+        {
+          "id": "c07.corridor.008",
+          "speaker": "dasha",
+          "emotion": "angry",
+          "text": "Вот же сука. Он здесь раньше нас, Ноль. Откуда он знал, куда идти?"
+        },
+        {
+          "id": "c07.corridor.009",
+          "speaker": "narrator",
+          "text": "В гарнитуре — только ровный гул твоего терминала."
+        }
+      ]
+    },
+    {
+      "id": "dasha_silent",
+      "location": "cardiology_corridor",
+      "lines": [
+        {
+          "id": "c07.dasha_silent.001",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Я под дверью стояла. Всё слышала."
+        },
+        {
+          "id": "c07.dasha_silent.002",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Ты с семнадцатого в курсе, что он мои слова из дела вынул. И молчок.",
+          "direction": "тихо, без крика — от этого хуже"
+        },
+        {
+          "id": "c07.dasha_silent.003",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Ладно. Потом."
+        }
+      ],
+      "choices": [
+        {
+          "id": "sorry",
+          "text": "Прости, Даша.",
+          "goto": "dasha_silent_end",
+          "flag": "dasha_hurt_c07"
+        },
+        {
+          "id": "not_mine",
+          "text": "Это было не моё — говорить. Его.",
+          "goto": "dasha_silent_end",
+          "flag": "dasha_hurt_c07"
+        }
+      ]
+    },
+    {
+      "id": "dasha_silent_end",
+      "location": "cardiology_corridor",
+      "lines": [
+        {
+          "id": "c07.dasha_silent_end.001",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Работай давай. Протокол сам себя не напишет."
+        }
+      ]
+    },
+    {
+      "id": "dasha_knew",
+      "location": "cardiology_corridor",
+      "lines": [
+        {
+          "id": "c07.dasha_knew.001",
+          "speaker": "dasha",
+          "emotion": "hurt",
+          "text": "Хорошо, что я знала заранее. Иначе бы я его сегодня сама… прямо там, в кабинете."
+        },
+        {
+          "id": "c07.dasha_knew.002",
+          "speaker": "dasha",
+          "emotion": "determined",
+          "text": "Ладно. Протокол, Ноль. Пока он там лежит — давай по-честному."
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        {
+          "id": "c07.outro.001",
+          "speaker": "narrator",
+          "text": "Без двадцати двенадцать. Протокол подшит, в подвале гудит серверная."
+        },
+        {
+          "id": "c07.outro.002",
+          "speaker": "nina",
+          "emotion": "sad",
+          "text": "Иди домой, голубчик. Сегодня самая длинная ночь. Дальше будет светлее — по минуте в день."
+        },
+        {
+          "id": "c07.outro.003",
+          "speaker": "nina",
+          "emotion": "neutral",
+          "text": "Я Фикуса покормлю и тоже пойду. Он у меня сегодня без ужина."
+        },
+        {
+          "id": "c07.outro.004",
+          "speaker": "dasha",
+          "emotion": "neutral",
+          "text": "Ноль. Он в сознании. Спросил, как ты. Сказала — работает.",
+          "direction": "по рации из больничного коридора, устало"
+        },
+        {
+          "id": "c07.outro.005",
+          "speaker": "narrator",
+          "text": "Двадцать три сорок одна. Турникет на выходе пищит: твой пропуск — «выход»."
+        },
+        {
+          "id": "c07.outro.006",
+          "speaker": "narrator",
+          "text": "Внизу, за двумя дверями, в серверной горит чужой монитор. До утра его никто не выключит."
+        }
+      ]
+    }
+  ]
+}

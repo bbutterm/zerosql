@@ -4,101 +4,539 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * ZeroSQL — направление «Служебное» (docs/design/UI_ART_DIRECTION.md).
+ *
+ * Три материала: ЭКРАН (АИС «Зеркало»: графит, Golos + PT Mono, плоско и непрозрачно),
+ * БУМАГА (бланки, распечатки: PT Serif, тонер, карандаш, штемпельная краска)
+ * и ЖИВОПИСЬ (портреты и места — вся атмосфера живёт только там).
+ * Фирменный цвет один — натрий. Светлой темы нет: светлое в игре — это бумага.
+ */
+
 @theme inline {
+  --font-sans: var(--font-ui), "Golos Text", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-data), "PT Mono", ui-monospace, monospace;
+  --font-serif: var(--font-doc), "PT Serif", Georgia, serif;
+  --font-script: var(--font-hand), "Bad Script", cursive;
+
+  /* Экран «Зеркала» */
+  --color-room: var(--room);
+  --color-scr-side: var(--scr-side);
+  --color-scr-base: var(--scr-base);
+  --color-scr-chrome: var(--scr-chrome);
+  --color-scr-raise: var(--scr-raise);
+  --color-scr-select: var(--scr-select);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-sodium: var(--sodium);
+  --color-sodium-hover: var(--sodium-hover);
+  --color-sodium-press: var(--sodium-press);
+  --color-sodium-ink: var(--sodium-ink);
+  --color-sodium-wash: var(--sodium-wash);
+  --color-cold: var(--cold);
+  --color-alarm: var(--alarm);
+
+  /* Бумага */
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-photo: var(--paper-photo);
+  --color-sticky: var(--sticky);
+  --color-print: var(--print);
+  --color-print-2: var(--print-2);
+  --color-print-3: var(--print-3);
+  --color-pencil: var(--pencil);
+  --color-pen: var(--pen);
+  --color-red-pencil: var(--red-pencil);
+  --color-seal: var(--seal);
+  --color-tape: var(--tape);
+
+  /* Стена */
+  --color-wall: var(--wall);
+  --color-wall-2: var(--wall-2);
+
+  /* shadcn: имена сохранены ради примитивов ui/* и старой страницы /game */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-  --color-noir-green: var(--noir-green);
-  --color-noir-red: var(--noir-red);
-  --color-noir-amber: var(--noir-amber);
-  --color-noir-dim: var(--noir-dim);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Скругление: кнопки и поля — 2 px, всё остальное — 0 */
+  --radius-xs: var(--radius-ctl);
+  --radius-sm: var(--radius-ctl);
+  --radius-md: var(--radius-ctl);
+  --radius-lg: var(--radius-ctl);
+  --radius-xl: var(--radius-ctl);
+  --radius-2xl: var(--radius-ctl);
+  --radius-3xl: var(--radius-ctl);
+  --radius-4xl: var(--radius-ctl);
+}
+
+@theme {
+  /* Движение (раздел 8.1). Без перелёта и отскока */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-in: cubic-bezier(0.5, 0, 0.9, 0.3);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-hit: cubic-bezier(0.7, 0, 1, 1);
 }
 
 :root {
-  --background: oklch(0.1 0.005 280);
-  --foreground: oklch(0.82 0.01 270);
-  --card: oklch(0.14 0.005 280);
-  --card-foreground: oklch(0.82 0.01 270);
-  --popover: oklch(0.14 0.005 280);
-  --popover-foreground: oklch(0.82 0.01 270);
-  --primary: oklch(0.75 0.12 85);
-  --primary-foreground: oklch(0.1 0.005 280);
-  --secondary: oklch(0.18 0.005 280);
-  --secondary-foreground: oklch(0.82 0.01 270);
-  --muted: oklch(0.18 0.005 280);
-  --muted-foreground: oklch(0.55 0.01 270);
-  --accent: oklch(0.75 0.12 85);
-  --accent-foreground: oklch(0.1 0.005 280);
-  --destructive: oklch(0.5 0.15 25);
-  --border: oklch(0.22 0.008 280);
-  --input: oklch(0.22 0.008 280);
-  --ring: oklch(0.75 0.12 85);
-  --chart-1: oklch(0.75 0.12 85);
-  --chart-2: oklch(0.5 0.1 150);
-  --chart-3: oklch(0.5 0.15 25);
-  --chart-4: oklch(0.6 0.1 250);
-  --chart-5: oklch(0.55 0.01 270);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.12 0.005 280);
-  --sidebar-foreground: oklch(0.82 0.01 270);
-  --sidebar-primary: oklch(0.75 0.12 85);
-  --sidebar-primary-foreground: oklch(0.1 0.005 280);
-  --sidebar-accent: oklch(0.18 0.005 280);
-  --sidebar-accent-foreground: oklch(0.82 0.01 270);
-  --sidebar-border: oklch(0.22 0.008 280);
-  --sidebar-ring: oklch(0.75 0.12 85);
+  color-scheme: dark;
 
-  --noir-green: oklch(0.55 0.15 150);
-  --noir-red: oklch(0.5 0.15 25);
-  --noir-amber: oklch(0.75 0.12 85);
-  --noir-dim: oklch(0.45 0.01 270);
+  /* Комната и экран */
+  --room: #0a0c0d;
+  --scr-side: #101315;
+  --scr-base: #14171a;
+  --scr-chrome: #1b1f22;
+  --scr-raise: #22272a;
+  --scr-select: #253034;
+  --line: #23282b;
+  --line-strong: #343b3f;
+  --ink-1: #e6e4de;
+  --ink-2: #a7acab;
+  --ink-3: #90979a;
+  --ink-4: #4e5558;
+  --sodium: #e3a13f;
+  --sodium-hover: #ecb057;
+  --sodium-press: #c88a2e;
+  --sodium-ink: #1a1307;
+  --sodium-wash: #2c2417;
+  --cold: #93b9b3;
+  --alarm: #ec6a52;
+
+  /* Бумага */
+  --paper: #eae5d9;
+  --paper-2: #dcd5c5;
+  --paper-photo: #f3f1ec;
+  --sticky: #ebd574;
+  --print: #1f1e1b;
+  --print-2: #57544d;
+  --print-3: #8c8578;
+  --pencil: #55575b;
+  --pen: #233f94;
+  --red-pencil: #b5332a;
+  --seal: #4a4f9e;
+  --tape: #d8ccae;
+
+  /* Стена */
+  --wall: #27302c;
+  --wall-2: #1f2724;
+
+  --radius-ctl: 2px;
+  --shadow-paper: 0 1px 1px rgb(0 0 0 / 0.35), 0 10px 24px -10px rgb(0 0 0 / 0.65);
+  --shadow-pinned: 0 1px 2px rgb(0 0 0 / 0.45), 0 4px 10px -4px rgb(0 0 0 / 0.5);
+  --shadow-menu: 0 6px 16px rgb(0 0 0 / 0.45);
+
+  --dur-hover: 80ms;
+  --dur-1: 140ms;
+  --dur-2: 220ms;
+  --dur-pin: 420ms;
+  --dur-fade: 1200ms;
+
+  /* shadcn → «Зеркало» */
+  --background: var(--room);
+  --foreground: var(--ink-1);
+  --card: var(--scr-base);
+  --card-foreground: var(--ink-1);
+  --popover: var(--scr-chrome);
+  --popover-foreground: var(--ink-1);
+  --primary: var(--sodium);
+  --primary-foreground: var(--sodium-ink);
+  --secondary: var(--scr-raise);
+  --secondary-foreground: var(--ink-1);
+  --muted: var(--scr-chrome);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--scr-raise);
+  --accent-foreground: var(--ink-1);
+  --destructive: var(--alarm);
+  --border: var(--line-strong);
+  --input: var(--line-strong);
+  --ring: var(--ink-1);
+  --radius: 2px;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
+    @apply border-border;
   }
   html {
-    @apply font-sans;
+    font-family: var(--font-sans);
+    font-synthesis: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: auto;
+  }
+  body {
+    background: var(--room);
+    color: var(--ink-1);
+    font-size: 13px;
+    line-height: 20px;
+  }
+  ::selection {
+    background: #2b3539;
+    color: var(--ink-1);
+  }
+  :where(a, button, [role="button"], [role="tab"], [role="option"], [role="menuitem"], summary, input, select, textarea, [tabindex]):focus-visible {
+    outline: 1px solid var(--ink-1);
+    outline-offset: 1px;
+  }
+  p,
+  li,
+  blockquote {
+    text-wrap: pretty;
+  }
+
+  /* Полоса прокрутки на экране: 8 px, ползунок --line-strong, дорожка прозрачная */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+  }
+  /* Результат запроса: полоса 10 px, ползунок ink-3 (≥ 3:1, WCAG 1.4.11) — широкий
+     результат обязан показывать, что справа есть ещё столбцы */
+  .zs-scroll-strong::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .zs-scroll-strong::-webkit-scrollbar-thumb {
+    background: var(--ink-3);
+    border: 2px solid var(--scr-base);
+  }
+  .zs-scroll-strong::-webkit-scrollbar-track {
+    background: var(--scr-base);
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--line-strong) transparent;
+    }
+    .zs-scroll-strong {
+      scrollbar-width: auto;
+      scrollbar-color: var(--ink-3) var(--scr-base);
+    }
+  }
+}
+
+/* ---------- Шкала (раздел 3.2): система — Golos, данные — PT Mono, люди и бумага — PT Serif, рука — Bad Script ---------- */
+
+@utility ui-12 {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.01em;
+}
+@utility ui-13 {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: 0;
+}
+@utility ui-14 {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: 0;
+}
+@utility ui-15 {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+@utility ui-20 {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+@utility mono-11 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+@utility mono-12 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0;
+}
+@utility mono-13 {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+@utility mono-14 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0;
+}
+@utility doc-11 {
+  font-family: var(--font-serif);
+  font-size: 11px;
+  line-height: 14px;
+  font-style: italic;
+}
+@utility doc-14 {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 21px;
+}
+@utility doc-15 {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 24px;
+}
+@utility doc-head {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+@utility doc-18 {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 28px;
+}
+@utility doc-name {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 28px;
+  font-weight: 700;
+}
+@utility doc-22 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  line-height: 32px;
+  letter-spacing: -0.005em;
+}
+@utility hand-20 {
+  font-family: var(--font-script);
+  font-size: 20px;
+  line-height: 26px;
+}
+
+/* ---------- Материалы ---------- */
+
+/* Офисная бумага: бланк, распечатки, учётная карточка */
+@utility paper {
+  background-color: var(--paper);
+  background-image: url("/textures/paper-office.webp");
+  background-size: 512px;
+  background-blend-mode: multiply;
+  color: var(--print);
+  & ::selection {
+    background: var(--sticky);
+    color: var(--print);
+  }
+  & :focus-visible {
+    outline-color: var(--print);
+    outline-offset: 2px;
+  }
+}
+/* Старый лист, лента принтера, бумажка с вариантами */
+@utility paper-2 {
+  background-color: var(--paper-2);
+  background-image: url("/textures/paper-thin.webp");
+  background-size: 512px;
+  background-blend-mode: multiply;
+  color: var(--print);
+  & ::selection {
+    background: var(--sticky);
+    color: var(--print);
+  }
+  & :focus-visible {
+    outline-color: var(--print);
+    outline-offset: 2px;
+  }
+}
+/* Протокол опроса, расшифровка: тонкая бумага */
+@utility paper-thin {
+  background-color: var(--paper);
+  background-image: url("/textures/paper-thin.webp");
+  background-size: 512px;
+  background-blend-mode: multiply;
+  color: var(--print);
+}
+/* Штемпельная краска: резина по бумаге. Пятна и пустоты — маска из файла, позиция по id */
+@utility ink-stamp {
+  -webkit-mask-image: url("/textures/stamp-mask.webp");
+  mask-image: url("/textures/stamp-mask.webp");
+  -webkit-mask-size: 512px;
+  mask-size: 512px;
+  mix-blend-mode: multiply;
+}
+/* Графит: штрих карандаша с просветами бумажного зуба */
+@utility pencil-grain {
+  -webkit-mask-image: url("/textures/pencil-grain.png");
+  mask-image: url("/textures/pencil-grain.png");
+  -webkit-mask-size: 128px;
+  mask-size: 128px;
+}
+/* Ночной кадр, напечатанный на лазерном принтере: растр, пока нет ассета */
+@utility halftone-night {
+  background-color: var(--paper);
+  background-image: url("/textures/halftone-night.webp");
+  background-size: 100% 100%;
+  background-blend-mode: multiply;
+}
+/* Тонер: мягкость печати видна только при увеличении. Это растекание, а не свечение */
+@utility toner {
+  text-shadow: 0 0 0.35px rgb(31 30 27 / 0.55);
+}
+/* Стена подвала: масляная краска + один неподвижный свет лампы */
+@utility wall {
+  background-color: var(--wall);
+  background-image:
+    radial-gradient(120% 90% at 18% 0%, transparent 40%, var(--wall-2) 100%),
+    url("/textures/wall-paint.webp");
+  background-size: 100% 100%, 512px;
+  background-blend-mode: normal, multiply;
+}
+@utility shadow-paper {
+  box-shadow: var(--shadow-paper);
+}
+@utility shadow-pinned {
+  box-shadow: var(--shadow-pinned);
+}
+@utility shadow-menu {
+  box-shadow: var(--shadow-menu);
+}
+/* Цифры в столбцах, времени и счётчиках у Golos */
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Редактор SQL: PT Mono 14/22 на десктопе, 16/24 на мобильном (иначе iOS масштабирует при фокусе) */
+.zs-editor {
+  --editor-size: 14px;
+  --editor-leading: 22px;
+}
+@media (max-width: 1023px) {
+  .zs-editor {
+    --editor-size: 16px;
+    --editor-leading: 24px;
+  }
+  /* Перенос строки на мобильном — с висячим отступом: продолжение не похоже на новую строку */
+  .zs-editor .cm-line {
+    padding-left: 2ch !important;
+    text-indent: -2ch;
+  }
+}
+
+/* Маркер-выделитель на распечатке: не сдвигает моноширинную сетку */
+.zs-mark {
+  padding: 0;
+  background: var(--sticky);
+  color: var(--print);
+  mix-blend-mode: multiply;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ---------- Движение (раздел 8.2) ---------- */
+
+@keyframes zs-caret {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes zs-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Подсветка нового гаснет: строка схемы, реестра, приобщённое */
+@keyframes zs-wash-out {
+  from {
+    background-color: var(--sodium-wash);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+/* Удар штампа или датера: 70 мс ускорения к бумаге, затем краска впитывается */
+@keyframes zs-stamp {
+  0% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(1.06);
+    opacity: 0;
+    animation-timing-function: var(--ease-hit);
+  }
+  26% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(1);
+    opacity: 0.66;
+    animation-timing-function: linear;
+  }
+  100% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(1);
+    opacity: 0.88;
+  }
+}
+/* Карандаш и ручка: штрих рисуется по длине пути */
+@keyframes zs-draw {
+  from {
+    stroke-dashoffset: var(--len, 40);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@utility anim-caret {
+  animation: zs-caret 1060ms steps(1) infinite;
+}
+/* После угасания возвращается обычный фон (и наведение), поэтому fill — backwards */
+@utility anim-wash {
+  animation: zs-wash-out var(--dur-fade) linear var(--wash-delay, 1500ms) backwards;
+}
+
+/* Бесконечная анимация одна на экран (каретка) и замирает в скрытой вкладке */
+:root[data-hidden] *,
+:root[data-hidden] *::before,
+:root[data-hidden] *::after {
+  animation-play-state: paused !important;
+}
+
+/* Уменьшенное движение: всё появляется сразу, каретка не мигает */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

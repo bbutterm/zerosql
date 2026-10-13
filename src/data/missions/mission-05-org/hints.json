@@ -1,7 +1,0 @@
-[
-  "Начните с SELECT * FROM org_members — изучите структуру таблицы.",
-  "Для получения имён соедините org_members с suspects: SELECT s.name, o.rank FROM suspects s JOIN org_members o ON s.id = o.suspect_id.",
-  "DISTINCT убирает дубликаты: SELECT DISTINCT rank FROM org_members.",
-  "NOT IN позволяет найти тех, кого нет в подзапросе: WHERE id NOT IN (SELECT suspect_id FROM org_members).",
-  "ORDER BY сортирует результат: ORDER BY joined_date ASC — от ранних к поздним."
-]

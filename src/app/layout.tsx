@@ -1,22 +1,48 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Bad_Script, Golos_Text, PT_Mono, PT_Serif } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { VisibilityPause } from "@/components/kit/visibility-pause";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/**
+ * Четыре семейства, у каждого одна роль:
+ * система говорит Golos, данные пишутся PT Mono, люди и бумага — PT Serif, рука — Bad Script.
+ */
+const ui = Golos_Text({
   subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600"],
+  variable: "--font-ui",
+  display: "swap",
 });
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const data = PT_Mono({
   subsets: ["latin", "cyrillic"],
+  weight: "400",
+  variable: "--font-data",
+  display: "swap",
+});
+const doc = PT_Serif({
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-doc",
+  display: "swap",
+});
+const hand = Bad_Script({
+  subsets: ["latin", "cyrillic"],
+  weight: "400",
+  variable: "--font-hand",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "ZeroSQL — Детективная игра на SQL",
+  title: "ZeroSQL",
   description:
-    "Расследуй преступления в DataCity, используя SQL-запросы. Ты — детектив-аналитик против группировки BASE.",
+    "Детектив на SQL. Полярная ночь, город, который греет дата-центр, и полынья, которая не замерзает.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0C0D",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -27,10 +53,11 @@ export default function RootLayout({
   return (
     <html
       lang="ru"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${ui.variable} ${data.variable} ${doc.variable} ${hand.variable} dark h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <TooltipProvider>{children}</TooltipProvider>
+      <body className="flex min-h-full flex-col">
+        <VisibilityPause />
+        <TooltipProvider delay={500}>{children}</TooltipProvider>
       </body>
     </html>
   );

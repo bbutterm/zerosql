@@ -1,0 +1,81 @@
+[
+  {
+    "id": "h.transactions",
+    "title": "Транзакции: BEGIN, COMMIT, ROLLBACK",
+    "summary": "Транзакция собирает несколько изменений в одно целое. После `BEGIN` всё, что вы вставили, изменили или удалили, видно вам, но ещё не окончательно: `COMMIT` сохраняет, `ROLLBACK` отменяет всё разом. Черновик без транзакции — это сразу чистовик.",
+    "syntax": "BEGIN;\n  -- INSERT / UPDATE / DELETE …\n  -- SELECT — проверить, что получилось\nCOMMIT;    -- сохранить\n-- или\nROLLBACK;  -- отменить всё после BEGIN",
+    "example": "BEGIN;\nDELETE FROM draft_publication WHERE source_role = 'информатор';\nSELECT COUNT(*) FROM draft_publication;  -- 48: проверяем\nROLLBACK;                                -- и возвращаем 50",
+    "pitfalls": [
+      "Без `BEGIN` каждая команда сохраняется сама (автофиксация). `ROLLBACK` после неё ответит `cannot rollback - no transaction is active` — откатывать уже нечего.",
+      "`BEGIN` внутри открытой транзакции — ошибка `cannot start a transaction within a transaction`. Сначала закройте прежнюю: `COMMIT` или `ROLLBACK`.",
+      "Открытая транзакция живёт между запросами: пока вы не написали `COMMIT` или `ROLLBACK`, изменения висят в воздухе. Плановые операции архива перед своей работой откатывают её сами — и МИРА об этом скажет.",
+      "Если в скрипте `BEGIN; INSERT …; ROLLBACK;` запустить целиком, итог — как будто ничего не было. Проверку числа строк ставьте до `ROLLBACK`."
+    ]
+  },
+  {
+    "id": "h.insert_select",
+    "title": "INSERT … SELECT",
+    "summary": "`INSERT INTO` добавляет строки. Вместо `VALUES` можно подставить целый `SELECT`: каждая строка его результата станет новой строкой таблицы. Так переносят данные из архива в рабочую таблицу одним запросом.",
+    "syntax": "INSERT INTO таблица (столбец1, столбец2, …)\nSELECT выражение1, выражение2, …\nFROM источник\nWHERE условие;",
+    "example": "INSERT INTO draft_statements (id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, status)\nSELECT id, case_id, doc_reg_no, person_text, taken_at, taken_by, typed_by, text, 'восстановлено'\nFROM arch16_statements\nWHERE case_id = '15-0219'\n  AND id NOT IN (SELECT id FROM draft_statements);",
+    "pitfalls": [
+      "Всегда перечисляйте столбцы. `INSERT INTO draft_statements SELECT a.* FROM arch16_statements a` упадёт: `table draft_statements has 10 columns but 8 values were supplied` — в архиве нет `person_id` и `status`.",
+      "Столбцы сопоставляются по порядку, а не по именам. Переставили `taken_by` и `typed_by` в `SELECT` — и принявший станет машинисткой без единой ошибки.",
+      "Недостающее значение можно подставить константой прямо в `SELECT`: `'восстановлено'`. Столбец, которого нет в списке, получит NULL.",
+      "Повторная вставка того же id — `UNIQUE constraint failed`. Отсекайте уже перенесённое: `id NOT IN (SELECT id FROM …)` или `NOT EXISTS`."
+    ]
+  },
+  {
+    "id": "h.update",
+    "title": "UPDATE: изменить строки",
+    "summary": "`UPDATE` меняет значения в уже существующих строках. `SET` говорит, что поставить, `WHERE` — в каких строках. Новое значение может быть подзапросом, который смотрит на текущую строку: так подтягивают данные из другой таблицы.",
+    "syntax": "UPDATE таблица\nSET столбец = значение | (SELECT … WHERE ключ = таблица.ключ)\nWHERE условие;",
+    "example": "UPDATE draft_persons\nSET special_marks = (SELECT a.special_marks\n                     FROM arch16_persons a\n                     WHERE a.id = draft_persons.id)\nWHERE id = 2214;",
+    "pitfalls": [
+      "`UPDATE` без `WHERE` меняет все строки таблицы. С подзапросом из архива это значит: все сто карточек получат архивную примету или NULL, если в архиве человека нет. Поэтому — сначала `BEGIN`.",
+      "Коррелированный подзапрос ссылается на обновляемую таблицу по её имени: `a.id = draft_persons.id`. Если написать `a.id = id`, оба `id` окажутся архивными: условие истинно всегда, и в ячейку ляжет примета первого попавшегося человека.",
+      "Подзапрос в `SET` должен вернуть одно значение. Вернёт ноль строк — в ячейку ляжет NULL, без ошибки.",
+      "Проверить до записи просто: тот же подзапрос в `SELECT … WHERE id = 2214`. Что покажет — то и запишется."
+    ]
+  },
+  {
+    "id": "h.delete",
+    "title": "DELETE: удалить строки",
+    "summary": "`DELETE FROM` удаляет строки, для которых условие `WHERE` истинно. Строки с NULL в условии (неизвестно — не истинно) остаются. Перед удалением прогоните то же условие в `SELECT` — увидите, кого убираете.",
+    "syntax": "DELETE FROM таблица\nWHERE условие;\n\n-- сначала посмотреть:\nSELECT * FROM таблица WHERE условие;",
+    "example": "DELETE FROM draft_publication\nWHERE source_role = 'информатор'\n   OR date(person_birth_date, '+18 years') > date(ts);",
+    "pitfalls": [
+      "`DELETE FROM таблица` без `WHERE` очищает таблицу целиком. Без `BEGIN` вернуть уже нечем.",
+      "Возраст считайте на дату события, а не на сегодня: `date(person_birth_date, '+18 years') > date(ts)`. Свидетельница, которой сегодня двадцать пять, в 2015 году была ребёнком.",
+      "По имени удалять опасно: `LIKE 'Ким%'` заденет и отца, а `LIKE 'Ким Д%'` — и взрослую оперативницу 2026 года. Условие должно описывать причину удаления, а не человека.",
+      "У документов `person_birth_date` — NULL. Сравнение с NULL не истинно, поэтому документы условие по возрасту не удалит. Это верно, но держите в голове: `NOT (…)` их тоже не удалит.",
+      "Улики не удаляют: `DELETE` по `statements`, `persons`, `draft_statements` Нина остановит. Из газеты — можно, из дела — никогда."
+    ]
+  },
+  {
+    "id": "h.view",
+    "title": "Представления: CREATE VIEW",
+    "summary": "Представление — сохранённый под именем `SELECT`. Данных оно не копирует: при каждом чтении запрос выполняется заново на текущих таблицах. Удобно, когда одну и ту же выборку нужно отдавать много раз — например, пакет для прессы.",
+    "syntax": "CREATE VIEW имя AS\nSELECT столбцы\nFROM таблица\n[WHERE …]\n[ORDER BY …];\n\nSELECT * FROM имя;\nDROP VIEW имя;  -- пересоздать",
+    "example": "CREATE VIEW draft_package AS\nSELECT ts, place, what, source_class\nFROM draft_publication\nORDER BY ts;\n\nSELECT * FROM draft_package;",
+    "pitfalls": [
+      "Имя занято — `view draft_package already exists`. Исправить представление нельзя, только удалить (`DROP VIEW draft_package`) и создать заново.",
+      "Представление читает таблицу при каждом запросе. Удалили строки из `draft_publication` — они пропали и из витрины, пересоздавать не нужно.",
+      "Без `ORDER BY` строки идут в порядке хранения (по id), а не по времени. Порядок задавайте внутри представления или в запросе к нему.",
+      "Что не попало в `SELECT`, того в витрине нет: так прячут персональные столбцы — `person_text`, `person_birth_date`, `source_role`.",
+      "Здесь можно создавать только представления. `CREATE TABLE`, `ALTER`, `DROP TABLE` архив не пропустит."
+    ]
+  },
+  {
+    "id": "w.evidence",
+    "title": "Улики не удаляют",
+    "summary": "Правило Нины. Объяснения, карточки людей и опись улик — это дело: из него ничего не вычёркивают, даже чтобы кого-то защитить. Защищают в публикации: оттуда можно убрать несовершеннолетних на дату показаний и информаторов.",
+    "syntax": "-- дело: только INSERT и UPDATE\nINSERT INTO draft_statements (…) SELECT …;\nUPDATE draft_persons SET … WHERE id = …;\n\n-- публикация: DELETE можно\nDELETE FROM draft_publication WHERE …;",
+    "example": "SELECT id, person_text, person_birth_date, source_role, ts\nFROM draft_publication\nWHERE source_role = 'информатор'\n   OR date(person_birth_date, '+18 years') > date(ts);",
+    "pitfalls": [
+      "`DELETE` по `statements`, `persons`, `evidence_registry` или `draft_statements` не блокируется, но Нина его заметит: «Улики не удаляют, голубчик».",
+      "Удалённое из дела объяснение — это вторая дыра в журнале. Первую, № 3312, искали десять лет.",
+      "Защитить человека — значит убрать его из газеты, а не из дела. В деле он остаётся свидетелем."
+    ]
+  }
+]

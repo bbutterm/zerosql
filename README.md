@@ -1,146 +1,102 @@
 <img src="./docs/portfolio-cover.svg" width="900" alt="ZeroSQL — SQL detective game">
 
-**[Open demo](https://zerosql.vercel.app)** · **Project documentation**
+# ZeroSQL: Полынья
 
----
+Браузерный SQL-детектив. Полярная ночь, город Полынья, цокольный этаж ГУ МВД. Игрок — дежурный аналитик ОЦР, его единственный инструмент — SQL к ведомственной системе «Зеркало». **Запросы — это геймплей**: игра проверяет результат запроса, а не его текст, и засчитывает любой корректный запрос.
 
-# ZeroSQL — Браузерный SQL-детектив
-
-Нуарная детективная игра, где **SQL-запросы — это геймплей**. Игрок — аналитик-детектив в городе DataCity, расследующий дела преступной группировки «БАЗА».
+- **13 дел**: пролог «Нулевой этаж», десять дел, интерлюдия «Черновик» и финал «Первое солнце» — от `SELECT *` до оконных функций, рекурсивных CTE, транзакций и представлений.
+- **Мир генерируется в браузере**: детерминированная база примерно на 55 тыс. строк (полсотни таблиц, суточные ритмы, фоновый шум, опечатки), посаженные факты дел и пасхалки. Серверной части нет.
+- Сцены и реплики, допросы «Наушник» (надавить, предъявить карточку), протокол-заключение с пакетной сверкой, обвинения, живые события по игровым часам, пять концовок.
+- 33 отметки в личном деле, 22 тайника, справочник SQL, открывающийся по делам.
 
 ## Стек
 
 | Слой | Технология |
 |------|-----------|
-| Фреймворк | Next.js 16 (App Router, Turbopack) |
-| База данных | SQL.js — SQLite → WASM, работает целиком в браузере |
-| Редактор | CodeMirror 6, подсветка SQL, автодополнение |
-| Стейт | Zustand 5 + localStorage persistence |
-| UI | shadcn/ui + Tailwind CSS, тёмная нуарная тема |
-| Тесты | Vitest — 125 тестов |
+| Фреймворк | Next.js 16 (App Router), React 19 |
+| База | sql.js 1.14 (SQLite → WASM), в Web Worker; байты мира кешируются в IndexedDB |
+| Редактор | CodeMirror 6 (`@uiw/react-codemirror`, `@codemirror/lang-sql`) |
+| Состояние | Zustand 5, сохранение в localStorage с версией схемы |
+| UI | Tailwind CSS 4, Base UI, собственный кит «Зеркала» |
+| Тесты | Vitest 3 |
 
 ## Архитектура
 
 ```
-┌─────────────────────────────────────────────────┐
-│  UI Components (src/components/game/)            │
-│  sql-editor, results-table, case-panel, ...      │
-└──────────────────────┬──────────────────────────┘
-                       │ zustand
-┌──────────────────────▼──────────────────────────┐
-│  Game Store (src/stores/game-store.ts)           │
-│  Состояние игры, прогресс миссий, история        │
-└──────────────────────┬──────────────────────────┘
-                       │ import from @/engine
-┌──────────────────────▼──────────────────────────┐
-│  Engine Facade (src/engine/index.ts)             │
-│  Единая точка входа в ядро                       │
-│                                                  │
-│  initEngine()          — БД + schema + seed      │
-│  executeSQL()          — доступ + выполнение     │
-│  checkMissionProgress()— валидация целей          │
-│  isMissionComplete()   — завершение миссии        │
-│  getSchema() / getForeignKeys() — для UI         │
-└──────────────────────┬──────────────────────────┘
-                       │ обёртка
-┌──────────────────────▼──────────────────────────┐
-│  Engine Internals (не импортировать напрямую)    │
-│  database.ts — SQL.js обёртка                    │
-│  schema.ts   — DDL (8 таблиц)                   │
-│  seed.ts     — INSERT-данные (115 строк)         │
-│  table-guard.ts — контроль доступа к таблицам    │
-│  validator.ts   — 5 типов валидации              │
-│  mission-runner.ts — прогресс по целям           │
-└─────────────────────────────────────────────────┘
+UI: src/app (маршруты), src/components (экраны, стол, сцены)
+  │  только стор и пропсы — движок не импортируется
+  ▼
+Стор: src/stores/game — состояние сезона и дела, сохранение, селекторы
+  │  import … from "@/engine"
+  ▼
+Фасад: src/engine/index.ts — единственная точка входа в ядро
+  ▼
+Внутренности src/engine:
+  runtime/   клиент ядра: Web Worker (или in-process), журнал дела, восстановление по таймауту
+  world/     генератор мира: схема, посадки фактов по делам, шум, сюжетные патчи, горизонт
+  execute, table-guard, sql-lint, sql-errors   выполнение, доступ к таблицам, линтер, разбор ошибок
+  validator, case-runner, protocol, board,     проверка задач, протокол, карточки и обвинение,
+  interrogation, live, clock, cron             допрос, живые события и часы, расписание zero
+  story, scoring, secrets, query-log           целостность контента, оценка и звания, тайники, журнал запросов
 ```
 
-**Весь код за пределами `src/engine/` импортирует только через фасад `@/engine`.**
-Тесты обращаются к внутренним модулям напрямую — это допустимо.
+Поток запроса: игрок → `runQuery` в сторе → `EngineClient.run(sql, context)` в воркере (политика доступа → часы → выполнение → реестр увиденного → задачи → тайники → линтер → строка `query_log`) → стор обновляет задачи, улики, события, сцены.
 
-## Структура проекта
+**Правило фасада.** Код вне `src/engine` импортирует ядро только из `@/engine`; компоненты не импортируют ядро вовсе. Исключение — тесты. Проверка (должно быть пусто):
 
-```
-src/
-├── app/                     # Next.js App Router
-│   ├── layout.tsx
-│   ├── page.tsx             # Главная
-│   └── game/page.tsx        # Игровой экран (client-side)
-│
-├── engine/                  # Ядро игры
-│   ├── index.ts             # ★ Фасад — единственный публичный API
-│   ├── database.ts          # SQL.js: инициализация, выполнение, схема
-│   ├── schema.ts            # DDL — 8 таблиц
-│   ├── seed.ts              # Данные — 115 строк
-│   ├── table-guard.ts       # Блокировка таблиц по миссии
-│   ├── validator.ts         # row_count, contains_columns, contains_value, exact_match, custom
-│   └── mission-runner.ts    # Последовательная проверка целей
-│
-├── data/missions/           # Определения миссий
-│   ├── index.ts
-│   ├── mission-00-tutorial.ts   # SELECT, WHERE, COUNT
-│   ├── mission-01-first-case.ts # JOIN
-│   ├── mission-02-intercept.ts  # LIKE, AND/OR
-│   └── mission-03-money.ts      # SUM, GROUP BY
-│
-├── stores/
-│   └── game-store.ts        # Zustand — стейт + persistence
-│
-├── components/
-│   ├── game/                # Игровые компоненты
-│   └── ui/                  # shadcn/ui
-│
-├── types/                   # TypeScript типы
-│   ├── database.ts          # QueryResult, TableInfo, ForeignKey
-│   ├── game.ts              # GameState, QueryHistoryEntry
-│   └── mission.ts           # Mission, Objective, ValidationRule
-│
-└── __tests__/               # 125 тестов
-    ├── engine/              # Тесты ядра
-    └── missions/            # Тесты проходимости миссий
+```bash
+grep -rnE "from ['\"](@/engine/|(\.\./)+engine/)" src --include=*.ts --include=*.tsx | grep -v "^src/engine/" | grep -v "^src/__tests__/"
 ```
 
-## База данных (8 таблиц)
+## Контент
 
-| Таблица | Записей | Описание |
-|---------|---------|----------|
-| `suspects` | 15 | Подозреваемые с позывными |
-| `locations` | 8 | Локации города |
-| `crimes` | 8 | Дела (контрабанда, отмывание, кражи...) |
-| `evidence` | 10 | Улики |
-| `crime_suspects` | 19 | Связи подозреваемый ↔ дело + роль |
-| `communications` | 12 | Перехваченные сообщения |
-| `transactions` | 12 | Финансовые операции |
-| `org_members` | 12 | Структура группировки «БАЗА» |
+```
+src/data/
+  cases/case-NN-<slug>/case.json    CaseDef без сцен: задачи с эталонами, протокол, обвинения, события, часы
+  cases/case-NN-<slug>/script.json  { scenes }: сцены, выборы, предъявления, допросы
+  cases/index.ts                    сборка дел сезона
+  characters.json                   каст (id = папка портретов)
+  handbook/cNN.json                 статьи справочника, которые открывает дело
+  secrets.json, achievements.json   тайники и отметки личного дела
+  endings.ts                        тексты концовок
+```
 
-## Миссии
+Типы контента — `src/types/case.ts`, `src/types/story.ts`. Целостность проверяют `validateCaseContent` / `validateSeasonContent`. Как писать задачи и тесты дела — `docs/design/TECH_SPEC.md`, разд. 4–5.
 
-| # | Название | SQL-концепции | Разблокированные таблицы |
-|---|----------|--------------|------------------------|
-| 0 | Первый день в участке | SELECT, WHERE, COUNT | suspects, crimes |
-| 1 | Тени порта — Связи | JOIN, WHERE, AND | + crime_suspects |
-| 2 | Тени порта — Перехват | LIKE, AND/OR | + communications |
-| 3 | Тени порта — Деньги | SUM, GROUP BY | + transactions |
+**Ассеты** (если файла нет, игра показывает заглушку и текст без звука):
 
-Каждая миссия — набор последовательных целей. Игрок пишет SQL, система проверяет **результат запроса** (не текст SQL). Любой корректный запрос засчитывается.
+- озвучка: `public/voice/<lineId>.mp3`, `lineId` = id реплики (`c03.interrogation.007`);
+- портреты: `public/portraits/<characterId>/<emotion>.webp` (уличный вариант — `<emotion>_outdoor.webp`);
+- фоны: `public/backgrounds/<id>.webp`.
 
-## Добавление новой миссии
+Списки всех нужных файлов собирает `npm run manifest` в `docs/production/`.
 
-1. Создать `src/data/missions/mission-XX-name.ts` по типу `Mission`
-2. Добавить в массив `src/data/missions/index.ts`
-3. Типы валидации: `row_count`, `contains_columns`, `contains_value`, `exact_match`, `custom`
-4. Написать тесты в `src/__tests__/missions/`
+## Маршруты
+
+`/` — запуск (18+, холодное открытие, вход «Зеркала») · `/play` — журнал дел, стол, разбор, финал · `/archive` — свободный режим после сезона · `/lab` — витрина компонентов (dev).
 
 ## Команды
 
 ```bash
-npm run dev        # Дев-сервер
-npm run build      # Продакшен-сборка
-npm run test:run   # Запуск всех тестов (125)
-npm run test       # Тесты в watch-режиме
+npm run dev        # дев-сервер
+npm run build      # продакшен-сборка
+npm run test:run   # все тесты (1704)
 npm run lint       # ESLint
+npm run manifest   # манифесты озвучки, портретов и фонов (docs/production)
+npm run qa -- --base-url http://localhost:3150   # прохождение сезона в браузере (Playwright), см. шапку scripts/qa-playthrough.mjs
 ```
 
-## Известные баги
+## Документация
 
-1. **Mission 3, цель `obj-money-trail`** — seed содержит 1 транзакцию для suspect_id=1 + suspicious=1, валидатор ожидает >= 2. Игрок застревает, следуя подсказке.
-2. **SQLite LIKE + кириллица** — `LIKE '%груз%'` не найдёт `'Груз'` (case-insensitive только для ASCII). Не блокирует прохождение, но может путать.
+- `docs/design/GAME_DESIGN.md` — библия: сюжет, персонажи, дела, мир, механики;
+- `docs/design/TECH_SPEC.md` — технический контракт: слои, контент, мир, задачи, тесты, рантайм;
+- `docs/design/UI_ART_DIRECTION.md`, `docs/design/EASTER_EGGS.md` — интерфейс и пасхалки;
+- `docs/production/` — арт- и голосовая библии, манифесты и промпты ассетов.
+
+## Известные пробелы
+
+- Финальная доска не реализована: пины не пишутся в `evidence_registry` по узлам N1–N9, поэтому флаг A (`final_board`, задача ★11.4) недостижим и концовка «Первое солнце» пока недоступна (лучшая — «Тихая вода»).
+- Отметки «Зоркий глаз», «Снайпер», «Ювелир», «Фикус», «Все десять» ждут механик, которых ещё нет.
+- Не сделаны блокнот аномалий, оценка изящества запроса и утренняя сводка.
+- Озвучка есть только у пролога (46 реплик), портретов и фонов нет совсем — везде заглушки.
+- В финале экрана «Отправка пакета», о котором говорят задача 11.7 и подсказки к ней, нет: адресат и отправка выбираются в сценах после допроса Гранина.

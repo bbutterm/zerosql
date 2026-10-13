@@ -1,0 +1,69 @@
+[
+  {
+    "id": "h.recursive",
+    "title": "Рекурсия: WITH RECURSIVE",
+    "summary": "Рекурсивный CTE проходит цепочку неизвестной длины: владелец владельца владельца… Сначала выполняется стартовая часть (якорь), потом шаг повторяется над строками, найденными на прошлом шаге, пока новых строк не останется.",
+    "syntax": "WITH RECURSIVE имя(столбцы) AS (\n  SELECT …                -- якорь: стартовые строки\n  UNION ALL\n  SELECT …                -- шаг: присоединяет таблицу\n  FROM имя JOIN таблица ON … -- к строкам прошлого шага\n)\nSELECT … FROM имя;",
+    "example": "-- Вверх по владельцам: от «Ладога-Логистик» до людей\nWITH RECURSIVE up(company_id, owner_type, owner_id, share, depth) AS (\n  SELECT company_id, owner_type, owner_id, share, 1\n  FROM company_owners\n  WHERE company_id = 15 AND until IS NULL AND owner_type = 'company' AND share > 50\n  UNION ALL\n  SELECT o.company_id, o.owner_type, o.owner_id, o.share, up.depth + 1\n  FROM up JOIN company_owners o\n    ON up.owner_type = 'company' AND o.company_id = up.owner_id AND o.until IS NULL\n)\nSELECT * FROM up ORDER BY depth;",
+    "pitfalls": [
+      "Шаг ссылается на сам CTE ровно один раз и только в FROM/JOIN. Агрегаты, DISTINCT и подзапрос к имени CTE в шаге SQLite не пропустит.",
+      "Направление задаёт условие соединения: «вверх» — `o.company_id = up.owner_id` (ищем владельцев владельца), «вниз» — `o.owner_id = up.company_id` (ищем, чем он владеет). Перепутали — получите ноль строк или чужую ветку.",
+      "Фильтр, который нужен на каждом уровне (`until IS NULL`), пишется и в якоре, и в шаге. В одном якоре он отсечёт только первый этаж — история владения вылезет выше.",
+      "Столбец глубины (`depth + 1`) помогает и читать результат, и ограничить рекурсию. Без него непонятно, какой этаж матрёшки перед вами.",
+      "`UNION ALL` повторяет шаг, пока появляются строки. Если в данных есть цикл, запрос не кончится никогда — см. «Защита от циклов»."
+    ]
+  },
+  {
+    "id": "h.cycle_guard",
+    "title": "Защита от циклов",
+    "summary": "Если А владеет Б, а Б владеет А, рекурсия с `UNION ALL` ходит по кругу бесконечно: в терминале это таймаут. Спасают два приёма: `UNION` без меняющихся столбцов (повтор строки отбрасывается, и шаг останавливается) или явный предел глубины.",
+    "syntax": "-- 1. UNION: в строке только то, что повторится на круге\nWITH RECURSIVE g(id) AS (\n  SELECT … UNION SELECT … )\n\n-- 2. Предел глубины\nWITH RECURSIVE g(id, depth) AS (\n  SELECT …, 0\n  UNION ALL\n  SELECT …, g.depth + 1 FROM g JOIN … WHERE g.depth < 10 )",
+    "example": "-- Всё, чем владеет «Северный кордон» (id 13), — с циклом 15 ↔ 16 внутри\nWITH RECURSIVE down(id) AS (\n  SELECT 13\n  UNION\n  SELECT o.company_id\n  FROM down JOIN company_owners o\n    ON o.owner_type = 'company' AND o.owner_id = down.id\n)\nSELECT c.id, c.name FROM down JOIN companies c ON c.id = down.id;",
+    "pitfalls": [
+      "`UNION` спасает, только если строка на круге повторяется целиком. Добавили `depth + 1` — каждая строка новая, и `UNION` уже не остановит цикл.",
+      "Предел глубины с `UNION ALL` даёт дубли: компания в цикле встретится на каждом уровне. Для списка «кто в группе» добавьте `DISTINCT` во внешнем запросе.",
+      "Рекурсия вверх от «Щита» в цикл не попадает, а вниз от Kordon — попадает. Проверяйте данные, а не направление: цикл может ждать в любой ветке.",
+      "В SQLite есть и аварийный тормоз — `LIMIT` внутри рекурсивного CTE, но он обрывает обход посреди дерева. Это отладка, а не ответ."
+    ]
+  },
+  {
+    "id": "h.running_total",
+    "title": "Нарастающий итог: SUM() OVER",
+    "summary": "Агрегат с `OVER (ORDER BY …)` не схлопывает строки, а считает для каждой строки сумму всех строк до неё включительно — как остаток в кассовой книге. Так находят момент, когда сумма перевалила порог.",
+    "syntax": "SUM(столбец) OVER (\n  [PARTITION BY группа]\n  ORDER BY порядок, уникальный_ключ\n  ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n) AS итог\n\n-- порог — снаружи:\nWITH t AS (SELECT …, SUM(…) OVER (…) AS итог FROM …)\nSELECT * FROM t WHERE итог >= порог ORDER BY итог LIMIT 1;",
+    "example": "-- Как копились платежи «Ладога Инвест» → «Щит» в 2026 году\nSELECT ts, amount,\n       SUM(amount) OVER (ORDER BY ts, id\n                         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS итог\nFROM transactions\nWHERE account_id = 'ACC-10017' AND amount > 0 AND ts >= '2026-01-01 00:00:00';",
+    "pitfalls": [
+      "Без `ORDER BY` в `OVER` сумма считается по всему окну: у каждой строки один и тот же общий итог.",
+      "Фильтр по итогу — только во внешнем запросе или в CTE. `WHERE SUM(…) OVER (…) > …` даёт `misuse of window function`.",
+      "`WHERE` во внутреннем запросе срабатывает до окна: отфильтровали покупателя — итог считается только по его сделкам. Забыли — сложите весь реестр.",
+      "При одинаковых датах результат зависит от рамки окна — см. «Рамки окна: ROWS и RANGE»."
+    ]
+  },
+  {
+    "id": "h.frames",
+    "title": "Рамки окна: ROWS и RANGE",
+    "summary": "Рамка решает, какие строки входят в окно текущей строки. По умолчанию при `ORDER BY` это `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`: в окно попадают и все «равные» строки с тем же ключом сортировки. `ROWS` считает строки по одной.",
+    "syntax": "… OVER (ORDER BY ключ\n        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n\n-- скользящее окно: текущая и две предыдущие\n… OVER (ORDER BY ключ ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)",
+    "example": "-- 07.12.2015 в реестре несколько сделок: сравните две рамки\nSELECT deal_no, deal_date, amount,\n       SUM(amount) OVER (ORDER BY deal_date) AS range_итог,\n       SUM(amount) OVER (ORDER BY deal_date, deal_no\n                         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rows_итог\nFROM share_deals\nWHERE deal_date BETWEEN '2015-12-04' AND '2015-12-09';",
+    "pitfalls": [
+      "Ловушка RANGE: две сделки в один день получают одинаковый итог — сумму обеих. Порог «пробивает» первая из них, хотя на деле его пробила вторая.",
+      "`ROWS` без уникального порядка тоже не спасает: строки одной даты лягут в случайном порядке. Добавьте второй ключ — номер сделки или id.",
+      "`ORDER BY` внутри `OVER` и `ORDER BY` в конце запроса — разные вещи. Первый задаёт, как копится итог, второй — как строки лягут на экран.",
+      "`RANGE` с числовым смещением (`RANGE BETWEEN 100 PRECEDING …`) работает только при одном числовом ключе сортировки."
+    ]
+  },
+  {
+    "id": "w.ownership",
+    "title": "Доли и номиналы",
+    "summary": "`company_owners` — реестр долей: у каждой компании владельцы-люди (`owner_type = 'person'`, id в persons) или компании (`'company'`, id в companies). `share` — проценты, `until` — конец владения: нынешние владельцы — `until IS NULL`. Доли нынешних владельцев одной компании дают ровно 100.",
+    "syntax": "SELECT o.company_id, o.owner_type, o.owner_id, o.share, o.since, o.until\nFROM company_owners o\nWHERE o.until IS NULL;",
+    "example": "-- Кто сейчас владеет «Глубиной» и какой долей\nSELECT c.name, o.owner_type, oc.name AS владелец_компания, o.owner_id, o.share\nFROM company_owners o\nJOIN companies c ON c.id = o.company_id\nLEFT JOIN companies oc ON o.owner_type = 'company' AND oc.id = o.owner_id\nWHERE c.name LIKE '%Глубина»%' AND o.until IS NULL;",
+    "pitfalls": [
+      "Номинал — человек, на которого записана доля, но решения принимает не он. 30 % у «мебели» нужны, чтобы в бумагах не стояло одно имя.",
+      "`owner_id` — это id в persons или в companies, смотря по `owner_type`. Соединять надо с той таблицей, на которую указывает тип, иначе человек 13 станет компанией 13.",
+      "Прежние владельцы не удаляются, им ставят `until`. Без `until IS NULL` в цепочке появятся бывшие хозяева.",
+      "У «Сияния» 49 % — «рынок» (`owner_type = 'market'`, без owner_id): это акции в свободном обращении, а не человек.",
+      "Владение — не управление: директор компании (`companies.director_person_id`) и её владелец — часто разные люди."
+    ]
+  }
+]

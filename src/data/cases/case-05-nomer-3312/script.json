@@ -1,0 +1,215 @@
+{
+  "scenes": [
+    {
+      "id": "intro",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.intro.001", "speaker": "narrator", "text": "Ночь с 14 на 15 декабря, 02:40. Цоколь гудит: за стеной серверная, над головой — пустое здание." },
+        { "id": "c05.intro.002", "speaker": "narrator", "text": "Радио в дежурке: «Глубина» с сегодняшнего дня переводит нагрузку в зал Б. Мороз — минус тридцать восемь." },
+        { "id": "c05.intro.003", "speaker": "nina", "emotion": "neutral", "text": "Не спится, голубчик? Мне тоже. Чайник я поставила, сушки в коробке — бери.", "direction": "мягко, напевно, с северным оканьем; шёпотом, будто кто-то спит" },
+        { "id": "c05.intro.004", "speaker": "nina", "emotion": "happy", "text": "Лев Борисович велел журнал пятнадцатого года проверить. Так это ж мой «Сокол», я его наизусть помню.", "direction": "с гордостью, постукивает пальцем по столу" },
+        { "id": "c05.intro.005", "speaker": "nina", "emotion": "thinking", "text": "Номер к номеру, как бусы. Только «Сокол» тот жил не по описи, а как бог на душу положит.", "direction": "поговоркой, нараспев" },
+        { "id": "c05.intro.006", "speaker": "narrator", "text": "В дверь просовывается тёмный хвост и светящийся шов худи. Тоха, банка энергетика в руке." },
+        { "id": "c05.intro.007", "speaker": "tokha", "emotion": "happy", "text": "Не спите? Имба. Я заливку стерегу, Мельник велел до утра глаз не смыкать, хе.", "direction": "быстрый тенор, нервный смешок" },
+        { "id": "c05.intro.008", "speaker": "tokha", "emotion": "happy", "text": "О, хороший у тебя в пятницу LEFT JOIN был, чистенький.", "direction": "мимоходом, легко, уже разворачиваясь к двери; сам не слышит, что проговорился" },
+        { "id": "c05.intro.009", "speaker": "narrator", "text": "В пятницу был аудит. Тохе никто ничего не показывал." }
+      ],
+      "choices": [
+        { "id": "ask", "text": "Какой ещё LEFT JOIN, Тоха? Откуда ты про него знаешь?", "goto": "intro_ask" },
+        { "id": "bye", "text": "Спасибо. Иди стереги свою заливку.", "goto": "intro_bye" }
+      ]
+    },
+    {
+      "id": "intro_ask",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.intro_ask.001", "speaker": "tokha", "emotion": "lie", "lie": true, "text": "А? Да короч, мониторинг нагрузки, там всё видно. Чисто графики, хе.", "direction": "«короч» скороговоркой — примета лжи; смешок выше обычного" },
+        { "id": "c05.intro_ask.002", "speaker": "tokha", "emotion": "uneasy", "text": "Всё, у меня там заливка. Нина Фёдоровна, сушку возьму?", "direction": "торопливо, не глядя" },
+        { "id": "c05.intro_ask.003", "speaker": "nina", "emotion": "neutral", "text": "Бери, бери. Худой, как жердь.", "direction": "ласково-ворчливо; провожает его взглядом поверх очков" }
+      ]
+    },
+    {
+      "id": "intro_bye",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.intro_bye.001", "speaker": "tokha", "emotion": "happy", "text": "Стерегу, хе. Если «Сокол» заорёт — я в серверной.", "direction": "весело, на ходу" },
+        { "id": "c05.intro_bye.002", "speaker": "nina", "emotion": "neutral", "text": "Иди уж, сторож. Худой, как жердь.", "direction": "ласково-ворчливо" }
+      ]
+    },
+    {
+      "id": "gaps",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.gaps.001", "speaker": "narrator", "text": "Два номера. 3312 — ночь на 20 февраля 2015-го. 4471 — 10 марта, середина дня." },
+        { "id": "c05.gaps.002", "speaker": "nina", "emotion": "happy", "text": "Четыре тысячи четыреста семьдесят один — это Валька-практикантка. Кофе пролила, весь лист поплыл.", "direction": "охотно, со смешком, будто рада, что спросили про это" },
+        { "id": "c05.gaps.003", "speaker": "nina", "emotion": "neutral", "text": "Я потом неделю журнал утюгом сушила. Это всё не по описи, голубчик.", "direction": "напевно" },
+        { "id": "c05.gaps.004", "speaker": "narrator", "text": "Про второй номер Нина молчит. Палец перестаёт стучать по столу." },
+        { "id": "c05.gaps.005", "speaker": "nina", "emotion": "thinking", "text": "А три-три-один-два… Мало ли. Ночь, февраль. Испортили номер, вот и всё.", "direction": "слишком быстро и без напева; не поднимает глаз" }
+      ]
+    },
+    {
+      "id": "coffee",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.coffee.001", "speaker": "nina", "emotion": "happy", "text": "Говорила же — кофе. Валька потом «взамен испорченного» писала и ревела в три ручья.", "direction": "довольно, нараспев" },
+        { "id": "c05.coffee.002", "speaker": "nina", "emotion": "neutral", "text": "Хорошая девка была, только руки-крюки. Ты на неё зла не держи, голубчик.", "direction": "тепло" }
+      ]
+    },
+    {
+      "id": "night_0312",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.night_0312.001", "speaker": "narrator", "text": "03:12. За стеной, в серверной, сухо щёлкает реле." },
+        { "id": "c05.night_0312.002", "speaker": "narrator", "text": "Фикус поднимает голову с батареи и долго смотрит на твой монитор." },
+        { "id": "c05.night_0312.003", "speaker": "nina", "emotion": "scared", "text": "Опять он в это время просыпается. Ирочка говорила — к гостям.", "direction": "тихо, почти себе; и сразу пожалела, что сказала" },
+        { "id": "c05.night_0312.004", "speaker": "narrator", "text": "Чай остывает. Курсор мигает. Больше ничего не происходит — по крайней мере, на экране." }
+      ]
+    },
+    {
+      "id": "rec02",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.rec02.001", "speaker": "narrator", "text": "Здесь до тебя уже стояла Ирина. В ящике стола щёлкает диктофон." },
+        { "id": "c05.rec02.002", "speaker": "irina", "emotion": "neutral", "text": "Двадцать девятое октября. Смотрела «Сокол» в контуре миграции. Номера идут подряд. Кроме одного.", "direction": "запись диктофона; ночь, полушёпот" },
+        { "id": "c05.rec02.003", "speaker": "irina", "emotion": "neutral", "text": "Три-три-один-два. В бумажном журнале у Нины — та же дыра.", "direction": "полушёпот, цифры по одной" },
+        { "id": "c05.rec02.004", "speaker": "irina", "emotion": "happy", "text": "Если ты тоже её видишь — значит, думаешь как я.", "direction": "короткий выдох вместо смешка" },
+        { "id": "c05.rec02.005", "speaker": "narrator", "text": "«Ким Д. С., 13 л.» Схема — к объяснению, которого в журнале нет." }
+      ]
+    },
+    {
+      "id": "folder",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.folder.001", "speaker": "narrator", "text": "Следователь: майор Ратников Л. Б. Тот же человек, чья записка приклеена к монитору." },
+        { "id": "c05.folder.002", "speaker": "nina", "emotion": "scared", "text": "Лев Борисович тогда в майорах ходил. Быстро ходил, хорошо.", "direction": "слишком ровно; смотрит на дверь" },
+        { "id": "c05.folder.003", "speaker": "nina", "emotion": "thinking", "text": "Приостановили — значит, так надо было. Не нам с тобой решать, голубчик.", "direction": "канцелярским тоном, будто читает с листа" }
+      ]
+    },
+    {
+      "id": "talk",
+      "location": "basement_archive_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.talk.001", "speaker": "narrator", "text": "Нина ставит перед тобой кружку. Свою не трогает." },
+        { "id": "c05.talk.002", "speaker": "nina", "emotion": "neutral", "text": "Шестьдесят один, говоришь? А кто ж ещё. Машинистка в отделе одна была — я.", "direction": "спокойно, даже с облегчением" },
+        { "id": "c05.talk.003", "speaker": "nina", "emotion": "neutral", "text": "Это не улика, голубчик. Это штатное расписание.", "direction": "назидательно, постукивает пальцем" },
+        { "id": "c05.talk.004", "speaker": "nina", "emotion": "neutral", "lie": true, "text": "Не помню я, голубчик, столько лет.", "direction": "без оканья, ровно, как по бумаге — Нина так не говорит, когда говорит правду" }
+      ],
+      "interrogation": {
+        "suspect": "nina",
+        "mode": "talk",
+        "breakSteps": ["neutral", "scared", "ashamed"],
+        "lieTell": "пропадает северное оканье: Нина говорит ровно, как по бумаге",
+        "points": [
+          {
+            "line": "c05.talk.004",
+            "press": "talk_press",
+            "present": {
+              "prompt": "Чем ответить на «не помню»?",
+              "correct": ["ev.c05.scheme_3313"],
+              "cards": [
+                { "table": "doc_registry", "all": [{ "column": "reg_no", "eq": 3313 }] }
+              ],
+              "success": "nina",
+              "failure": "talk_miss"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "talk_press",
+      "location": "basement_archive_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.talk_press.001", "speaker": "nina", "emotion": "angry", "text": "Порядок у меня был! Номер к номеру. Кроме тех, что люди портили.", "direction": "вспыхивает и тут же гаснет" },
+        { "id": "c05.talk_press.002", "speaker": "nina", "emotion": "neutral", "text": "А людей тех я не помню. Столько лет, голубчик.", "direction": "снова ровно, без оканья" }
+      ]
+    },
+    {
+      "id": "talk_miss",
+      "location": "basement_archive_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.talk_miss.001", "speaker": "nina", "emotion": "neutral", "text": "Это не то, голубчик. Это я и так знаю.", "direction": "с облегчением" },
+        { "id": "c05.talk_miss.002", "speaker": "nina", "emotion": "thinking", "text": "Ты мне бумагу покажи, где я есть. Тогда и поговорим.", "direction": "почти вызов; и сама этого боится" }
+      ]
+    },
+    {
+      "id": "nina",
+      "location": "basement_archive_night",
+      "music": "desk_low",
+      "next": "rec05",
+      "lines": [
+        { "id": "c05.nina.001", "speaker": "narrator", "text": "Нина долго смотрит на строку 3313. Снимает очки. Без них глаза у неё маленькие и очень усталые." },
+        { "id": "c05.nina.002", "speaker": "nina", "emotion": "scared", "text": "Схему девочка рисовала. Фломастером, на обороте бланка. Причал, фонари, а машина — квадратиком.", "direction": "тихо, медленно, будто видит этот лист" },
+        { "id": "c05.nina.003", "speaker": "nina", "emotion": "scared", "text": "Ночь была, второй час. Лев Борисович шапку диктовал, а дальше — её словами.", "direction": "тихо; пауза перед «Лев Борисович»" },
+        { "id": "c05.nina.004", "speaker": "nina", "emotion": "ashamed", "text": "Я слово в слово печатала. Как положено.", "direction": "с усилием" },
+        { "id": "c05.nina.005", "speaker": "nina", "emotion": "ashamed", "text": "А утром номера в журнале не стало. Будто и не было.", "direction": "почти шёпотом" },
+        { "id": "c05.nina.006", "speaker": "narrator", "text": "Палец Нины стучит по столу — раз, другой — и замирает." },
+        { "id": "c05.nina.007", "speaker": "nina", "emotion": "sad", "text": "Тринадцать лет ей было, голубчик. Тринадцать.", "direction": "голос садится на втором «тринадцать»" },
+        { "id": "c05.nina.008", "speaker": "narrator", "text": "Кот на батарее вздыхает во сне." },
+        { "id": "c05.nina.009", "speaker": "nina", "emotion": "ashamed", "text": "Девочка говорила. Я печатала.", "direction": "просто, без напева; самая тяжёлая реплика Нины" },
+        { "id": "c05.nina.010", "speaker": "nina", "emotion": "ashamed", "text": "Больше не спрашивай, голубчик.", "direction": "мягко, но окончательно; встаёт" }
+      ]
+    },
+    {
+      "id": "rec05",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.rec05.001", "speaker": "narrator", "text": "Нина уходит в архив и прикрывает за собой дверь. В ящике щёлкает диктофон." },
+        { "id": "c05.rec05.002", "speaker": "irina", "emotion": "neutral", "text": "Запись. Девятое ноября. Нина знает больше, чем говорит.", "direction": "запись диктофона; ночь, полушёпот" },
+        { "id": "c05.rec05.003", "speaker": "irina", "emotion": "neutral", "text": "Я всегда начинаю с главного — с первой буквы. Мама так читать учила.", "direction": "полушёпот, с теплом на «мама»" },
+        { "id": "c05.rec05.004", "speaker": "irina", "emotion": "neutral", "text": "Ладно. Дальше.", "direction": "короткий выдох" }
+      ]
+    },
+    {
+      "id": "petrovna",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.petrovna.001", "speaker": "narrator", "text": "Вальц Ирина Петровна. В графе «отец» — 1388. Сазонов Пётр Ильич." },
+        { "id": "c05.petrovna.002", "speaker": "narrator", "text": "Петровна. Пётр. Бухгалтер, который 19 февраля 2015-го уехал из дома «на минутку» и не вернулся." },
+        { "id": "c05.petrovna.003", "speaker": "narrator", "text": "Здесь до тебя уже стояла Ирина. Щелчок диктофона." },
+        { "id": "c05.petrovna.004", "speaker": "irina", "emotion": "neutral", "text": "Запись. Третье ноября. Его карточка. «Местонахождение неизвестно».", "direction": "запись диктофона; ночь, полушёпот" },
+        { "id": "c05.petrovna.005", "speaker": "irina", "emotion": "neutral", "text": "Одиннадцать лет — одна строка.", "direction": "долгий выдох; запись обрывается" },
+        { "id": "c05.petrovna.006", "speaker": "narrator", "text": "Кружка «Лучший аналитик» стоит у монитора. Её поставила дочь человека из дела 15-0219." }
+      ]
+    },
+    {
+      "id": "sealed",
+      "location": "basement_b0_03_night",
+      "music": "desk_low",
+      "next": "morning",
+      "lines": [
+        { "id": "c05.sealed.001", "speaker": "mira", "emotion": "neutral", "text": "Сверено. Пять позиций.", "direction": "ровно, чуть слишком дружелюбно" },
+        { "id": "c05.sealed.002", "speaker": "narrator", "text": "05:40. Заливка завершена. В ПБД — всё, что было в «Соколе». Кроме одной строки." },
+        { "id": "c05.sealed.003", "speaker": "narrator", "text": "Нина возвращается с термосом и молча кладёт свою папку поверх карточки 3313." }
+      ]
+    },
+    {
+      "id": "morning",
+      "location": "basement_b0_03_day",
+      "music": "desk_low",
+      "lines": [
+        { "id": "c05.morning.001", "speaker": "narrator", "text": "Утро. Под потолком цоколя загораются лампы, и подвал сразу становится меньше." },
+        { "id": "c05.morning.002", "speaker": "dasha", "emotion": "neutral", "text": "Так. Стоп. Ты тут всю ночь сидишь? Глаза как у Фикуса.", "direction": "быстро, с порога; жуёт жвачку, парка в инее" },
+        { "id": "c05.morning.003", "speaker": "dasha", "emotion": "smug", "text": "Слышь, а кто у тебя в журнале в три ночи шарился?", "direction": "между делом, кивает на экран с query_log; не всерьёз — пока" },
+        { "id": "c05.morning.004", "speaker": "tokha", "emotion": "lie", "lie": true, "text": "Да это cron, короч. Служебное. Хе.", "direction": "из дверей, с банкой; «короч» скороговоркой — примета лжи" },
+        { "id": "c05.morning.005", "speaker": "dasha", "emotion": "neutral", "text": "Служебное. В три двенадцать. Ну-ну.", "direction": "рублено, проглатывая окончания" },
+        { "id": "c05.morning.006", "speaker": "tokha", "emotion": "uneasy", "text": "Ну… я пошёл. Заливка всё, база. Мельнику доложу.", "direction": "пятится, смешка нет" },
+        { "id": "c05.morning.007", "speaker": "dasha", "emotion": "determined", "text": "Ладно, не клюёт — и не надо. Я на выезд. Лев Борисович велел тебя накормить, сушки не считаются.", "direction": "быстро, тепло под грубостью" },
+        { "id": "c05.morning.008", "speaker": "narrator", "text": "На доске под Нининой папкой — карточка 3313. Даша её не видит." }
+      ]
+    }
+  ]
+}
