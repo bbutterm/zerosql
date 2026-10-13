@@ -10,8 +10,8 @@ substation_promzona_2,Подстанция «Промзона-2»,public/backgro
 pakhomova_apartment,Квартира Пахомовой,public/backgrounds/pakhomova_apartment.webp,1920x1080,P1,yes,yes,no
 polyarnaya_street_night,Полярная улица ночью,public/backgrounds/polyarnaya_street_night.webp,1920x1080,P1,no,yes,no
 black_ice_mostki,Чёрный лёд у мостков (ключевой арт),public/backgrounds/black_ice_mostki.webp,1920x1080,P2,no,yes,no
-cafe_stvor,Кафе «Створ» у маяка,public/backgrounds/cafe_stvor.webp,1920x1080,P3,no,yes,no
-gu_hall_ceremony,Холл ГУ (церемония),public/backgrounds/gu_hall_ceremony.webp,1920x1080,P3,no,yes,no
+cafe_stvor,Кафе «Створ» у маяка,public/backgrounds/cafe_stvor.webp,1920x1080,P3,yes,yes,no
+gu_hall_ceremony,Холл ГУ (церемония),public/backgrounds/gu_hall_ceremony.webp,1920x1080,P3,yes,yes,no
 basement_new_year,Подвал в новогоднюю ночь,public/backgrounds/basement_new_year.webp,1920x1080,P3,no,yes,no
 mostki_dawn,Мостки на рассвете,public/backgrounds/mostki_dawn.webp,1920x1080,P3,no,yes,no
 title_night,"Холодное открытие, ночь (ключевая картина)",public/backgrounds/title_night.webp,2560x1440,P0 №6,no,yes,no
@@ -26,3 +26,7 @@ polynya_ice_old_pier,polynya_ice_old_pier,public/backgrounds/polynya_ice_old_pie
 polynya_shore_noon,polynya_shore_noon,public/backgrounds/polynya_shore_noon.webp,1920x1080,,yes,no,no
 basement_b0_03_morning,basement_b0_03_morning,public/backgrounds/basement_b0_03_morning.webp,1920x1080,,yes,no,no
 pier_lantern_night,pier_lantern_night,public/backgrounds/pier_lantern_night.webp,1920x1080,,yes,no,no
+ocr_office,ocr_office,public/backgrounds/ocr_office.webp,1920x1080,,yes,no,no
+stairwell_b,stairwell_b,public/backgrounds/stairwell_b.webp,1920x1080,,yes,no,no
+server_tambour,server_tambour,public/backgrounds/server_tambour.webp,1920x1080,,yes,no,no
+first_sun_window,first_sun_window,public/backgrounds/first_sun_window.webp,1920x1080,,yes,no,no
