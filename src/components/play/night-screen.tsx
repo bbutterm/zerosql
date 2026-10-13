@@ -26,7 +26,7 @@ import type { Settings } from "@/stores/game/types";
 import { StatusBar } from "@/components/desk/status-bar";
 import { Redaction, ScreenButton } from "@/components/kit/screen";
 import { typo } from "@/components/kit/typo";
-import { useBackground } from "@/components/story/scene-backdrop";
+import { ROOM_UNDER_TEXT, useBackground } from "@/components/story/scene-backdrop";
 import { useLineAudio } from "@/components/story/line-audio";
 import { NIGHT_BACKGROUND } from "@/data/backgrounds";
 
@@ -480,8 +480,8 @@ export function NightScreen({
             className="pointer-events-none absolute inset-0 -z-10 size-full object-cover"
             style={{ animation: reduced || bgUrl === bgAtStart ? undefined : "zs-fade-in 400ms var(--ease-out) both" }}
           />
-          {/* Текст ночи стоит по всему кадру (штамп над окнами, лента над мониторами): комната 0.85, как за логом диалога */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-room/85" />
+          {/* Текст ночи стоит по всему кадру (штамп над окнами, лента над мониторами): комната та же, что за логом диалога */}
+          <div aria-hidden className={cn("pointer-events-none absolute inset-0 -z-10", ROOM_UNDER_TEXT)} />
         </>
       )}
 

@@ -17,7 +17,13 @@ import {
   locations,
 } from "@/data/backgrounds";
 import { LOCATION_ID_RE } from "@/engine";
-import { backgroundCandidates } from "@/components/story/scene-backdrop";
+import {
+  type BackdropStack,
+  backdropRetarget,
+  backdropSettled,
+  backdropShown,
+  backgroundCandidates,
+} from "@/components/story/scene-backdrop";
 import { LOCATIONS as ART_LOCATIONS, promptRows } from "../../../scripts/art-prompts.mjs";
 
 const PUBLIC = join(__dirname, "..", "..", "..", "public");
@@ -128,5 +134,53 @@ describe("сданные картины в public/backgrounds", () => {
 
   it("локация без своей картины и без семьи — чистая комната", () => {
     if (!delivered(backgroundUrl("stairwell_b"))) expect(shownNow("stairwell_b")).toBeNull();
+  });
+});
+
+describe("фон сцены: стопка картин в потоке сцен (UI §7.14)", () => {
+  const A = "/backgrounds/a.webp";
+  const B = "/backgrounds/b.webp";
+  const C = "/backgrounds/c.webp";
+  const shown = (s: BackdropStack) => s.layers.map((l, i) => `${l.url}:${backdropShown(s, i) ? 1 : 0}`);
+  const first: BackdropStack = { layers: [{ url: A, enter: false }], top: A };
+
+  it("новая картина проявляется поверх прошлой; прошлая уходит, когда новая проявилась", () => {
+    const next = backdropRetarget(first, B, false);
+    expect(next.layers).toEqual([
+      { url: A, enter: false },
+      { url: B, enter: true },
+    ]);
+    expect(shown(next)).toEqual([`${A}:1`, `${B}:1`]);
+    // Посреди перехода ничего не убирается
+    expect(backdropSettled(next, B, "0.4")).toBe(next);
+    expect(backdropSettled(next, B, "1")).toEqual({ layers: [{ url: B, enter: true }], top: B });
+  });
+
+  it("смена посреди проявления: картина гаснет с того места, где была, и уходит, погаснув", () => {
+    const fading = backdropRetarget(backdropRetarget({ layers: [], top: null }, A, false), null, false);
+    // Слой не пересоздаётся (тот же url, тот же порядок) — CSS-переход продолжает непрозрачность
+    expect(fading.layers).toEqual([{ url: A, enter: true }]);
+    expect(shown(fading)).toEqual([`${A}:0`]);
+    expect(backdropSettled(fading, A, "0.3")).toBe(fading);
+    expect(backdropSettled(fading, A, "0")).toEqual({ layers: [], top: null });
+  });
+
+  it("возврат к картине под проявляющейся: верхняя гаснет, нижняя не шевелится", () => {
+    const back = backdropRetarget(backdropRetarget(first, B, false), A, false);
+    expect(back.layers.map((l) => l.url)).toEqual([A, B]);
+    expect(shown(back)).toEqual([`${A}:1`, `${B}:0`]);
+    expect(backdropSettled(back, B, "0")).toEqual({ layers: [{ url: A, enter: false }], top: A });
+  });
+
+  it("третья картина посреди перехода ложится сверху, обе прошлые остаются под ней до конца", () => {
+    const third = backdropRetarget(backdropRetarget(first, B, false), C, false);
+    expect(shown(third)).toEqual([`${A}:1`, `${B}:1`, `${C}:1`]);
+    expect(backdropSettled(third, B, "1")).toBe(third);
+    expect(backdropSettled(third, C, "1")).toEqual({ layers: [{ url: C, enter: true }], top: C });
+  });
+
+  it("меньше движения: в кадре сразу одна цель", () => {
+    expect(backdropRetarget(backdropRetarget(first, B, false), C, true)).toEqual({ layers: [{ url: C, enter: false }], top: C });
+    expect(backdropRetarget(first, null, true)).toEqual({ layers: [], top: null });
   });
 });

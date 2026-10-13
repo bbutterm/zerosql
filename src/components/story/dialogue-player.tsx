@@ -62,11 +62,12 @@ export interface DialoguePlayerProps {
    */
   background?: string | null;
   /**
-   * Сцена продолжает поток (родитель пересоздаёт плеер на каждую сцену): комната уже на экране
-   * с этой картиной (id локации или null). Гашения и проявления нет, смена картины —
-   * перекрёстным затуханием; сцена без location остаётся на этой картине
+   * Что остаётся в логе, когда родитель сменил сцену (плеер живёт весь поток сцен, комната и
+   * картина не начинаются заново): flow — прошлые сцены остаются выше, предъявленная улика —
+   * на столе; scene — каждая сцена начинает лог и стол заново, как отдельный показ. `startAt`
+   * действует на каждую новую сцену
    */
-  continueFrom?: { background: string | null };
+  logScope?: "flow" | "scene";
   /** «Меньше движения» из «Параметров»; prefers-reduced-motion учитывается всегда */
   reducedMotion?: boolean;
   /** «Отмена» в предъявлении; без колбэка кнопки нет */
@@ -152,7 +153,7 @@ export function DialoguePlayer({
   portraitBasePath = "/portraits",
   backgroundBasePath = "/backgrounds",
   background,
-  continueFrom,
+  logScope = "flow",
   reducedMotion = false,
   onCancelPresent,
   className,
@@ -182,17 +183,22 @@ export function DialoguePlayer({
   const [muted, setMuted] = useState(defaultMuted);
   const [auto, setAuto] = useState(defaultAutoAdvance);
   // Место сцены: своя локация или картина прошлой сцены потока (сцена без location не меняет места)
-  const [place, setPlace] = useState<string | null>(() => scene.location ?? continueFrom?.background ?? null);
+  const [place, setPlace] = useState<string | null>(() => scene.location ?? null);
 
-  // Новая сцена от родителя: прошлая уходит в историю, печать начинается заново
+  // Новая сцена от родителя: прошлая уходит в историю (или лог начинается заново), печать — с startAt
   if (scene.id !== current.id) {
-    const prevItems = sceneEntries(current, labelOf(current));
-    setHistory((h) => [...h, ...prevItems.slice(0, index + 1), ...trailing]);
+    if (logScope === "flow") {
+      const prevItems = sceneEntries(current, labelOf(current));
+      setHistory((h) => [...h, ...prevItems.slice(0, index + 1), ...trailing]);
+    } else {
+      setHistory([]);
+      setTable(null);
+    }
     setTrailing([]);
     setCurrent(scene);
-    setIndex(0);
-    setShown(0);
-    setAtEnd(scene.lines.length === 0);
+    setIndex(initialIndex(scene, startAt));
+    setShown(startAt === "end" || startAt > 0 ? Number.MAX_SAFE_INTEGER : 0);
+    setAtEnd(startAt === "end" || scene.lines.length === 0);
     setResolved(false);
     setPicked(null);
     setPlace(scene.location ?? place);
@@ -424,9 +430,9 @@ export function DialoguePlayer({
   // Картина под сценой: проп важнее места сцены; null — чистая комната
   const shownPlace = background !== undefined ? background : place;
   const painting = useBackground(shownPlace, backgroundBasePath).url !== null;
-  // Новая сцена поверх стола: гашение экрана (240 мс), затем проявление комнаты (400 мс).
-  // Продолжение потока — комната уже на экране; меньше движения — сразу
-  const entering = variant === "overlay" && !continueFrom && !reduced;
+  // Плеер появился поверх стола: гашение экрана (240 мс), затем проявление комнаты (400 мс).
+  // Следующие сцены потока идут в том же плеере — вход доигрывает, не начинаясь заново; меньше движения — сразу
+  const entering = variant === "overlay" && !reduced;
 
   return (
     <div
@@ -449,12 +455,7 @@ export function DialoguePlayer({
         className="absolute inset-0 [--zone:min(640px,44.4cqw)]"
         style={{ animation: entering ? "zs-fade-in 400ms var(--ease-out) 240ms both" : undefined }}
       >
-        <SceneBackdrop
-          location={shownPlace}
-          from={continueFrom ? continueFrom.background : undefined}
-          reduced={reduced}
-          basePath={backgroundBasePath}
-        />
+        <SceneBackdrop location={shownPlace} reduced={reduced} basePath={backgroundBasePath} />
 
         <div className="absolute inset-0 cursor-default" onClick={onStageClick}>
           {/* Портрет: широко — слева на всю высоту; узко — сверху 42 % */}

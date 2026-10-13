@@ -18,14 +18,10 @@ function Resume({ label, onClick, testId }: { label: string; onClick: () => void
   );
 }
 
-/** Экземпляр сцены на экране: плеер пересоздаётся на каждую сцену */
+/** Сцена на экране: номер нужен, чтобы отложенное предъявление относилось к своей сцене */
 interface SceneInstance {
   id: string | null;
   n: number;
-  /** Картина сцены: её location или картина прошлой сцены потока */
-  place: string | null;
-  /** Сцена сменила сцену без паузы: комната уже на экране с этой картиной */
-  from?: { background: string | null };
 }
 
 /**
@@ -33,9 +29,11 @@ interface SceneInstance {
  * Сцена играет сама; стор узнаёт о конце сцены, выборе и предъявлении. Предъявление и
  * допрос можно отложить — тогда в строке окна остаётся «вернуться».
  *
- * Поток сцен: если новая сцена сменяет прошлую сразу (выбор, «дальше», предъявление), комната
- * не гаснет и не проявляется заново, а картина меняется перекрёстным затуханием; сцена без
- * location остаётся на картине прошлой. Сцена после стола или допроса открывается заново.
+ * Поток сцен: пока новая сцена сменяет прошлую сразу (выбор, «дальше», предъявление), на экране
+ * тот же плеер — комната не гаснет и не проявляется заново, начатый вход доигрывает, картина
+ * меняется перекрёстным затуханием с того места, где она была; сцена без location остаётся на
+ * картине прошлой. Лог и стол каждая сцена начинает заново (logScope="scene"). Сцена после стола,
+ * допроса или отложенного предъявления — новый плеер: она открывается заново.
  */
 export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string): { overlay: ReactNode; resume: ReactNode } {
   const stage = useGameView(stageView);
@@ -45,19 +43,11 @@ export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string)
   const busy = useGame((s) => s.busy);
   const pins = useGame((s) => s.session?.pins);
 
-  // Экземпляр сцены: новый каждый раз, когда на сцену выходит другая сцена
+  // Номер сцены: новый каждый раз, когда на сцену выходит другая сцена
   const sceneId = stage?.scene.id ?? null;
-  const [inst, setInst] = useState<SceneInstance>({ id: null, n: 0, place: null });
+  const [inst, setInst] = useState<SceneInstance>({ id: null, n: 0 });
   const [deferred, setDeferred] = useState<number | null>(null);
-  if (sceneId !== inst.id) {
-    const continuing = sceneId !== null && inst.id !== null && deferred !== inst.n;
-    setInst({
-      id: sceneId,
-      n: inst.n + 1,
-      place: stage?.scene.location ?? (continuing ? inst.place : null),
-      from: continuing ? { background: inst.place } : undefined,
-    });
-  }
+  if (sceneId !== inst.id) setInst({ id: sceneId, n: inst.n + 1 });
   const [away, setAway] = useState<string | null>(null);
 
   const st = () => gameStore.getState();
@@ -72,25 +62,22 @@ export function useSceneLayer(items: EvidenceCardData[], locationLabel?: string)
     resume = (
       <Resume
         label="Сцена ждёт: вернуться"
-        onClick={() => {
-          // Возврат к отложенной сцене — снова вход: стол гаснет, комната проявляется
-          setDeferred(null);
-          setInst((i) => ({ ...i, from: undefined }));
-        }}
+        // Возврат к отложенной сцене — новый плеер, снова вход: стол гаснет, комната проявляется
+        onClick={() => setDeferred(null)}
         testId="resume-scene"
       />
     );
   } else if (stage) {
+    // Без ключа сцены: плеер живёт весь поток и сам переходит к следующей сцене
     overlay = (
       <DialoguePlayer
-        key={`${stage.scene.id}:${inst.n}`}
         variant="overlay"
         scene={stage.scene}
         characters={CHARACTERS}
         evidence={items}
         playerName={profile.playerName || undefined}
         locationLabel={locationLabel ?? ""}
-        continueFrom={inst.from}
+        logScope="scene"
         reducedMotion={settings.reducedMotion}
         startAt={stage.awaiting ? "end" : stage.lineIndex}
         defaultMuted={settings.voiceVolume === 0}
